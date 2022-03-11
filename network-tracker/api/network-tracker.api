@@ -1,0 +1,38 @@
+public abstract interface class com/gojek/networktracker/NetworkStateListener {
+	public abstract fun onStateChanged (Lcom/gojek/networktracker/model/NetworkState;)V
+}
+
+public abstract interface class com/gojek/networktracker/NetworkStateTracker {
+	public abstract fun addListener (Lcom/gojek/networktracker/NetworkStateListener;)V
+	public abstract fun getActiveNetworkState ()Lcom/gojek/networktracker/model/NetworkState;
+	public abstract fun removeListener (Lcom/gojek/networktracker/NetworkStateListener;)V
+}
+
+public final class com/gojek/networktracker/NetworkStateTrackerFactory {
+	public static final field Companion Lcom/gojek/networktracker/NetworkStateTrackerFactory$Companion;
+}
+
+public final class com/gojek/networktracker/NetworkStateTrackerFactory$Companion {
+	public final fun create (Landroid/content/Context;Lcom/gojek/courier/logging/ILogger;)Lcom/gojek/networktracker/NetworkStateTracker;
+	public static synthetic fun create$default (Lcom/gojek/networktracker/NetworkStateTrackerFactory$Companion;Landroid/content/Context;Lcom/gojek/courier/logging/ILogger;ILjava/lang/Object;)Lcom/gojek/networktracker/NetworkStateTracker;
+}
+
+public final class com/gojek/networktracker/model/NetworkState {
+	public fun <init> (ZZZZLandroid/net/NetworkInfo;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Landroid/net/NetworkInfo;
+	public final fun copy (ZZZZLandroid/net/NetworkInfo;)Lcom/gojek/networktracker/model/NetworkState;
+	public static synthetic fun copy$default (Lcom/gojek/networktracker/model/NetworkState;ZZZZLandroid/net/NetworkInfo;ILjava/lang/Object;)Lcom/gojek/networktracker/model/NetworkState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNetInfo ()Landroid/net/NetworkInfo;
+	public fun hashCode ()I
+	public final fun isConnected ()Z
+	public final fun isMetered ()Z
+	public final fun isNotRoaming ()Z
+	public final fun isValidated ()Z
+	public fun toString ()Ljava/lang/String;
+}
+

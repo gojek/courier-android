@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mqtt_chuck_name">MQTT Chuck</string>
+    <string name="mqtt_chuck_notification_category">Mqtt Chuck notifications</string>
+    <string name="mqtt_chuck_mqtt_notification_title">Recording MQTT activity</string>
+    <string name="mqtt_chuck_clear">Clear</string>
+    <string name="mqtt_chuck_cancel">Cancel</string>
+    <string name="mqtt_chuck_share">Share</string>
+    <string name="mqtt_chuck_search">Search</string>
+    <string name="mqtt_chuck_share_transaction_title">Share MQTT Packet</string>
+    <string name="mqtt_chuck_share_transaction_subject">MQTT Packet details</string>
+    <string name="mqtt_chuck_clear_mqtt_confirmation">Do you want to clear complete mqtt history?</string>
+    <string name="mqtt_chuck_body_content_copied">Body content copied</string>
+    <string name="mqtt_chuck_body_content_copy_failed">Body content copy failed</string>
+</resources>

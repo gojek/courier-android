@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".internal.presentation.transactionlist.ui.fragment.TransactionListFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/transaction_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        app:layoutManager="LinearLayoutManager"
+        tools:context=".internal.presentation.transactionlist.ui.fragment.TransactionListFragment"
+        tools:listitem="@layout/mqtt_chucker_list_item_transaction" />
+
+    <ProgressBar
+        android:id="@+id/transaction_list_loader"
+        style="@style/ProgressBar"
+        tools:visibility="visible"/>
+
+</FrameLayout>

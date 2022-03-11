@@ -1,0 +1,31 @@
+public abstract class com/gojek/appstatemanager/AppState {
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getName ()Ljava/lang/String;
+}
+
+public final class com/gojek/appstatemanager/AppState$BACKGROUND : com/gojek/appstatemanager/AppState {
+	public static final field INSTANCE Lcom/gojek/appstatemanager/AppState$BACKGROUND;
+}
+
+public final class com/gojek/appstatemanager/AppState$FOREGROUND : com/gojek/appstatemanager/AppState {
+	public static final field INSTANCE Lcom/gojek/appstatemanager/AppState$FOREGROUND;
+}
+
+public abstract interface class com/gojek/appstatemanager/AppStateChangeListener {
+	public abstract fun onAppStateChange (Lcom/gojek/appstatemanager/AppState;)V
+}
+
+public abstract interface class com/gojek/appstatemanager/AppStateManager {
+	public abstract fun addAppStateListener (Lcom/gojek/appstatemanager/AppStateChangeListener;)V
+	public abstract fun getCurrentAppState ()Lcom/gojek/appstatemanager/AppState;
+	public abstract fun removeAppStateListener (Lcom/gojek/appstatemanager/AppStateChangeListener;)V
+}
+
+public final class com/gojek/appstatemanager/AppStateManagerFactory {
+	public static final field Companion Lcom/gojek/appstatemanager/AppStateManagerFactory$Companion;
+}
+
+public final class com/gojek/appstatemanager/AppStateManagerFactory$Companion {
+	public final fun create ()Lcom/gojek/appstatemanager/AppStateManager;
+}
+

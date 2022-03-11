@@ -1,0 +1,8 @@
+public final class com/gojek/timer/pingsender/TimerPingSenderFactory {
+	public static final field Companion Lcom/gojek/timer/pingsender/TimerPingSenderFactory$Companion;
+}
+
+public final class com/gojek/timer/pingsender/TimerPingSenderFactory$Companion {
+	public final fun create ()Lcom/gojek/mqtt/pingsender/MqttPingSender;
+}
+

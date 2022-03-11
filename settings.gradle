@@ -1,0 +1,29 @@
+rootProject.name='Courier'
+include ':app'
+include ':paho'
+include ':paho-v5'
+include ':mqtt-client'
+include ':courier'
+include ':courier-core'
+include ':courier-core-android'
+include ':courier-message-adapter-gson'
+include ':courier-message-adapter-moshi'
+include ':courier-message-adapter-protobuf'
+include ':courier-stream-adapter-rxjava'
+include ':courier-stream-adapter-rxjava2'
+include ':courier-stream-adapter-coroutines'
+include ':adaptive-keep-alive'
+include ':network-tracker'
+include ':chuck-mqtt'
+include ':chuck-mqtt-no-ops'
+include ':app-state-manager'
+include ':courier-auth-http'
+include ':mqtt-pingsender'
+include ':workmanager-pingsender'
+include ':alarm-pingsender'
+include ':timer-pingsender'
+
+project(':mqtt-pingsender').projectDir = new File(settingsDir, './pingsender/mqtt-pingsender')
+project(':workmanager-pingsender').projectDir = new File(settingsDir, './pingsender/workmanager-pingsender')
+project(':alarm-pingsender').projectDir = new File(settingsDir, './pingsender/alarm-pingsender')
+project(':timer-pingsender').projectDir = new File(settingsDir, './pingsender/timer-pingsender')

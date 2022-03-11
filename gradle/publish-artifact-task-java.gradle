@@ -1,0 +1,31 @@
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.artifactory'
+
+afterEvaluate {
+    publishing {
+        publications {
+            artifactUpload(MavenPublication) {
+                from components.java
+                def pname = project.ext.get("name") as String
+                def pversion = project.ext.get("version") as String
+                project.group 'com.gojek.android'
+                artifactId pname
+                version = pversion
+            }
+        }
+    }
+}
+
+artifactory {
+    contextUrl = ''
+    publish {
+        repository {
+            repoKey = ''
+            username = System.getenv('ARTIFACTORY_USER')
+            password = System.getenv('ARTIFACTORY_PASSWORD')
+        }
+        defaults {
+            publications('artifactUpload')
+        }
+    }
+}

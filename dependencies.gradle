@@ -1,0 +1,11 @@
+ext {
+    kotlinStdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    rxJava = 'io.reactivex.rxjava2:rxjava:2.1.16'
+
+    kotlinCoroutines = 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2'
+    kotlinCoroutinesRxInterop = 'org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.3.2'
+
+    gson = 'com.google.code.gson:gson:2.8.5'
+    okio = 'com.squareup.okio:okio:1.13.0'
+}

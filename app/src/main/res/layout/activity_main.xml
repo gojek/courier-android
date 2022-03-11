@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.MainActivity">
+
+    <EditText
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:id="@+id/brokerIP"
+        android:hint="Broker IP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:gravity="center"
+        android:id="@+id/brokerPort"
+        android:hint="Broker Port"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:gravity="center"
+        android:id="@+id/clientId"
+        android:hint="ClientId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:gravity="center"
+        android:id="@+id/username"
+        android:hint="Username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:gravity="center"
+        android:id="@+id/password"
+        android:hint="Password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:id="@+id/message"
+        android:hint="Message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/connect"
+        android:text="Connect"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/disconnect"
+        android:text="Disconnect"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/send"
+        android:text="Send message"/>
+
+    <EditText
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:id="@+id/topic"
+        android:hint="Topic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:id="@+id/subscribe"
+            android:text="Subscribe"/>
+
+        <Button
+            android:id="@+id/unsubscribe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Unsubscribe" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

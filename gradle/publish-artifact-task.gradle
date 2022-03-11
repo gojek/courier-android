@@ -1,0 +1,85 @@
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            aar(MavenPublication) {
+                def pname = project.ext.get("name") as String
+                def pversion = project.ext.get("version") as String
+                def ppublish = project.ext.get("publish") as Boolean
+
+                if (ppublish) {
+                    if (pname != null && pversion != null) {
+                        project.artifactoryPublish.skip = false
+                        project.tasks.artifactoryPublish.dependsOn("assembleRelease")
+                        project.tasks.artifactoryPublish.dependsOn("generatePomFileForAarPublication")
+                        println("$project.name will be published as $pname : $pversion")
+                    } else {
+                        println("$project.name is missing publishing details")
+                    }
+                }
+                groupId 'com.gojek.android'
+                artifactId pname
+                version = pversion
+                artifact(sourcesJar)
+                artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+                pom.withXml {
+                    def dependencies = asNode().appendNode('dependencies')
+                    configurations.implementation.allDependencies.each {
+                        if (it.name != "unspecified" && it.version != "unspecified") {
+                            def group = it.group
+                            def name = it.name
+                            def version = it.version
+                            if (it.group == "android-config-provider") {
+                                group = groupId
+                            }
+                            def dependency = dependencies.appendNode('dependency')
+                            dependency.appendNode('groupId', group)
+                            dependency.appendNode('artifactId', name)
+                            dependency.appendNode('version', version)
+                            dependency.appendNode('scope', 'runtime')
+                        }
+                    }
+                    configurations.api.allDependencies.each {
+                        if (it.name != "unspecified" && it.version != "unspecified") {
+                            def group = it.group
+                            def name = it.name
+                            def version = it.version
+
+                            if (it.group == "android-config-provider") {
+                                group = groupId
+                            }
+                            def dependency = dependencies.appendNode('dependency')
+                            dependency.appendNode('groupId', group)
+                            dependency.appendNode('artifactId', name)
+                            dependency.appendNode('version', version)
+                            dependency.appendNode('scope', 'compile')
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+project.artifactoryPublish.skip = true
+artifactory {
+    contextUrl = ''
+    publish {
+        repository {
+            repoKey = ''
+            username = System.getenv('ARTIFACTORY_USER')
+            password = System.getenv('ARTIFACTORY_PASSWORD')
+        }
+        defaults {
+            publications('aar')
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+}

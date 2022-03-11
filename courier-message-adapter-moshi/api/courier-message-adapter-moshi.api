@@ -1,0 +1,24 @@
+public final class com/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory : com/gojek/courier/MessageAdapter$Factory {
+	public fun <init> ()V
+	public fun <init> (Lcom/squareup/moshi/Moshi;Lcom/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory$Config;)V
+	public synthetic fun <init> (Lcom/squareup/moshi/Moshi;Lcom/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun create (Ljava/lang/reflect/Type;[Ljava/lang/annotation/Annotation;)Lcom/gojek/courier/MessageAdapter;
+}
+
+public final class com/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory$Config {
+	public fun <init> ()V
+	public fun <init> (ZZZ)V
+	public synthetic fun <init> (ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun copy (ZZZ)Lcom/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory$Config;
+	public static synthetic fun copy$default (Lcom/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory$Config;ZZZILjava/lang/Object;)Lcom/gojek/courier/messageadapter/moshi/MoshiMessageAdapterFactory$Config;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFailOnUnknown ()Z
+	public final fun getLenient ()Z
+	public final fun getSerializeNull ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+

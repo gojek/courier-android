@@ -1,0 +1,18 @@
+public final class com/gojek/courier/authhttp/HttpAuthenticatorFactory {
+	public static final field Companion Lcom/gojek/courier/authhttp/HttpAuthenticatorFactory$Companion;
+}
+
+public final class com/gojek/courier/authhttp/HttpAuthenticatorFactory$Companion {
+	public final fun create (Lretrofit2/Retrofit;Ljava/lang/String;Lcom/gojek/courier/authhttp/handler/ResponseHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/courier/authhttp/retry/AuthRetryPolicy;Ljava/util/Map;)Lcom/gojek/mqtt/auth/Authenticator;
+	public static synthetic fun create$default (Lcom/gojek/courier/authhttp/HttpAuthenticatorFactory$Companion;Lretrofit2/Retrofit;Ljava/lang/String;Lcom/gojek/courier/authhttp/handler/ResponseHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/courier/authhttp/retry/AuthRetryPolicy;Ljava/util/Map;ILjava/lang/Object;)Lcom/gojek/mqtt/auth/Authenticator;
+}
+
+public abstract interface class com/gojek/courier/authhttp/handler/ResponseHandler {
+	public abstract fun handleResponse (Lokhttp3/ResponseBody;Lcom/gojek/mqtt/model/MqttConnectOptions;)Lcom/gojek/mqtt/model/MqttConnectOptions;
+}
+
+public abstract interface class com/gojek/courier/authhttp/retry/AuthRetryPolicy {
+	public abstract fun getRetrySeconds (Ljava/lang/Throwable;)J
+	public abstract fun reset ()V
+}
+

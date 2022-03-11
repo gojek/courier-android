@@ -1,0 +1,81 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 31
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.gojek.courier.app"
+        minSdkVersion 21
+        targetSdkVersion 31
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.31"
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
+
+    //Mqtt Client
+    implementation project(':mqtt-client')
+    //Courier
+    implementation project(':courier')
+    //Chuck Mqtt
+    implementation project(':chuck-mqtt')
+    implementation project(':app-state-manager')
+
+    //Timber logging
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    //RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
+    //Retrofit
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+
+    implementation project(':courier-stream-adapter-rxjava2')
+    implementation project(':courier-message-adapter-gson')
+    implementation project(':courier-message-adapter-moshi')
+    implementation project(':courier-message-adapter-protobuf')
+    implementation project(':adaptive-keep-alive')
+
+    //Stetho
+    implementation 'com.facebook.stetho:stetho:1.5.1'
+
+    //Network tracker
+    implementation project(':network-tracker')
+
+    //http authenticator
+    implementation project(':courier-auth-http')
+
+    //WorkManager Ping Sender
+    implementation project(':workmanager-pingsender')
+    implementation project(':alarm-pingsender')
+    implementation project(':timer-pingsender')
+
+    testImplementation 'junit:junit:4.13.1'
+}
