@@ -56,7 +56,6 @@ val clean by tasks.creating(Delete::class) {
     delete("${rootDir}/courier-stream-adapter-rxjava2/build")
     delete("${rootDir}/mqtt-client/build")
     delete("${rootDir}/paho/build")
-    delete("${rootDir}/paho-v5/build")
     delete("${rootDir}/adaptive-keep-alive/build")
     delete("${rootDir}/network-tracker/build")
     delete("${rootDir}/chuck-mqtt/build")
