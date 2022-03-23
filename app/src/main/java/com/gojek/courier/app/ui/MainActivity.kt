@@ -126,7 +126,6 @@ class MainActivity : AppCompatActivity() {
                     pingSender = WorkPingSenderFactory.createAdaptiveMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
                 ),
                 inactivityTimeoutSeconds = 45,
-                pingExperimentVariant = 3,
                 activityCheckIntervalSeconds = 30,
                 isMqttVersion4Enabled = true
             ),

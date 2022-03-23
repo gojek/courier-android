@@ -122,7 +122,7 @@ internal class AndroidMqttClient(
     private var forceRefresh = false
 
     private val subscriptionStore: SubscriptionStore =
-        if (experimentConfigs.isNewSubscriptionStoreEnabled) {
+        if (experimentConfigs.isPersistentSubscriptionStoreEnabled) {
             PersistableSubscriptionStore(context)
         } else {
             InMemorySubscriptionStore()
@@ -148,19 +148,16 @@ internal class AndroidMqttClient(
             this,
             logger,
             mqttConfiguration.eventHandler,
-            experimentConfigs.activityCheckIntervalSeconds,
-            experimentConfigs.removeConnectionCheckRunnableAfterDisconnect
+            experimentConfigs.activityCheckIntervalSeconds
         )
         mqttUtils = MqttUtils()
         networkUtils = NetworkUtils()
         mqttPersistence = PahoPersistence(context)
         messageSendListener = MqttMessageSendListener()
         networkHandler = NetworkHandler(
-            context = context,
             logger = mqttConfiguration.logger,
             androidMqttClient = this,
             networkUtils = networkUtils,
-            isNetworkValidatedCheckEnabled = experimentConfigs.isNetworkValidatedCheckEnabled,
             networkStateTracker = networkStateTracker
         )
         mqttClientEventAdapter = MqttClientEventAdapter(
@@ -180,11 +177,8 @@ internal class AndroidMqttClient(
                 socketFactory = mqttConfiguration.socketFactory,
                 mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map { it.mapToPahoInterceptor() },
                 persistenceOptions = mqttConfiguration.persistenceOptions,
-                isNetworkCheckEnabled = experimentConfigs.isNetworkCheckEnabled,
-                pingExperimentVariant = experimentConfigs.pingExperimentVariant,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
                 policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
-                isNewStoreLogicEnabled = experimentConfigs.isNewStoreLogicEnabled,
                 isMqttVersion4Enabled = experimentConfigs.isMqttVersion4Enabled
             )
 

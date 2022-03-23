@@ -7,7 +7,6 @@ import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.client.IClientSchedulerBridge
 import com.gojek.mqtt.event.EventHandler
-import com.gojek.mqtt.event.MqttEvent
 import com.gojek.mqtt.event.MqttEvent.HandlerThreadNotAliveEvent
 import com.gojek.mqtt.policies.connectretrytime.ConnectRetryTimeConfig
 import com.gojek.mqtt.scheduler.runnable.*
@@ -18,17 +17,13 @@ internal class MqttRunnableScheduler(
     private val clientSchedulerBridge: IClientSchedulerBridge,
     private val logger: ILogger,
     private val eventHandler: EventHandler,
-    private val activityCheckIntervalSeconds: Int,
-    removeConnCheckRunnableAfterDisconnect: Boolean
+    private val activityCheckIntervalSeconds: Int
 ) : IRunnableScheduler {
     private val connectionCheckRunnable = ConnectionCheckRunnable(clientSchedulerBridge)
     private val mqttExceptionRunnable = MqttExceptionRunnable(clientSchedulerBridge)
     private val disconnectRunnable = DisconnectRunnable(
-            clientSchedulerBridge,
-            mqttThreadHandler,
-            connectionCheckRunnable,
-            removeConnCheckRunnableAfterDisconnect
-        )
+        clientSchedulerBridge
+    )
     private val activityCheckRunnable = ActivityCheckRunnable(clientSchedulerBridge, logger)
     private val resetParamsRunnable = ResetParamsRunnable(clientSchedulerBridge)
     private val authFailureRunnable = AuthFailureRunnable(clientSchedulerBridge)
