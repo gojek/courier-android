@@ -150,7 +150,6 @@ public class ClientState
 	private long inactivityTimeout = DEFAULT_INACTIVITY_TIMEOUT;
 	private final static long DEFAULT_INACTIVITY_TIMEOUT = 60 * 1000;
 
-	private int pingExperimentVariant = 1;
 	private IPahoEvents pahoEvents;
 
 	private final String TAG = "clientState";
@@ -188,7 +187,6 @@ public class ClientState
 		this.pahoEvents = pahoEvents;
 
 		if (experimentsConfig != null) {
-			pingExperimentVariant = experimentsConfig.getPingExperimentVariant();
 			inactivityTimeout = experimentsConfig.inactivityTimeoutSecs() * 1000L;
 		}
 
@@ -634,94 +632,6 @@ public class ClientState
 		}
 	}
 
-	public MqttToken checkForActivity() throws MqttException {
-		if (pingExperimentVariant == 2) {
-			return checkForActivityV2();
-		} else if (pingExperimentVariant == 3) {
-			return checkForActivityV3();
-		} else {
-			return checkForActivityV1();
-		}
-	}
-
-	/**
-	 * Check and send a ping if needed and check for ping timeout. Need to send a ping if nothing has been sent or received in the last keepalive interval. It is important to check
-	 * for both sent and received packets in order to catch the case where an app is solely sending QoS 0 messages or receiving QoS 0 messages. QoS 0 message are not good enough
-	 * for checking a connection is alive as they are one way messages.
-	 * 
-	 * If a ping has been sent but no data has been received in the last keepalive interval then the connection is deamed to be broken.
-	 * 
-	 * @return token of ping command, null if no ping command has been sent.
-	 */
-	private MqttToken checkForActivityV1() throws MqttException
-	{
-		final String methodName = "checkForActivity";
-
-		MqttToken token = null;
-		long nextPingTime = getKeepAlive();
-
-		if (connected && this.keepAlive > 0)
-		{
-			long time = System.currentTimeMillis();
-			// Reduce schedule frequency since System.currentTimeMillis is no accurate, add a buffer
-			// It is 1/10 in minimum keepalive unit.
-			int delta = 100;
-			int keepAliveMargin = 5000;
-
-			synchronized (pingOutstanding)
-			{
-
-				if (!pingOutstanding.booleanValue())
-				{
-					long lastActivity = Math.max(lastInboundActivity, lastOutboundActivity);
-
-					// Is a ping required?
-					if (time - lastActivity + keepAliveMargin >= this.keepAlive)
-					{
-
-						// @TRACE 620=ping needed. keepAlive={0} lastOutboundActivity={1} lastInboundActivity={2}
-						logger.d(TAG, "inserting ping in pending flows , lastoutboundactivity time : " + lastOutboundActivity + " lastinboundactivitytime : " + lastInboundActivity);
-						pingOutstanding = Boolean.TRUE;
-						lastPing = time;
-						token = new MqttToken(clientComms.getClient().getClientId());
-						tokenStore.saveToken(token, pingCommand);
-						pendingFlows.insertElementAt(pingCommand, 0);
-
-						nextPingTime = getKeepAlive();
-
-						// Wake sender thread since it may be in wait state (in ClientState.get())
-						notifyQueueLock();
-					}
-					else
-					{
-						// @Trace 634=ping not needed yet. Schedule next ping.
-						nextPingTime = getKeepAlive() - (time - lastActivity);
-						logger.d(TAG, "ping not outstanding , nextping time : " + nextPingTime);
-					}
-				}
-				else if ((time - lastPing >= keepAlive + delta) && (time - lastInboundActivity >= keepAlive + delta) && (time - lastOutboundActivity >= keepAlive + delta))
-				{
-					// any of the conditions is true means the client is active
-					// lastInboundActivity will be updated once receiving is done.
-					// Add a delta, since the timer and System.currentTimeMillis() is not accurate.
-					// A ping is outstanding but no packet has been received in KA so connection is deemed broken
-					// @TRACE 619=Timed out as no activity, keepAlive={0} lastOutboundActivity={1} lastInboundActivity={2} time={3} lastPing={4}
-					logger.e(TAG, "timed out as no activity, already sent the ping but no response recieved,  lastoutboundactivity : " + lastOutboundActivity
-							+ " fastReconnectCheckStartTime : " + fastReconnectCheckStartTime + " lastinboundactivity : " + lastInboundActivity);
-
-					// A ping has already been sent. At this point, assume that the
-					// broker has hung and the TCP layer hasn't noticed.
-					throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_CLIENT_TIMEOUT);
-				}
-			}
-			// @TRACE 624=Schedule next ping at {0}
-			logger.d(TAG, "scheduling next ping time : " + nextPingTime);
-			pingSender.schedule(nextPingTime);
-		}
-
-		return token;
-	}
-
 	/**
 	 * Check and send a ping if needed and check for ping timeout. Need to send a ping if nothing has been sent or received in the last keepalive interval. It is important to check
 	 * for both sent and received packets in order to catch the case where an app is solely sending QoS 0 messages or receiving QoS 0 messages. QoS 0 message are not good enough
@@ -731,7 +641,7 @@ public class ClientState
 	 *
 	 * @return token of ping command, null if no ping command has been sent.
 	 */
-	private MqttToken checkForActivityV2() throws MqttException
+	public MqttToken checkForActivity() throws MqttException
 	{
 		final String methodName = "checkForActivity";
 
@@ -778,68 +688,6 @@ public class ClientState
 					}
 				}
 				else if ((time - lastPing >= keepAlive + delta) && (time - lastInboundActivity >= keepAlive + delta))
-				{
-					// any of the conditions is true means the client is active
-					// lastInboundActivity will be updated once receiving is done.
-					// Add a delta, since the timer and System.currentTimeMillis() is not accurate.
-					// A ping is outstanding but no packet has been received in KA so connection is deemed broken
-					// @TRACE 619=Timed out as no activity, keepAlive={0} lastOutboundActivity={1} lastInboundActivity={2} time={3} lastPing={4}
-					logger.e(TAG, "timed out as no activity, already sent the ping but no response recieved,  lastoutboundactivity : " + lastOutboundActivity
-							+ " fastReconnectCheckStartTime : " + fastReconnectCheckStartTime + " lastinboundactivity : " + lastInboundActivity);
-
-					// A ping has already been sent. At this point, assume that the
-					// broker has hung and the TCP layer hasn't noticed.
-					throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_CLIENT_TIMEOUT);
-				}
-			}
-			// @TRACE 624=Schedule next ping at {0}
-			logger.d(TAG, "scheduling next ping time : " + nextPingTime);
-			pingSender.schedule(nextPingTime);
-		}
-
-		return token;
-	}
-
-	/**
-	 * Check and send a ping if needed and check for ping timeout. Need to send a ping if nothing has been sent or received in the last keepalive interval. It is important to check
-	 * for both sent and received packets in order to catch the case where an app is solely sending QoS 0 messages or receiving QoS 0 messages. QoS 0 message are not good enough
-	 * for checking a connection is alive as they are one way messages.
-	 *
-	 * If a ping has been sent but no data has been received in the last keepalive interval then the connection is deamed to be broken.
-	 *
-	 * @return token of ping command, null if no ping command has been sent.
-	 */
-	private MqttToken checkForActivityV3() throws MqttException
-	{
-		final String methodName = "checkForActivity";
-
-		MqttToken token = null;
-		long nextPingTime = getKeepAlive();
-
-		if (connected && this.keepAlive > 0)
-		{
-			long time = System.currentTimeMillis();
-
-			synchronized (pingOutstanding)
-			{
-
-				if (!pingOutstanding.booleanValue())
-				{
-
-					// @TRACE 620=ping needed. keepAlive={0} lastOutboundActivity={1} lastInboundActivity={2}
-					logger.d(TAG, "inserting ping in pending flows , lastoutboundactivity time : " + lastOutboundActivity + " lastinboundactivitytime : " + lastInboundActivity);
-					pingOutstanding = Boolean.TRUE;
-					lastPing = time;
-					token = new MqttToken(clientComms.getClient().getClientId());
-					tokenStore.saveToken(token, pingCommand);
-					pendingFlows.insertElementAt(pingCommand, 0);
-
-					nextPingTime = getKeepAlive();
-
-					// Wake sender thread since it may be in wait state (in ClientState.get())
-					notifyQueueLock();
-				}
-				else
 				{
 					// any of the conditions is true means the client is active
 					// lastInboundActivity will be updated once receiving is done.

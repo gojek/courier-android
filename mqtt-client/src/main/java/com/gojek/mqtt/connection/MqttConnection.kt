@@ -133,11 +133,6 @@ internal class MqttConnection(
                 mqtt!!.setCallback(getMqttCallback(messageReceiveListener))
                 logger.d(TAG, "Number of max inflight msgs allowed : " + mqtt!!.maxflightMessages)
             }
-            if (connectionConfig.isNetworkCheckEnabled && networkHandler.isConnected().not()) {
-                logger.d(TAG, "No Network Connection so should not connect")
-                connectionConfig.connectionEventHandler.onMqttConnectDiscarded("No Network Connection")
-                return
-            }
             if (isConnected()) {
                 logger.d(TAG, "Client already connected!!!")
                 connectionConfig.connectionEventHandler.onMqttConnectDiscarded("Client already connected")
@@ -406,18 +401,14 @@ internal class MqttConnection(
                         serverUri = serverUri,
                         timeTakenMillis = (connectSuccessTime - connectStartTime).fromNanosToMillis()
                     )
-                    if (connectionConfig.isNewStoreLogicEnabled) {
-                        runnableScheduler.scheduleSubscribe(
-                            0,
-                            subscriptionStore.getSubscribeTopics()
-                        )
-                        runnableScheduler.scheduleUnsubscribe(
-                            0,
-                            subscriptionStore.getUnsubscribeTopics(options!!.isCleanSession)
-                        )
-                    } else {
-                        runnableScheduler.scheduleSubscribe(0, subscriptionTopicMap)
-                    }
+                    runnableScheduler.scheduleSubscribe(
+                        0,
+                        subscriptionStore.getSubscribeTopics()
+                    )
+                    runnableScheduler.scheduleUnsubscribe(
+                        0,
+                        subscriptionStore.getUnsubscribeTopics(options!!.isCleanSession)
+                    )
                 } finally {
                     wakeLockProvider.releaseWakeLock()
                 }
@@ -497,9 +488,7 @@ internal class MqttConnection(
                     timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis()
                 )
                 subscriptionPolicy.resetParams()
-                if (connectionConfig.isNewStoreLogicEnabled) {
-                    subscriptionStore.getListener().onTopicsSubscribed(topicMap)
-                }
+                subscriptionStore.getListener().onTopicsSubscribed(topicMap)
             }
 
             override fun onFailure(
@@ -534,9 +523,7 @@ internal class MqttConnection(
                     timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis()
                 )
                 unsubscriptionPolicy.resetParams()
-                if (connectionConfig.isNewStoreLogicEnabled) {
-                    subscriptionStore.getListener().onTopicsUnsubscribed(topics)
-                }
+                subscriptionStore.getListener().onTopicsUnsubscribed(topics)
             }
 
             override fun onFailure(
@@ -598,18 +585,9 @@ internal class MqttConnection(
 
     private fun getPahoExperimentsConfig(): IExperimentsConfig {
         return object : IExperimentsConfig {
-            override fun getPingExperimentVariant(): Int {
-                return connectionConfig.pingExperimentVariant
-            }
-
             override fun inactivityTimeoutSecs(): Int {
                 return connectionConfig.inactivityTimeoutSeconds
             }
-
-            override fun shouldUseNewCommsCallback(): Boolean {
-                return false
-            }
-
         }
     }
 
