@@ -131,11 +131,7 @@ public class ClientComms {
         this.pahoEvents = pahoEvents;
 
         this.tokenStore = new CommsTokenStore(getClient().getClientId());
-        if (shouldUseNewCommsCallback(experimentsConfig)) {
-            this.callback = new CommsCallbackNew(this, logger);
-        } else {
-            this.callback = new CommsCallback(this, logger);
-        }
+        this.callback = new CommsCallback(this, logger);
         this.clientState = new ClientState(
                 persistence,
                 tokenStore,
@@ -824,13 +820,6 @@ public class ClientComms {
         this.persistence = persistence;
         clientState.setPersistence(persistence);
 
-    }
-
-    private boolean shouldUseNewCommsCallback(IExperimentsConfig experimentsConfig) {
-        if (experimentsConfig == null) {
-            return false;
-        }
-        return experimentsConfig.shouldUseNewCommsCallback();
     }
 
 	public void setDisconnectedMessageBuffer(DisconnectedMessageBuffer disconnectedMessageBuffer) {

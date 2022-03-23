@@ -25,10 +25,7 @@ internal data class ConnectionConfig(
     val disconnectTimeout: Int = DISCONNECT_TIMEOUT_MILLIS,
     val mqttInterceptorList: List<MqttInterceptor>,
     val persistenceOptions: PersistenceOptions,
-    val isNetworkCheckEnabled: Boolean,
-    val pingExperimentVariant: Int,
     val inactivityTimeoutSeconds: Int,
     val policyResetTimeSeconds: Int,
-    val isNewStoreLogicEnabled: Boolean,
     val isMqttVersion4Enabled: Boolean,
 )
