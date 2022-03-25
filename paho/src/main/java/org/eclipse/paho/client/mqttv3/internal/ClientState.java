@@ -477,7 +477,7 @@ public class ClientState
 			if (msg instanceof MqttPublish)
 			{
 				// @TRACE 610=QoS 2 publish key={0}
-
+				((MqttPublish) msg).setDuplicate(true);
 				insertInOrder(pendingMessages, (MqttPublish) msg);
 			}
 			else if (msg instanceof MqttPubRel)
@@ -493,7 +493,7 @@ public class ClientState
 			Object key = keys.nextElement();
 			MqttPublish msg = (MqttPublish) outboundQoS1.get(key);
 			// @TRACE 612=QoS 1 publish key={0}
-
+			msg.setDuplicate(true);
 			insertInOrder(pendingMessages, msg);
 		}
 
