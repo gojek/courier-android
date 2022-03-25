@@ -37,8 +37,6 @@ import com.gojek.mqtt.client.model.ConnectionState.DISCONNECTING
 import com.gojek.mqtt.client.model.ConnectionState.INITIALISED
 import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.client.model.MqttSendPacket
-import com.gojek.mqtt.client.username.DefaultUsernameProviderImpl
-import com.gojek.mqtt.client.username.UsernameProviderImpl
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.connection.IMqttConnection
 import com.gojek.mqtt.connection.MqttConnection
@@ -182,15 +180,6 @@ internal class AndroidMqttClient(
                 isMqttVersion4Enabled = experimentConfigs.isMqttVersion4Enabled
             )
 
-        val usernameProvider = experimentConfigs.extendedUsernameConfig?.let { config ->
-            UsernameProviderImpl(
-                context = context,
-                networkStateTracker = networkStateTracker,
-                appStateManager = appStateManager,
-                countryCode = config.countryCode
-            )
-        } ?: DefaultUsernameProviderImpl()
-
         mqttConnection = MqttConnection(
             context = context,
             connectionConfig = connectionConfig,
@@ -200,7 +189,6 @@ internal class AndroidMqttClient(
             messageSendListener = messageSendListener,
             pahoPersistence = mqttPersistence,
             networkHandler = networkHandler,
-            usernameProvider = usernameProvider,
             mqttPingSender = getMqttPingSender(),
             keepAliveFailureHandler = keepAliveFailureHandler,
             clock = clock,

@@ -9,14 +9,9 @@ data class ExperimentConfigs(
     val shouldConnectOnForeground: Boolean = true,
     val shouldConnectOnBackground: Boolean = true,
     val isPersistentSubscriptionStoreEnabled: Boolean = true,
-    val extendedUsernameConfig: ExtendedUsernameConfig? = null,
     val adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig? = null,
     val activityCheckIntervalSeconds: Int = DEFAULT_ACTIVITY_CHECK_INTERVAL_SECS,
     val inactivityTimeoutSeconds: Int = DEFAULT_INACTIVITY_TIMEOUT_SECS,
     val policyResetTimeSeconds: Int = DEFAULT_POLICY_RESET_TIME_SECS,
     val isMqttVersion4Enabled: Boolean = false,
-)
-
-data class ExtendedUsernameConfig(
-    val countryCode: String
 )
