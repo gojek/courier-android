@@ -35,15 +35,9 @@ apiValidation {
 }
 
 dependencies {
-    if (project.ext.get("isCI") as Boolean) {
-        api("com.gojek.android:mqtt-client:$version")
-        api("com.gojek.android:paho:$version")
-        implementation("com.gojek.android:courier-core-android:$version")
-    } else {
-        api(project(":mqtt-client"))
-        api(project(":paho"))
-        implementation(project(":courier-core-android"))
-    }
+    api(project(":mqtt-client"))
+    api(project(":paho"))
+    implementation(project(":courier-core-android"))
 
     implementation(deps.kotlin.stdlib.core)
 

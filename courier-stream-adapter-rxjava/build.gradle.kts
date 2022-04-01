@@ -20,13 +20,9 @@ plugins {
 }
 
 dependencies {
-    if (project.ext.get("isCI") as Boolean) {
-        api("com.gojek.android:courier-core:$version")
-    } else {
-        api(project(":courier-core"))
-    }
-
-    implementation(deps.kotlin.stdlib.core)
+    api(project(":courier-core"))
     api(deps.rx.java1)
+    implementation(deps.kotlin.stdlib.core)
+
     testImplementation(deps.android.test.kotlinTestJunit)
 }

@@ -35,6 +35,5 @@ apiValidation {
 
 dependencies {
     implementation(deps.kotlin.stdlib.core)
-
     implementation(deps.android.lifecycle.extensions)
 }

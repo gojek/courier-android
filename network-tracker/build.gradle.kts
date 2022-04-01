@@ -26,11 +26,7 @@ apiValidation {
 }
 
 dependencies {
-    if (project.ext.get("isCI") as Boolean) {
-        api("com.gojek.android:courier-core:$version")
-    } else {
-        api(project(":courier-core"))
-    }
+    api(project(":courier-core"))
     implementation(deps.android.lifecycle.extensions)
 
     testImplementation(deps.android.test.kotlinTestJunit)

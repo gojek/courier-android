@@ -29,13 +29,8 @@ apiValidation {
 }
 
 dependencies {
-    if (project.ext.get("isCI") as Boolean) {
-        api("com.gojek.android:mqtt-pingsender:$version")
-        implementation("com.gojek.android:courier-core-android:$version")
-    } else {
-        api(project(":mqtt-pingsender"))
-        implementation(project(":courier-core-android"))
-    }
+    api(project(":mqtt-pingsender"))
+    implementation(project(":courier-core-android"))
     implementation(deps.android.androidx.annotation)
 
     testImplementation(deps.android.test.kotlinTestJunit)

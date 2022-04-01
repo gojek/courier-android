@@ -25,13 +25,8 @@ apiValidation {
 }
 
 dependencies {
-    if (project.ext.get("isCI") as Boolean) {
-        api("com.gojek.android:courier-core:$version")
-        api("com.gojek.android:mqtt-client:$version")
-    } else {
-        api(project(":courier-core"))
-        api(project(":mqtt-client"))
-    }
+    api(project(":courier-core"))
+    api(project(":mqtt-client"))
 
     implementation(deps.rx.java)
 }
