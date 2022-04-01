@@ -1,0 +1,147 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            name = 'ajoberstar-backup'
+            url = 'https://ajoberstar.org/bintray-backup/'
+        }
+    }
+    dependencies {
+        classpath "org.ajoberstar:grgit:1.5.0"
+    }
+}
+
+import org.ajoberstar.grgit.Grgit
+
+ext {
+    // git
+    git = Grgit.open(currentDir: projectDir)
+
+    // CI variables
+    isCI = (System.getenv()["IS_CI"] != null && System.getenv()["IS_CI"] == "true")
+
+    if (!isCI) {
+        branch = gitCurrentBranchName()
+    } else {
+        /**
+         * In CI branch name always `HEAD` so that we need to use built in env variables.
+         */
+        branch = System.getenv()["CI_COMMIT_REF_NAME"]
+    }
+
+    /**
+     * `git.describe()` would have output something like `1.1.17-5-g5456525`
+     *
+     * **where**
+     * 1.1.17   : is version from tag
+     * 5        : is number of commits count
+     * g5456525 : is commit hash
+     *
+     * `git.describe().split('-')[0]` would only print 1st index `1.1.17`
+     *
+     * even if the `git.describe()` doesn't have `-` as the regex. the execution would not failing.
+     */
+    if (branch == "master") {
+        println("branch master")
+
+        def (major, minor, patch, commitCount, commitHash) = getFullVersion(git)
+
+        if (commitCount == null) {
+            gitVersionName = "$major.$minor.$patch-snapshot"
+        } else {
+            gitVersionName = "$major.$minor.$patch-snapshot-$commitCount-$commitHash"
+        }
+    } else if (isProduction(branch)) {
+        // means this a production
+        // e.g
+        // 1.1.17, 1.1.18 without any suffix
+        gitVersionName = git.describe()
+    } else {
+        // means this is dev
+        // 1.1.17-dev-5-34354
+        println("branch non master")
+        def (major, minor, patch, commitCount, commitHash) = getFullVersion(git)
+
+        if (commitCount == null) {
+            gitVersionName = "$major.$minor.$patch-dev"
+        } else {
+            gitVersionName = "$major.$minor.$patch-dev-$commitCount-$commitHash"
+        }
+    }
+
+    gitVersionCode = git.tag.list().size()
+    gitVersionCodeTime = git.head().time
+
+    println("Branch name is $branch")
+    println("Value from CI variable for `IS_CI` is $isCI")
+
+    if (!isCI) {
+        isCI = project.hasProperty("IS_CI")
+
+        println("Value from -P for `IS_CI` is $isCI")
+    }
+}
+
+task printVersion() {
+    println("Version Name: $gitVersionName")
+    println("Version Code: $gitVersionCode")
+    println("Version Code Time: $gitVersionCodeTime")
+}
+
+/**
+ * **Example**
+ *
+ * ```groovy
+ * println("Branch name is $gitCurrentBranchName()")
+ * > Branch name is master
+ * ```
+ *
+ * @return branch name
+ */
+private static def gitCurrentBranchName() {
+    def branch = ""
+    def proc = "git rev-parse --abbrev-ref HEAD".execute()
+    proc.in.eachLine { line -> branch = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    branch
+}
+
+/**
+ * This is for check if the branch name only contains number. this essentially for tag
+ *
+ * **Example**
+ * ```
+ * git tag 1.1.0
+ * git push origin 1.1.0
+ *
+ * **when the CI kick in**
+ * this condition will be met
+ * ```
+ *
+ * @param branchName
+ * @return boolean
+ */
+private static def isProduction(branchName) {
+    def branch = branchName ==~ /[0-9]+(\.[0-9]+)(\.[0-9]+)?/
+    branch
+}
+
+/**
+ * Compose common variables into descructive declaration.
+ *
+ * @param git
+ * @return list
+ */
+private static List getFullVersion(git) {
+    def tokens = git.describe().tokenize('-')
+    def commitCount = tokens[1]
+    def commitHash = tokens[2]
+    def version = tokens[0].tokenize('.')
+    def major = version[0]
+    def minor = version[1]
+    def patch = Integer.parseInt(version[2]) + 1
+
+    [major, minor, patch, commitCount, commitHash]
+}
