@@ -10,7 +10,6 @@ import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.mqtt.client.IMessageReceiveListener
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
 import com.gojek.mqtt.client.model.MqttSendPacket
-import com.gojek.mqtt.client.username.UsernameProvider
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
 import com.gojek.mqtt.event.PahoEventHandler
 import com.gojek.mqtt.exception.handler.v3.MqttExceptionHandler
@@ -53,7 +52,6 @@ internal class MqttConnection(
     private val messageSendListener: IMessageSendListener,
     private val pahoPersistence: PahoPersistence,
     private val networkHandler: NetworkHandler,
-    private val usernameProvider: UsernameProvider,
     private val mqttPingSender: MqttPingSender,
     private val keepAliveFailureHandler: KeepAliveFailureHandler,
     private val clock: Clock,
@@ -162,7 +160,7 @@ internal class MqttConnection(
             } else {
                 options!!.socketFactory = null
             }
-            options!!.userName = usernameProvider.provideUsername(connectOptions.username)
+            options!!.userName = connectOptions.username
             options!!.password = connectOptions.password.toCharArray()
             options!!.isCleanSession = connectOptions.isCleanSession
             options!!.keepAliveInterval = connectOptions.keepAlive.timeSeconds
