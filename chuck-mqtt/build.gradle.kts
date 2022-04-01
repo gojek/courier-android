@@ -12,7 +12,6 @@ android {
     }
 }
 
-
 ext {
     set("name", "chuck-mqtt")
     set("publish", true)

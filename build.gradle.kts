@@ -1,5 +1,6 @@
 plugins {
     id(ScriptPlugins.infrastructure)
+    id("org.ajoberstar.grgit").version("4.1.1")
 }
 
 buildscript {
@@ -7,6 +8,7 @@ buildscript {
         google()
         mavenCentral()
         mavenLocal()
+        maven(url = "https://ajoberstar.org/bintray-backup/")
         // add jcenter repository here
     }
     dependencies {
