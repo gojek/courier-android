@@ -7,10 +7,14 @@ import com.gojek.keepalive.persistence.KeepAlivePersistence
 import com.gojek.keepalive.utils.NetworkUtils
 import com.gojek.mqtt.pingsender.KeepAlive
 import com.gojek.mqtt.pingsender.KeepAliveCalculator
+import com.gojek.networktracker.NetworkStateListener
+import com.gojek.networktracker.NetworkStateTracker
+import com.gojek.networktracker.model.NetworkState
 import com.google.gson.Gson
 import java.util.*
 
 internal class OptimalKeepAliveCalculator(
+    networkTracker: NetworkStateTracker,
     private val networkUtils: NetworkUtils,
     private val lowerBound: Int,
     private val upperBound: Int,
@@ -48,9 +52,23 @@ internal class OptimalKeepAliveCalculator(
     @VisibleForTesting
     internal var convergenceTime = 0
 
-    override fun init() {
-        val networkType = networkUtils.getNetworkType().toInt()
-        val networkName = networkUtils.getNetworkName()
+    private val networkStateListener: NetworkStateListener =
+        object : NetworkStateListener {
+            override fun onStateChanged(activeNetworkState: NetworkState) {
+                if (activeNetworkState.isConnected) {
+                    val networkType = networkUtils.getNetworkType(activeNetworkState.netInfo)
+                    val networkName = networkUtils.getNetworkName(activeNetworkState.netInfo)
+                    initialise(networkType.toInt(), networkName)
+                }
+            }
+        }
+
+    init {
+        networkTracker.addListener(networkStateListener)
+    }
+
+    @VisibleForTesting
+    internal fun initialise(networkType: Int, networkName: String) {
         val nwName = networkName.toLowerCase(Locale.getDefault())
         if (currentNetworkName != nwName || currentNetworkType != networkType) {
             this.currentNetworkType = networkType

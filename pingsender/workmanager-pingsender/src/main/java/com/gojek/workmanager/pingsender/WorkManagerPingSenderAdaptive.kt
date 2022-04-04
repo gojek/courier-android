@@ -41,7 +41,6 @@ internal class WorkManagerPingSenderAdaptive(
         pingSender = this
         this.comms = comms
         this.logger = logger
-        keepAliveCalculator.init()
     }
 
     override fun start() {

@@ -5,6 +5,7 @@ import com.gojek.keepalive.model.toKeepAlive
 import com.gojek.keepalive.persistence.KeepAlivePersistence
 import com.gojek.keepalive.utils.NetworkUtils
 import com.gojek.mqtt.pingsender.KeepAlive
+import com.gojek.networktracker.NetworkStateTracker
 import com.google.gson.Gson
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -12,7 +13,6 @@ import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
@@ -23,6 +23,7 @@ import kotlin.test.assertTrue
 
 @RunWith(MockitoJUnitRunner::class)
 class OptimalKeepAliveCalculatorTest {
+    private val networkTracker = mock<NetworkStateTracker>()
     private val networkUtils = mock<NetworkUtils>()
     private val keepAlivePersistence = mock<KeepAlivePersistence>()
     private val optimalKeepAliveObserver = mock<OptimalKeepAliveObserver>()
@@ -33,6 +34,7 @@ class OptimalKeepAliveCalculatorTest {
     private val optimalKeepAliveResetLimit: Int = 30
 
     private val optimalKeepAliveCalculator = OptimalKeepAliveCalculator(
+        networkTracker = networkTracker,
         networkUtils = networkUtils,
         persistence = keepAlivePersistence,
         optimalKeepAliveObserver = optimalKeepAliveObserver,
@@ -43,23 +45,15 @@ class OptimalKeepAliveCalculatorTest {
         gson = gson
     )
 
-    @Before
-    fun setup() {
-        whenever(networkUtils.getNetworkName()).thenReturn("current-network")
-        whenever(networkUtils.getNetworkType()).thenReturn(1)
-    }
-
     @Test
     fun `test init with network info same as current network info`() {
         setCurrentNetworkInfo()
 
         val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
+        optimalKeepAliveCalculator.initialise(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
         val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
 
         assertEquals(oldKeepAlive, newKeepAlive)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
     }
 
     @Test
@@ -68,14 +62,12 @@ class OptimalKeepAliveCalculatorTest {
         whenever(keepAlivePersistence.has(getCurrentNetworKey())).thenReturn(false)
 
         val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
+        optimalKeepAliveCalculator.initialise(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
         val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
 
         assertNotEquals(oldKeepAlive, newKeepAlive)
         verifyCurrentNetworkInfo()
         verify(keepAlivePersistence).has(getCurrentNetworKey())
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
     }
 
     @Test
@@ -88,7 +80,7 @@ class OptimalKeepAliveCalculatorTest {
             .thenReturn(getKeepAlivePersistenceModel(lowerBound, upperBound))
 
         val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
+        optimalKeepAliveCalculator.initialise(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
         val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
 
         assertNotEquals(oldKeepAlive, newKeepAlive)
@@ -97,8 +89,6 @@ class OptimalKeepAliveCalculatorTest {
         verify(keepAlivePersistence).has(getCurrentNetworKey())
         verify(keepAlivePersistence).get(getCurrentNetworKey(), "")
         verify(gson).fromJson("test-network-info", KeepAlivePersistenceModel::class.java)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
     }
 
     @Test
@@ -109,7 +99,7 @@ class OptimalKeepAliveCalculatorTest {
         whenever(gson.fromJson("test-network-info", KeepAlivePersistenceModel::class.java)).thenReturn(getKeepAlivePersistenceModel(lowerBound, upperBound+1))
 
         val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
+        optimalKeepAliveCalculator.initialise(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
         val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
 
         assertNotEquals(oldKeepAlive, newKeepAlive)
@@ -118,8 +108,6 @@ class OptimalKeepAliveCalculatorTest {
         verify(keepAlivePersistence).has(getCurrentNetworKey())
         verify(keepAlivePersistence).get(getCurrentNetworKey(), "")
         verify(gson).fromJson("test-network-info", KeepAlivePersistenceModel::class.java)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
     }
 
     @Test
@@ -130,7 +118,7 @@ class OptimalKeepAliveCalculatorTest {
         whenever(gson.fromJson("test-network-info", KeepAlivePersistenceModel::class.java)).thenReturn(getKeepAlivePersistenceModel(lowerBound+1, upperBound))
 
         val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
+        optimalKeepAliveCalculator.initialise(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
         val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
 
         assertNotEquals(oldKeepAlive, newKeepAlive)
@@ -139,8 +127,6 @@ class OptimalKeepAliveCalculatorTest {
         verify(keepAlivePersistence).has(getCurrentNetworKey())
         verify(keepAlivePersistence).get(getCurrentNetworKey(), "")
         verify(gson).fromJson("test-network-info", KeepAlivePersistenceModel::class.java)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
     }
 
     @Test
@@ -225,7 +211,7 @@ class OptimalKeepAliveCalculatorTest {
     @Test
     fun `test onKeepAliveSuccess with old network info`() {
         setOldNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", 5)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, 5)
 
         optimalKeepAliveCalculator.onKeepAliveSuccess(keepAlive)
 
@@ -236,7 +222,7 @@ class OptimalKeepAliveCalculatorTest {
     fun `test onKeepAliveSuccess with current network info`() {
         setCurrentNetworkInfo()
         optimalKeepAliveCalculator.lastSuccessfulKA = -1
-        val keepAlive = KeepAlive(1, "current-network", 5)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, 5)
         val persistenceModel = optimalKeepAliveCalculator.getKeepAlivePersistenceModel().copy(
             lastSuccessfulKeepAlive = 5,
             keepAliveFailureCount = 0
@@ -253,7 +239,7 @@ class OptimalKeepAliveCalculatorTest {
     @Test
     fun `test onKeepAliveFailure with old network info`() {
         setOldNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", 5)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, 5)
 
         optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
 
@@ -265,7 +251,7 @@ class OptimalKeepAliveCalculatorTest {
         setCurrentNetworkInfo()
         optimalKeepAliveCalculator.isOptimalKeepAlive = true
         optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit - 2
-        val keepAlive = KeepAlive(1, "current-network", 5)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, 5)
 
         optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
 
@@ -277,7 +263,7 @@ class OptimalKeepAliveCalculatorTest {
         setCurrentNetworkInfo()
         optimalKeepAliveCalculator.isOptimalKeepAlive = true
         optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit - 1
-        val keepAlive = KeepAlive(1, "current-network", 5)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, 5)
 
         optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
 
@@ -289,7 +275,7 @@ class OptimalKeepAliveCalculatorTest {
         setCurrentNetworkInfo()
         optimalKeepAliveCalculator.isOptimalKeepAlive = true
         optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit
-        val keepAlive = KeepAlive(1, "current-network", 5)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, 5)
 
         optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
 
@@ -299,7 +285,7 @@ class OptimalKeepAliveCalculatorTest {
     @Test
     fun `test onKeepAliveFailure when optimal keepalive is not found and underTrialKeepAlive is equal to lowerBound`() {
         setCurrentNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", lowerBound)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, lowerBound)
         optimalKeepAliveCalculator.probeCount = 4
         optimalKeepAliveCalculator.convergenceTime = 10
         val persistenceModel = optimalKeepAliveCalculator.getKeepAlivePersistenceModel().copy(
@@ -321,7 +307,7 @@ class OptimalKeepAliveCalculatorTest {
     @Test
     fun `test onKeepAliveFailure when optimal keepalive is not found and underTrialKeepAlive is not equal to lowerBound`() {
         setCurrentNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", lowerBound+1)
+        val keepAlive = KeepAlive(CURRENT_NETWORK_TYPE, CURRENT_NETWORK, lowerBound+1)
 
         optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
 
@@ -406,38 +392,38 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     private fun setOldNetworkInfo() {
-        optimalKeepAliveCalculator.currentNetworkName = "old-network"
-        optimalKeepAliveCalculator.currentNetworkType = 0
+        optimalKeepAliveCalculator.currentNetworkName = OLD_NETWORK
+        optimalKeepAliveCalculator.currentNetworkType = OLD_NETWORK_TYPE
     }
 
     private fun setCurrentNetworkInfo() {
-        optimalKeepAliveCalculator.currentNetworkName = "current-network"
-        optimalKeepAliveCalculator.currentNetworkType = 1
+        optimalKeepAliveCalculator.currentNetworkName = CURRENT_NETWORK
+        optimalKeepAliveCalculator.currentNetworkType = CURRENT_NETWORK_TYPE
     }
 
     private fun getCurrentNetworKey(): String {
-        return "1:current-network"
+        return "$CURRENT_NETWORK_TYPE:$CURRENT_NETWORK"
     }
 
     private fun getOldNetworKey(): String {
-        return "0:old-network"
+        return "$OLD_NETWORK_TYPE:$OLD_NETWORK"
     }
 
     private fun verifyCurrentNetworkInfo() {
-        assertEquals(optimalKeepAliveCalculator.currentNetworkName , "current-network")
-        assertEquals(optimalKeepAliveCalculator.currentNetworkType , 1)
+        assertEquals(optimalKeepAliveCalculator.currentNetworkName , CURRENT_NETWORK)
+        assertEquals(optimalKeepAliveCalculator.currentNetworkType , CURRENT_NETWORK_TYPE)
     }
 
     private fun verifyOldNetworkInfo() {
-        assertEquals(optimalKeepAliveCalculator.currentNetworkName , "old-network")
-        assertEquals(optimalKeepAliveCalculator.currentNetworkType , 0)
+        assertEquals(optimalKeepAliveCalculator.currentNetworkName , OLD_NETWORK)
+        assertEquals(optimalKeepAliveCalculator.currentNetworkType , OLD_NETWORK_TYPE)
     }
 
     private fun getKeepAlivePersistenceModel(lowerBound: Int, upperBound: Int): KeepAlivePersistenceModel {
         return KeepAlivePersistenceModel(
             lastSuccessfulKeepAlive = 4,
-            networkType = 1,
-            networkName = "current-network",
+            networkType = CURRENT_NETWORK_TYPE,
+            networkName = CURRENT_NETWORK,
             lowerBound = lowerBound,
             upperBound = upperBound,
             isOptimalKeepAlive = true,
@@ -449,3 +435,8 @@ class OptimalKeepAliveCalculatorTest {
         )
     }
 }
+
+private const val CURRENT_NETWORK = "current_network"
+private const val CURRENT_NETWORK_TYPE = 1
+private const val OLD_NETWORK = "old-network"
+private const val OLD_NETWORK_TYPE = 0

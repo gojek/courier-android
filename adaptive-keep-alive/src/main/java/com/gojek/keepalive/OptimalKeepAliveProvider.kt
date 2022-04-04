@@ -20,12 +20,10 @@ class OptimalKeepAliveProvider(
     )
 
     fun getOptimalKASecondsForCurrentNetwork(): Int {
-        keepAliveCalculator.init()
         return keepAliveCalculator.getOptimalKeepAlive().fromMinutesToSeconds().toInt()
     }
 
     internal fun onOptimalKeepAliveFailure() {
-        keepAliveCalculator.init()
         keepAliveCalculator.onOptimalKeepAliveFailure()
     }
 }

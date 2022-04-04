@@ -73,7 +73,6 @@ internal class AdaptiveAlarmPingSender(
     }
 
     override fun start() {
-        keepAliveCalculator.init()
         val action = PING_SENDER
         logger.d(TAG, "Register alarmreceiver to MqttService$action")
         /*
