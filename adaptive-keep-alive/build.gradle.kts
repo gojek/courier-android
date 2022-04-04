@@ -39,15 +39,9 @@ dependencies {
     implementation(deps.android.gson)
     implementation(deps.android.androidx.annotation)
 
-    if (project.ext.get("isCI") as Boolean) {
-        implementation("com.gojek.android:paho:$version")
-        implementation("com.gojek.android:courier-core:$version")
-        implementation("com.gojek.android:mqtt-pingsender:$version")
-    } else {
-        implementation(project(":paho"))
-        implementation(project(":courier-core"))
-        implementation(project(":mqtt-pingsender"))
-    }
+    implementation(project(":paho"))
+    implementation(project(":courier-core"))
+    implementation(project(":mqtt-pingsender"))
 
     testImplementation(deps.android.test.kotlinTestJunit)
 }

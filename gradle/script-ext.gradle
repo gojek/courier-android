@@ -1,5 +1,4 @@
 ext {
-    isCI = false
     gitVersionCode = grgit.tag.list().size()
     gitVersionName = grgit.describe(tags: true, always: true)
 }

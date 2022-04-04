@@ -37,23 +37,13 @@ apiValidation {
 }
 
 dependencies {
-    if (project.ext.get("isCI") as Boolean) {
-        implementation("com.gojek.android:paho:$version")
-        implementation("com.gojek.android:adaptive-keep-alive:$version")
-        implementation("com.gojek.android:network-tracker:$version")
-        implementation("com.gojek.android:app-state-manager:$version")
-        implementation("com.gojek.android:timer-pingsender:$version")
-        api("com.gojek.android:mqtt-pingsender:$version")
-        api("com.gojek.android:courier-core:$version")
-    } else {
-        implementation(project(":paho"))
-        implementation(project(":adaptive-keep-alive"))
-        implementation(project(":network-tracker"))
-        implementation(project(":app-state-manager"))
-        implementation(project(":timer-pingsender"))
-        api(project(":mqtt-pingsender"))
-        api(project(":courier-core"))
-    }
+    api(project(":mqtt-pingsender"))
+    api(project(":courier-core"))
+    implementation(project(":paho"))
+    implementation(project(":adaptive-keep-alive"))
+    implementation(project(":network-tracker"))
+    implementation(project(":app-state-manager"))
+    implementation(project(":timer-pingsender"))
 
     implementation(deps.android.lifecycle.extensions)
 

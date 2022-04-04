@@ -36,9 +36,5 @@ apiValidation {
 dependencies {
     implementation(deps.kotlin.stdlib.core)
 
-    if (project.ext.get("isCI") as Boolean) {
-        implementation("com.gojek.android:mqtt-client:$version")
-    } else {
-        implementation(project(":mqtt-client"))
-    }
+    implementation(project(":mqtt-client"))
 }
