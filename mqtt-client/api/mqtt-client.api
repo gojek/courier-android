@@ -3,11 +3,12 @@ public abstract interface class com/gojek/mqtt/auth/Authenticator {
 }
 
 public abstract interface class com/gojek/mqtt/client/MqttClient {
+	public abstract fun addMessageListener (Ljava/lang/String;Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun connect (Lcom/gojek/mqtt/model/MqttConnectOptions;)V
 	public abstract fun disconnect (Z)V
 	public abstract fun getCurrentState ()Lcom/gojek/mqtt/client/model/ConnectionState;
-	public abstract fun receive (Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun reconnect ()V
+	public abstract fun removeMessageListener (Ljava/lang/String;Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun send (Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;)Z
 	public abstract fun subscribe (Lkotlin/Pair;[Lkotlin/Pair;)V
 	public abstract fun unsubscribe (Ljava/lang/String;[Ljava/lang/String;)V
@@ -24,9 +25,10 @@ public abstract interface class com/gojek/mqtt/client/MqttInterceptor {
 
 public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public fun <init> ()V
-	public fun <init> (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZ)V
-	public synthetic fun <init> (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZJJ)V
+	public synthetic fun <init> (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
+	public final fun component10 ()J
 	public final fun component2 ()Z
 	public final fun component3 ()Z
 	public final fun component4 ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
@@ -34,12 +36,15 @@ public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public final fun component6 ()I
 	public final fun component7 ()I
 	public final fun component8 ()Z
-	public final fun copy (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public final fun component9 ()J
+	public final fun copy (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZJJ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIZJJILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActivityCheckIntervalSeconds ()I
 	public final fun getAdaptiveKeepAliveConfig ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
 	public final fun getInactivityTimeoutSeconds ()I
+	public final fun getIncomingMessagesCleanupIntervalSecs ()J
+	public final fun getIncomingMessagesTTLSecs ()J
 	public final fun getPolicyResetTimeSeconds ()I
 	public final fun getShouldConnectOnBackground ()Z
 	public final fun getShouldConnectOnForeground ()Z

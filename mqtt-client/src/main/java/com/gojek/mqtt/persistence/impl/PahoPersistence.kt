@@ -80,12 +80,16 @@ internal class PahoPersistence(private val context: Context) :
         incomingMessagesDao.addMessage(mqttPacket)
     }
 
-    override fun getAllIncomingMessages(): List<MqttReceivePacket> {
-        return incomingMessagesDao.getAllMessages()
+    override fun getAllIncomingMessagesWithTopicFilter(topics: Set<String>): List<MqttReceivePacket> {
+        return incomingMessagesDao.getAllMessagesWithTopicFilter(topics)
     }
 
-    override fun removeReceivedMessage(mqttPacket: MqttReceivePacket) {
-        incomingMessagesDao.removeMessage(mqttPacket)
+    override fun removeReceivedMessages(messageIds: List<Long>): Int {
+        return incomingMessagesDao.removeMessagesById(messageIds)
+    }
+
+    override fun removeMessagesWithOlderTimestamp(timestampNanos: Long): Int {
+        return incomingMessagesDao.removeMessagesWithOlderTimestamp(timestampNanos)
     }
 
     fun clearAll() {

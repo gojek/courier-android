@@ -127,7 +127,9 @@ class MainActivity : AppCompatActivity() {
                 ),
                 inactivityTimeoutSeconds = 45,
                 activityCheckIntervalSeconds = 30,
-                isMqttVersion4Enabled = true
+                isMqttVersion4Enabled = true,
+                incomingMessagesTTLSecs = 60,
+                incomingMessagesCleanupIntervalSecs = 10,
             ),
             pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
         )

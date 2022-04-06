@@ -121,8 +121,12 @@ internal class MqttClientInternal(
         return androidMqttClient.send(mqttPacket)
     }
 
-    fun receive(listener: MessageListener) {
-        return androidMqttClient.receive(listener)
+    fun addMessageListener(topic: String, listener: MessageListener) {
+        return androidMqttClient.addMessageListener(topic, listener)
+    }
+
+    fun removeMessageListener(topic: String, listener: MessageListener) {
+        return androidMqttClient.removeMessageListener(topic, listener)
     }
 
     fun getCurrentState(): ConnectionState {
