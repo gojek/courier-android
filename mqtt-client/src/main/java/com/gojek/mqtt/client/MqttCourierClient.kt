@@ -39,7 +39,11 @@ internal class MqttCourierClient(
         return mqttClient.send(MqttPacket((message as Message.Bytes).value, topic, qos))
     }
 
-    override fun receive(listener: MessageListener) {
-        mqttClient.receive(listener)
+    override fun addMessageListener(topic: String, listener: MessageListener) {
+        mqttClient.addMessageListener(topic, listener)
+    }
+
+    override fun removeMessageListener(topic: String, listener: MessageListener) {
+        mqttClient.removeMessageListener(topic, listener)
     }
 }

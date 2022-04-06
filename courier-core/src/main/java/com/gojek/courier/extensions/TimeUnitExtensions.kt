@@ -7,6 +7,9 @@ import java.util.concurrent.TimeUnit
 fun Long.fromNanosToMillis(): Long = TimeUnit.NANOSECONDS.toMillis(this)
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+fun Long.fromSecondsToNanos(): Long = TimeUnit.SECONDS.toNanos(this)
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 fun Long.fromMinutesToSeconds() = TimeUnit.MINUTES.toSeconds(this)
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)

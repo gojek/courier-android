@@ -1,81 +1,149 @@
 package com.gojek.mqtt.client
 
-import com.gojek.courier.QoS
+import android.os.HandlerThread
+import android.os.Process
+import android.os.Process.THREAD_PRIORITY_BACKGROUND
+import android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE
+import com.gojek.courier.Message
+import com.gojek.courier.extensions.fromSecondsToNanos
 import com.gojek.courier.logging.ILogger
+import com.gojek.courier.utils.Clock
+import com.gojek.mqtt.client.listener.MessageListener
+import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.MqttMessageReceiveErrorEvent
 import com.gojek.mqtt.exception.toCourierException
-import com.gojek.mqtt.model.MqttPacket
 import com.gojek.mqtt.persistence.IMqttReceivePersistence
 import com.gojek.mqtt.persistence.model.MqttReceivePacket
 import com.gojek.mqtt.utils.MqttUtils
-import io.reactivex.subjects.PublishSubject
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 internal class IncomingMsgControllerImpl(
     private val mqttUtils: MqttUtils,
-    private val publishSubject: PublishSubject<MqttPacket>,
     private val mqttReceivePersistence: IMqttReceivePersistence,
     private val logger: ILogger,
-    private val eventHandler: EventHandler
+    private val eventHandler: EventHandler,
+    private val ttlSeconds: Long,
+    private val cleanupIntervalSeconds: Long,
+    private val clock: Clock
 ): IncomingMsgController {
-    private val threadPool: ThreadPoolExecutor
-    private val trigger: HandleMessage
+    private val handleMsgThreadPool = ThreadPoolExecutor(
+        1,
+        1,
+        60,
+        TimeUnit.SECONDS,
+        LinkedBlockingQueue(1),
+        mqttUtils.threadFactory("msg-store", false)
+    ).apply { rejectedExecutionHandler = ThreadPoolExecutor.DiscardPolicy() }
 
-    init {
-        threadPool = ThreadPoolExecutor(
-            1,
-            1,
-            60,
-            TimeUnit.SECONDS,
-            LinkedBlockingQueue<Runnable>(1),
-            mqttUtils.threadFactory("msg-store", false)
-        )
-        threadPool.rejectedExecutionHandler = ThreadPoolExecutor.DiscardPolicy()
-        trigger = HandleMessage()
-    }
+    private val cleanupThreadPool = ScheduledThreadPoolExecutor(
+        1,
+        mqttUtils.threadFactory("msg-store-cleanup", false),
+        ThreadPoolExecutor.DiscardPolicy()
+    )
+
+    private val handleMessageTrigger = HandleMessage()
+    private val cleanupMessagesTrigger = CleanupExpiredMessages()
+
+    private val listenerMap = ConcurrentHashMap<String, List<MessageListener>>()
+
+    private var cleanupFuture: ScheduledFuture<*>? = null
 
     override fun triggerHandleMessage() {
-        threadPool.submit(trigger)
+        handleMsgThreadPool.submit(handleMessageTrigger)
+    }
+
+    private fun scheduleMessagesCleanup() {
+        cleanupFuture?.cancel(false)
+        cleanupFuture = cleanupThreadPool.schedule(
+            cleanupMessagesTrigger,
+            cleanupIntervalSeconds,
+            TimeUnit.SECONDS
+        )
+    }
+
+    @Synchronized
+    override fun registerListener(topic: String, listener: MessageListener) {
+        listenerMap[topic] = (listenerMap[topic] ?: emptyList()) + listener
+        triggerHandleMessage()
+    }
+
+    @Synchronized
+    override fun unregisterListener(topic: String, listener: MessageListener) {
+        listenerMap[topic] = (listenerMap[topic] ?: emptyList()) - listener
+        if (listenerMap[topic]!!.isEmpty()) {
+            listenerMap.remove(topic)
+        }
     }
 
     private inner class HandleMessage : Runnable {
         override fun run() {
-            // get Messages from DB and handle here
-            val messages: List<MqttReceivePacket> =
-                mqttReceivePersistence.getAllIncomingMessages()
-            if (mqttUtils.isEmpty(messages)) {
-                logger.d(TAG, "No Messages in Table")
-                return
-            }
-            for (message in messages) {
-                logger.d(TAG, "Going to process ${message.messageId}")
-                if (!sendMessage(message)) {
-                    deleteMessage(message)
-                    continue
+            try {
+                if (listenerMap.keys.isEmpty()) {
+                    logger.d(TAG, "No listeners registered")
+                    return
                 }
-                logger.d(TAG, "Successfully Processed Message ${message.messageId}")
-                deleteMessage(message)
+                val messages: List<MqttReceivePacket> =
+                    mqttReceivePersistence.getAllIncomingMessagesWithTopicFilter(listenerMap.keys)
+                if (mqttUtils.isEmpty(messages)) {
+                    logger.d(TAG, "No Messages in Table")
+                    return
+                }
+                val deletedMsgIds = mutableListOf<Long>()
+                for (message in messages) {
+                    logger.d(TAG, "Going to process ${message.messageId}")
+                    val listenersNotified = notifyListeners(message)
+                    if (listenersNotified) {
+                        deletedMsgIds.add(message.messageId)
+                    }
+                    logger.d(TAG, "Successfully Processed Message ${message.messageId}")
+                }
+                if (deletedMsgIds.isNotEmpty()) {
+                    val deletedMessagesCount = deleteMessages(deletedMsgIds)
+                    logger.d(TAG, "Deleted $deletedMessagesCount messages")
+                }
+            } finally {
+                scheduleMessagesCleanup()
             }
         }
 
-        private fun deleteMessage(message: MqttReceivePacket) {
-            mqttReceivePersistence.removeReceivedMessage(message)
+        private fun deleteMessages(messageIds: List<Long>): Int {
+            return mqttReceivePersistence.removeReceivedMessages(messageIds)
         }
     }
 
-    fun sendMessage(message: MqttReceivePacket): Boolean {
+    private inner class CleanupExpiredMessages : Runnable {
+        override fun run() {
+            logger.d(TAG, "Deleting expired messages")
+            val currentTime = clock.nanoTime()
+            val expiryTime = currentTime - ttlSeconds.fromSecondsToNanos()
+            val deletedMsgsCount =
+                mqttReceivePersistence.removeMessagesWithOlderTimestamp(expiryTime)
+            logger.d(TAG, "Deleted $deletedMsgsCount expired messages")
+        }
+    }
+
+    private fun notifyListeners(message: MqttReceivePacket): Boolean {
+        var notified = false
         try {
-            publishSubject.onNext(MqttPacket(message.message, message.topic, QoS.ONE))
-            return true
+            listenerMap[message.topic]!!.forEach {
+                notified = true
+                it.onMessageReceived(
+                    MqttMessage(message.topic, Message.Bytes(message.message))
+                )
+            }
+            return notified
         } catch (e: Throwable) {
-            // catching exception here and removing the message from Db
-            logger.d(TAG, "Exception while prcessing message $e")
+            logger.d(TAG, "Exception while processing message $e")
             eventHandler.onEvent(MqttMessageReceiveErrorEvent(message.topic, message.message.size, e.toCourierException()))
         }
-        return false
+        return notified
     }
 
     companion object {
