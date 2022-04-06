@@ -16,20 +16,17 @@ import java.util.Collections
 
 internal class PahoPersistence(private val context: Context) :
     MqttClientPersistence, IMqttReceivePersistence {
-    private lateinit var clientId: String
-    private val database by lazy {
-        Room.databaseBuilder(
+    private lateinit var database: MqttDatabase
+    private lateinit var incomingMessagesDao: IncomingMessagesDao
+    private lateinit var pahoMessagesDao: PahoMessagesDao
+
+    override fun open(clientId: String, serverURI: String) {
+        this.database = Room.databaseBuilder(
             context.applicationContext,
             MqttDatabase::class.java,
             "$clientId:mqtt-db"
         ).fallbackToDestructiveMigration()
             .build()
-    }
-    private lateinit var incomingMessagesDao: IncomingMessagesDao
-    private lateinit var pahoMessagesDao: PahoMessagesDao
-
-    override fun open(clientId: String, serverURI: String) {
-        this.clientId = clientId
         this.incomingMessagesDao = database.incomingMessagesDao()
         this.pahoMessagesDao = database.pahoMessagesDao()
     }
