@@ -2,12 +2,13 @@ package com.gojek.mqtt.persistence.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.gojek.mqtt.persistence.model.MqttPahoPacket
 
 @Dao
 internal interface PahoMessagesDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMessage(mqttPacket: MqttPahoPacket)
 
     @Query("DELETE from paho_messages where `key`=:key")
