@@ -127,7 +127,7 @@ internal class AdaptiveAlarmPingSender(
             return
         }
 
-        adaptiveKeepAlive = keepAliveCalculator.getKeepAlive()
+        adaptiveKeepAlive = keepAliveCalculator.getUnderTrialKeepAlive()
         val delayInMilliseconds = adaptiveKeepAlive.keepAliveMillis()
         try {
             val nextAlarmInMilliseconds = if(pingSenderConfig.useElapsedRealTimeAlarm) {

@@ -4,7 +4,7 @@ import androidx.annotation.RestrictTo
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 interface KeepAliveCalculator {
-    fun getKeepAlive(): KeepAlive
+    fun getUnderTrialKeepAlive(): KeepAlive
     fun onKeepAliveSuccess(keepAlive: KeepAlive)
     fun onKeepAliveFailure(keepAlive: KeepAlive)
     fun getOptimalKeepAlive(): Int

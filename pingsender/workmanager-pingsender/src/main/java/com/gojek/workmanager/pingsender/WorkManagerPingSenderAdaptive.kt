@@ -54,7 +54,7 @@ internal class WorkManagerPingSenderAdaptive(
     }
 
     override fun schedule(ignoredDelay: Long) {
-        adaptiveKeepAlive = keepAliveCalculator.getKeepAlive()
+        adaptiveKeepAlive = keepAliveCalculator.getUnderTrialKeepAlive()
         val delayInMilliseconds = adaptiveKeepAlive.keepAliveMillis()
 
         pingWorkScheduler.schedulePingWork(delayInMilliseconds, pingSenderConfig.timeoutSeconds)

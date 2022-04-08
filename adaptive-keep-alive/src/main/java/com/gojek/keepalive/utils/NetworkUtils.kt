@@ -8,12 +8,12 @@ internal const val NETWORK_TYPE_GSM = 16
 internal const val DISCONNECTED = -1
 
 internal class NetworkUtils {
-    internal fun getNetworkType(info: NetworkInfo?): Short {
+    internal fun getNetworkType(info: NetworkInfo?): Int {
         if (info == null || !info.isConnected) {
-            return DISCONNECTED.toShort()
+            return DISCONNECTED
         }
         if (info.type == ConnectivityManager.TYPE_WIFI) {
-            return ConnectivityManager.TYPE_WIFI.toShort()
+            return ConnectivityManager.TYPE_WIFI
         }
         return when (info.subtype) {
             TelephonyManager.NETWORK_TYPE_LTE -> 4
@@ -36,7 +36,7 @@ internal class NetworkUtils {
         }
     }
 
-    private fun isWifi(networkType: Short): Boolean {
-        return ConnectivityManager.TYPE_WIFI == networkType.toInt()
+    private fun isWifi(networkType: Int): Boolean {
+        return ConnectivityManager.TYPE_WIFI == networkType
     }
 }

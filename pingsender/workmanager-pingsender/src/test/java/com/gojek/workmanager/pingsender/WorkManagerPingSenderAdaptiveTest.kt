@@ -48,8 +48,8 @@ class WorkManagerPingSenderAdaptiveTest {
         val keepAlive = mock<KeepAlive>()
         whenever(comms.keepAlive).thenReturn(20000L)
         whenever(pingSenderConfig.timeoutSeconds).thenReturn(timeoutSeconds)
-        whenever(keepAlive.underTrialKeepAlive).thenReturn(keepaliveMinutes)
-        whenever(keepAliveCalculator.getKeepAlive()).thenReturn(keepAlive)
+        whenever(keepAlive.keepAliveMinutes).thenReturn(keepaliveMinutes)
+        whenever(keepAliveCalculator.getUnderTrialKeepAlive()).thenReturn(keepAlive)
 
         pingSender.start()
 
@@ -72,7 +72,7 @@ class WorkManagerPingSenderAdaptiveTest {
         val keepAlive = mock<KeepAlive>()
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(keepAlive.underTrialKeepAlive).thenReturn(keepaliveMinutes)
+        whenever(keepAlive.keepAliveMinutes).thenReturn(keepaliveMinutes)
         whenever(comms.sendPingRequest()).thenReturn(null)
         pingSender.adaptiveKeepAlive = keepAlive
 
@@ -96,11 +96,11 @@ class WorkManagerPingSenderAdaptiveTest {
         val timeoutSeconds = 10L
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(keepAlive.underTrialKeepAlive).thenReturn(keepaliveMinutes)
+        whenever(keepAlive.keepAliveMinutes).thenReturn(keepaliveMinutes)
         whenever(comms.sendPingRequest()).thenReturn(mqttToken)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
         whenever(mqttToken.userContext).thenReturn(keepAlive)
-        whenever(keepAliveCalculator.getKeepAlive()).thenReturn(keepAlive)
+        whenever(keepAliveCalculator.getUnderTrialKeepAlive()).thenReturn(keepAlive)
         whenever(pingSenderConfig.timeoutSeconds).thenReturn(timeoutSeconds)
         pingSender.adaptiveKeepAlive = keepAlive
 
@@ -133,7 +133,7 @@ class WorkManagerPingSenderAdaptiveTest {
         val endTime = TimeUnit.MILLISECONDS.toNanos(110)
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(keepAlive.underTrialKeepAlive).thenReturn(keepaliveMinutes)
+        whenever(keepAlive.keepAliveMinutes).thenReturn(keepaliveMinutes)
         whenever(comms.sendPingRequest()).thenReturn(mqttToken)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
         whenever(mqttToken.userContext).thenReturn(keepAlive)

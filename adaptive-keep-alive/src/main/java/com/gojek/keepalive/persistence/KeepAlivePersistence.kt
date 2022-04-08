@@ -1,28 +1,31 @@
 package com.gojek.keepalive.persistence
 
+import com.gojek.keepalive.model.KeepAlivePersistenceModel
 import com.gojek.keepalive.sharedpref.CourierSharedPreferences
+import com.google.gson.Gson
 
 internal interface KeepAlivePersistence {
     fun has(key: String): Boolean
-    fun <T> get(key: String, default: T): T
-    fun <T> put(key: String, value: T)
+    fun get(key: String): KeepAlivePersistenceModel
+    fun put(key: String, value: KeepAlivePersistenceModel)
     fun remove(key: String)
 }
 
 internal class KeepAlivePersistenceImpl(
-    private val sharedPreferences: CourierSharedPreferences
+    private val sharedPreferences: CourierSharedPreferences,
+    private val gson: Gson
 ): KeepAlivePersistence {
 
     override fun has(key: String): Boolean {
         return sharedPreferences.has(key)
     }
 
-    override fun <T> get(key: String, default: T): T {
-        return sharedPreferences.get(key, default)
+    override fun get(key: String): KeepAlivePersistenceModel {
+        return gson.fromJson(sharedPreferences.get(key, ""), KeepAlivePersistenceModel::class.java)
     }
 
-    override fun <T> put(key: String, value: T) {
-        sharedPreferences.put(key, value)
+    override fun put(key: String, value: KeepAlivePersistenceModel) {
+        sharedPreferences.put(key, gson.toJson(value))
     }
 
     override fun remove(key: String) {

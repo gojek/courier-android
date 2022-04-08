@@ -232,13 +232,6 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         override var connectionInfo: ConnectionInfo? = null
     ): MqttEvent(connectionInfo)
 
-    data class OptimalKeepAliveNotFoundEvent(
-        val timeMinutes: Int,
-        val probeCount: Int,
-        val convergenceTime: Int,
-        override var connectionInfo: ConnectionInfo? = null
-    ): MqttEvent(connectionInfo)
-
     data class MqttReconnectEvent(
         override var connectionInfo: ConnectionInfo? = null
     ): MqttEvent(connectionInfo)
