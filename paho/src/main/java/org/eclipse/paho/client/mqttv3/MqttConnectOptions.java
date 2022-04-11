@@ -86,7 +86,7 @@ public class MqttConnectOptions
 	private int readTimeout = READ_TIMEOUT_DEFAULT;
 
 	private String protocolName = "MQIsdp";
-	private int protocolVersion = 3;
+	private int protocolLevel = 3;
 
 	private String[] serverURIs = null;
 
@@ -542,12 +542,12 @@ public class MqttConnectOptions
 		return protocolName;
 	}
 
-	public void setProtocolVersion(int protocolVersion) {
-		this.protocolVersion = protocolVersion;
+	public void setProtocolLevel(int protocolLevel) {
+		this.protocolLevel = protocolLevel;
 	}
 
-	public int getProtocolVersion() {
-		return protocolVersion;
+	public int getProtocolLevel() {
+		return protocolLevel;
 	}
 
 	/**
