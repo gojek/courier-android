@@ -27,5 +27,4 @@ internal data class ConnectionConfig(
     val persistenceOptions: PersistenceOptions,
     val inactivityTimeoutSeconds: Int,
     val policyResetTimeSeconds: Int,
-    val isMqttVersion4Enabled: Boolean,
 )

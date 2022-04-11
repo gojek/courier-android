@@ -172,10 +172,8 @@ internal class MqttConnection(
                                     }
             options!!.connectionTimeout = connectTimeoutPolicy.getConnectTimeOut()
             options!!.handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
-            if (connectionConfig.isMqttVersion4Enabled) {
-                options!!.protocolName = "MQTT"
-                options!!.protocolVersion = 4
-            }
+            options!!.protocolName = mqttConnectOptions.version.protocolName
+            options!!.protocolLevel = mqttConnectOptions.version.protocolLevel
             logger.d(TAG, "MQTT connecting on : " + mqtt!!.serverURI)
             updatePolicyParams = true
             connectStartTime = clock.nanoTime()
