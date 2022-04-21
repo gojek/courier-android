@@ -16,7 +16,7 @@ object versions {
     const val retrofit = "2.6.2"
     const val groovy = "2.5.7"
     const val benchmarkGradlePlugin = "1.0.0"
-    const val dokkaGradlePlugin = "0.10.1"
+    const val dokkaGradlePlugin = "1.5.0"
     const val nodeGradlePlugin = "2.2.0"
     const val bintrayGradlePlugin = "1.8.4"
     const val timber = "4.7.1"
