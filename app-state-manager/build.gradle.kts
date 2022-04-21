@@ -1,7 +1,6 @@
 import plugin.AndroidLibraryConfigurationPlugin
 
 apply<AndroidLibraryConfigurationPlugin>()
-apply("$rootDir/gradle/publish-artifact-task.gradle")
 apply("$rootDir/gradle/script-ext.gradle")
 
 val version = ext.get("gitVersionName")
@@ -14,9 +13,9 @@ android {
 
 
 ext {
-    set("name", "app-state-manager")
-    set("publish", true)
-    set("version", ext.get("gitVersionName"))
+    set("PUBLISH_GROUP_ID", "com.gojek.courier")
+    set("PUBLISH_ARTIFACT_ID", "app-state-manager")
+    set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.0")
 }
 
@@ -37,3 +36,5 @@ dependencies {
     implementation(deps.kotlin.stdlib.core)
     implementation(deps.android.lifecycle.extensions)
 }
+
+apply(from = "${rootProject.projectDir}/gradle/publish-module.gradle")
