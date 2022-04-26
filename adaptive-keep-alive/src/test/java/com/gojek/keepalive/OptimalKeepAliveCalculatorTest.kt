@@ -1,451 +1,294 @@
 package com.gojek.keepalive
 
-import com.gojek.keepalive.model.KeepAlivePersistenceModel
-import com.gojek.keepalive.model.toKeepAlive
-import com.gojek.keepalive.persistence.KeepAlivePersistence
+import android.net.NetworkInfo
 import com.gojek.keepalive.utils.NetworkUtils
 import com.gojek.mqtt.pingsender.KeepAlive
-import com.google.gson.Gson
+import com.gojek.networktracker.NetworkStateTracker
+import com.gojek.networktracker.model.NetworkState
+import com.nhaarman.mockitokotlin2.doNothing
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
+import kotlin.test.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 
 @RunWith(MockitoJUnitRunner::class)
 class OptimalKeepAliveCalculatorTest {
+    private val networkTracker = mock<NetworkStateTracker>()
     private val networkUtils = mock<NetworkUtils>()
-    private val keepAlivePersistence = mock<KeepAlivePersistence>()
+    private val stateHandler = mock<AdaptiveKeepAliveStateHandler>()
     private val optimalKeepAliveObserver = mock<OptimalKeepAliveObserver>()
-    private val gson = mock<Gson>()
-    private val lowerBound: Int = 2
-    private val upperBound: Int = 10
-    private val step: Int = 2
-    private val optimalKeepAliveResetLimit: Int = 30
 
     private val optimalKeepAliveCalculator = OptimalKeepAliveCalculator(
+        networkTracker = networkTracker,
         networkUtils = networkUtils,
-        persistence = keepAlivePersistence,
         optimalKeepAliveObserver = optimalKeepAliveObserver,
-        lowerBound = lowerBound,
-        upperBound = upperBound,
-        step = step,
-        optimalKeepAliveResetLimit = optimalKeepAliveResetLimit,
-        gson = gson
+        stateHandler = stateHandler
     )
 
     @Before
     fun setup() {
-        whenever(networkUtils.getNetworkName()).thenReturn("current-network")
-        whenever(networkUtils.getNetworkType()).thenReturn(1)
+        verify(networkTracker).addListener(optimalKeepAliveCalculator.networkStateListener)
     }
 
     @Test
-    fun `test init with network info same as current network info`() {
-        setCurrentNetworkInfo()
+    fun `test networkStateListener onStateChanged should notify state handler when network is connected`() {
+        val networkState = mock<NetworkState>()
+        val netInfo = mock<NetworkInfo>()
+        whenever(networkState.isConnected).thenReturn(true)
+        whenever(networkState.netInfo).thenReturn(netInfo)
+        val networkType = 1
+        val networkName = "test-network"
+        whenever(networkUtils.getNetworkType(netInfo)).thenReturn(networkType)
+        whenever(networkUtils.getNetworkName(netInfo)).thenReturn(networkName)
 
-        val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
-        val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
+        optimalKeepAliveCalculator.networkStateListener.onStateChanged(networkState)
 
-        assertEquals(oldKeepAlive, newKeepAlive)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
+        verify(stateHandler).onNetworkChanged(networkType, networkName)
+        verify(networkState).isConnected
+        verify(networkState, times(2)).netInfo
+        verify(networkUtils).getNetworkType(netInfo)
+        verify(networkUtils).getNetworkName(netInfo)
+        verifyNoMoreInteractions(networkState)
     }
 
     @Test
-    fun `test init with network info different from current network info and no info available in persistence`() {
-        setOldNetworkInfo()
-        whenever(keepAlivePersistence.has(getCurrentNetworKey())).thenReturn(false)
+    fun `test networkStateListener onStateChanged should not notify state handler when network is not connected`() {
+        val networkState = mock<NetworkState>()
+        whenever(networkState.isConnected).thenReturn(false)
 
-        val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
-        val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
+        optimalKeepAliveCalculator.networkStateListener.onStateChanged(networkState)
 
-        assertNotEquals(oldKeepAlive, newKeepAlive)
-        verifyCurrentNetworkInfo()
-        verify(keepAlivePersistence).has(getCurrentNetworKey())
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
+        verify(networkState).isConnected
     }
 
     @Test
-    fun `test init with network info different from current network info and keepalive info available in persistence`() {
-        setOldNetworkInfo()
-        whenever(keepAlivePersistence.has(getCurrentNetworKey())).thenReturn(true)
-        whenever(keepAlivePersistence.get(getCurrentNetworKey(), ""))
-            .thenReturn("test-network-info")
-        whenever(gson.fromJson("test-network-info", KeepAlivePersistenceModel::class.java))
-            .thenReturn(getKeepAlivePersistenceModel(lowerBound, upperBound))
+    fun `test getUnderTrialKeepAlive when optimal keep alive is already found`() {
+        val optimalKeepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
+        whenever(stateHandler.getOptimalKeepAlive()).thenReturn(optimalKeepAlive)
 
-        val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
-        val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
+        val underTrialKeepAlive = optimalKeepAliveCalculator.getUnderTrialKeepAlive()
 
-        assertNotEquals(oldKeepAlive, newKeepAlive)
-        assertTrue(optimalKeepAliveCalculator.isOptimalKeepAlive)
-        verifyCurrentNetworkInfo()
-        verify(keepAlivePersistence).has(getCurrentNetworKey())
-        verify(keepAlivePersistence).get(getCurrentNetworKey(), "")
-        verify(gson).fromJson("test-network-info", KeepAlivePersistenceModel::class.java)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
+        assertEquals(optimalKeepAlive, underTrialKeepAlive)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).getOptimalKeepAlive()
     }
 
     @Test
-    fun `test init with network info different from current network info and keepalive info available in persistence with different upper bound`() {
-        setOldNetworkInfo()
-        whenever(keepAlivePersistence.has(getCurrentNetworKey())).thenReturn(true)
-        whenever(keepAlivePersistence.get(getCurrentNetworKey(), "")).thenReturn("test-network-info")
-        whenever(gson.fromJson("test-network-info", KeepAlivePersistenceModel::class.java)).thenReturn(getKeepAlivePersistenceModel(lowerBound, upperBound+1))
+    fun `test getUnderTrialKeepAlive when optimal keep alive is not found and current keep alive failure limit is not exceeded`() {
+        val keepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
+        whenever(stateHandler.isCurrentKeepAliveFailureLimitExceeded()).thenReturn(false)
+        whenever(stateHandler.getCurrentKeepAlive()).thenReturn(keepAlive)
 
-        val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
-        val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
+        val underTrialKeepAlive = optimalKeepAliveCalculator.getUnderTrialKeepAlive()
 
-        assertNotEquals(oldKeepAlive, newKeepAlive)
-        assertFalse(optimalKeepAliveCalculator.isOptimalKeepAlive)
-        verifyCurrentNetworkInfo()
-        verify(keepAlivePersistence).has(getCurrentNetworKey())
-        verify(keepAlivePersistence).get(getCurrentNetworKey(), "")
-        verify(gson).fromJson("test-network-info", KeepAlivePersistenceModel::class.java)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
+        assertEquals(keepAlive, underTrialKeepAlive)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).calculateNextKeepAlive()
+        verify(stateHandler).isCurrentKeepAliveFailureLimitExceeded()
+        verify(stateHandler).updateProbeCountAndConvergenceTime()
+        verify(stateHandler).updatePersistenceWithLatestState()
+        verify(stateHandler).getCurrentKeepAlive()
     }
 
     @Test
-    fun `test init with network info different from current network info and keepalive info available in persistence with different lower bound`() {
-        setOldNetworkInfo()
-        whenever(keepAlivePersistence.has(getCurrentNetworKey())).thenReturn(true)
-        whenever(keepAlivePersistence.get(getCurrentNetworKey(), "")).thenReturn("test-network-info")
-        whenever(gson.fromJson("test-network-info", KeepAlivePersistenceModel::class.java)).thenReturn(getKeepAlivePersistenceModel(lowerBound+1, upperBound))
+    fun `test getUnderTrialKeepAlive when optimal keep alive is not found and current keep alive failure limit is exceeded`() {
+        val keepAlive = mock<KeepAlive>()
+        val optimalKeepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false, true)
+        whenever(stateHandler.getOptimalKeepAlive()).thenReturn(optimalKeepAlive)
+        whenever(stateHandler.isCurrentKeepAliveFailureLimitExceeded()).thenReturn(true)
+        whenever(stateHandler.getCurrentKeepAlive()).thenReturn(keepAlive)
 
-        val oldKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        optimalKeepAliveCalculator.init()
-        val newKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
+        val optimalKeepAliveCalculatorSpy = spy(optimalKeepAliveCalculator)
+        doNothing().whenever(optimalKeepAliveCalculatorSpy).onKeepAliveFailure(keepAlive)
 
-        assertNotEquals(oldKeepAlive, newKeepAlive)
-        assertFalse(optimalKeepAliveCalculator.isOptimalKeepAlive)
-        verifyCurrentNetworkInfo()
-        verify(keepAlivePersistence).has(getCurrentNetworKey())
-        verify(keepAlivePersistence).get(getCurrentNetworKey(), "")
-        verify(gson).fromJson("test-network-info", KeepAlivePersistenceModel::class.java)
-        verify(networkUtils).getNetworkName()
-        verify(networkUtils).getNetworkType()
+        val underTrialKeepAlive = optimalKeepAliveCalculatorSpy.getUnderTrialKeepAlive()
+
+        assertEquals(optimalKeepAlive, underTrialKeepAlive)
+        verify(stateHandler, times(2)).isOptimalKeepAliveFound()
+        verify(stateHandler).calculateNextKeepAlive()
+        verify(stateHandler).isCurrentKeepAliveFailureLimitExceeded()
+        verify(stateHandler).getCurrentKeepAlive()
+        verify(stateHandler).getOptimalKeepAlive()
+        verify(optimalKeepAliveCalculatorSpy).onKeepAliveFailure(keepAlive)
     }
 
     @Test
-    fun `test getKeepAlive with optimal keepalive already found`() {
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        setCurrentNetworkInfo()
-        val keepAlivePersistenceModel = optimalKeepAliveCalculator.getKeepAlivePersistenceModel()
-        val keepAlive = keepAlivePersistenceModel.toKeepAlive()
-        whenever(gson.toJson(keepAlivePersistenceModel)).thenReturn("test-network-info")
-
-        val optimalKeepAlive = optimalKeepAliveCalculator.getKeepAlive()
-
-        assertEquals(keepAlive, optimalKeepAlive)
-        verify(keepAlivePersistence).put(getCurrentNetworKey(), "test-network-info")
-    }
-
-    @Test
-    fun `test calculateKeepAlive when optimal keepalive is found`()  {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.lastSuccessfulKA = upperBound
-        optimalKeepAliveCalculator.probeCount = 4
-        optimalKeepAliveCalculator.convergenceTime = 10
-        val persistenceModel = optimalKeepAliveCalculator.getKeepAlivePersistenceModel().copy(
-            isOptimalKeepAlive = true,
-            keepAliveFailureCount = 0
-        )
-        whenever(gson.toJson(persistenceModel)).thenReturn("test-network-info")
-
-        optimalKeepAliveCalculator.calculateKeepAlive()
-
-        verify(keepAlivePersistence).put(getCurrentNetworKey(), "test-network-info")
-        verify(optimalKeepAliveObserver).onOptimalKeepAliveFound(upperBound, 4, 10)
-    }
-
-    @Test
-    fun `test calculateKeepAlive when optimal keepalive is still to be found`()  {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.lastSuccessfulKA = 4
-        optimalKeepAliveCalculator.probeCount = 2
-        optimalKeepAliveCalculator.convergenceTime = 6
-        optimalKeepAliveCalculator.currentKAFailureCount = 0
-        optimalKeepAliveCalculator.currentKA = 4
-
-
-        optimalKeepAliveCalculator.calculateKeepAlive()
-
-        assertEquals(0, optimalKeepAliveCalculator.currentKAFailureCount)
-        assertEquals(6, optimalKeepAliveCalculator.currentKA)
-        assertEquals(3, optimalKeepAliveCalculator.probeCount)
-        assertEquals(12, optimalKeepAliveCalculator.convergenceTime)
-    }
-
-    @Test
-    fun `test calculateKeepAlive when optimal keepalive is still to be found and currentKA is already tried`()  {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.lastSuccessfulKA = 4
-        optimalKeepAliveCalculator.probeCount = 2
-        optimalKeepAliveCalculator.convergenceTime = 6
-        optimalKeepAliveCalculator.currentKAFailureCount = 0
-        optimalKeepAliveCalculator.currentKA = 6
-
-
-        optimalKeepAliveCalculator.calculateKeepAlive()
-
-        assertEquals(1, optimalKeepAliveCalculator.currentKAFailureCount)
-        assertEquals(6, optimalKeepAliveCalculator.currentKA)
-        assertEquals(3, optimalKeepAliveCalculator.probeCount)
-        assertEquals(12, optimalKeepAliveCalculator.convergenceTime)
-    }
-
-    @Test
-    fun `test getNetworkKey`() {
-        setCurrentNetworkInfo()
-        var networkKey = optimalKeepAliveCalculator.getNetworkKey()
-        assertEquals(getCurrentNetworKey(), networkKey)
-
-        setOldNetworkInfo()
-        networkKey = optimalKeepAliveCalculator.getNetworkKey()
-        assertEquals(getOldNetworKey(), networkKey)
-    }
-
-    @Test
-    fun `test onKeepAliveSuccess with old network info`() {
-        setOldNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", 5)
+    fun `test onKeepAliveSuccess when keep alive succeeded is invalid`() {
+        val keepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(false)
 
         optimalKeepAliveCalculator.onKeepAliveSuccess(keepAlive)
 
-        verifyZeroInteractions(keepAlivePersistence)
+        verify(stateHandler).isValidKeepAlive(keepAlive)
     }
 
     @Test
-    fun `test onKeepAliveSuccess with current network info`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.lastSuccessfulKA = -1
-        val keepAlive = KeepAlive(1, "current-network", 5)
-        val persistenceModel = optimalKeepAliveCalculator.getKeepAlivePersistenceModel().copy(
-            lastSuccessfulKeepAlive = 5,
-            keepAliveFailureCount = 0
-        )
-        whenever(gson.toJson(persistenceModel)).thenReturn("test-network-info")
+    fun `test onKeepAliveSuccess when keep alive succeeded is valid and optimal keep alive is found`() {
+        val keepAlive = mock<KeepAlive>()
+        val optimalKeepAlive = KeepAlive(1, "test-network", 5)
+        val probeCount = 7
+        val convergenceTime = 29
+        whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(true)
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
+        whenever(stateHandler.getOptimalKeepAlive()).thenReturn(optimalKeepAlive)
+        whenever(stateHandler.getProbeCount()).thenReturn(probeCount)
+        whenever(stateHandler.getConvergenceTime()).thenReturn(convergenceTime)
 
         optimalKeepAliveCalculator.onKeepAliveSuccess(keepAlive)
 
-        assertEquals(keepAlive.underTrialKeepAlive, optimalKeepAliveCalculator.lastSuccessfulKA)
-        assertEquals(0, optimalKeepAliveCalculator.currentKAFailureCount)
-        verify(keepAlivePersistence).put(getCurrentNetworKey(), "test-network-info")
-    }
-
-    @Test
-    fun `test onKeepAliveFailure with old network info`() {
-        setOldNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", 5)
-
-        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
-
-        verifyZeroInteractions(keepAlivePersistence)
-    }
-
-    @Test
-    fun `test onKeepAliveFailure when optimal keepalive is found and optimalKAFailureCount is less than optimalKeepAliveResetLimit`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit - 2
-        val keepAlive = KeepAlive(1, "current-network", 5)
-
-        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
-
-        verifyZeroInteractions(keepAlivePersistence)
-    }
-
-    @Test
-    fun `test onKeepAliveFailure when optimal keepalive is found and optimalKAFailureCount is equal to optimalKeepAliveResetLimit`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit - 1
-        val keepAlive = KeepAlive(1, "current-network", 5)
-
-        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
-
-        verify(keepAlivePersistence).remove(getCurrentNetworKey())
-    }
-
-    @Test
-    fun `test onKeepAliveFailure when optimal keepalive is found and optimalKAFailureCount is greater than optimalKeepAliveResetLimit`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit
-        val keepAlive = KeepAlive(1, "current-network", 5)
-
-        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
-
-        verify(keepAlivePersistence).remove(getCurrentNetworKey())
-    }
-
-    @Test
-    fun `test onKeepAliveFailure when optimal keepalive is not found and underTrialKeepAlive is equal to lowerBound`() {
-        setCurrentNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", lowerBound)
-        optimalKeepAliveCalculator.probeCount = 4
-        optimalKeepAliveCalculator.convergenceTime = 10
-        val persistenceModel = optimalKeepAliveCalculator.getKeepAlivePersistenceModel().copy(
-            lastSuccessfulKeepAlive = lowerBound,
-            keepAliveFailureCount = 0,
-            isOptimalKeepAlive = true
+        verify(stateHandler).isValidKeepAlive(keepAlive)
+        verify(stateHandler).updateKeepAliveSuccessState(keepAlive)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).getOptimalKeepAlive()
+        verify(stateHandler).getProbeCount()
+        verify(stateHandler).getConvergenceTime()
+        verify(optimalKeepAliveObserver).onOptimalKeepAliveFound(
+            timeMinutes = optimalKeepAlive.keepAliveMinutes,
+            probeCount = probeCount,
+            convergenceTime = convergenceTime
         )
-        whenever(gson.toJson(persistenceModel)).thenReturn("test-network-info")
-
-        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
-
-        assertTrue(optimalKeepAliveCalculator.isOptimalKeepAlive)
-        assertEquals(keepAlive.underTrialKeepAlive, optimalKeepAliveCalculator.lastSuccessfulKA)
-        assertEquals(0, optimalKeepAliveCalculator.currentKAFailureCount)
-        verify(keepAlivePersistence).put(getCurrentNetworKey(), "test-network-info")
-        verify(optimalKeepAliveObserver).onOptimalKeepAliveNotFound(lowerBound, 4, 10)
+        verify(stateHandler).updatePersistenceWithLatestState()
     }
 
     @Test
-    fun `test onKeepAliveFailure when optimal keepalive is not found and underTrialKeepAlive is not equal to lowerBound`() {
-        setCurrentNetworkInfo()
-        val keepAlive = KeepAlive(1, "current-network", lowerBound+1)
+    fun `test onKeepAliveSuccess when keep alive succeeded is valid and optimal keep alive is not found`() {
+        val keepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(true)
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
 
-        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
+        optimalKeepAliveCalculator.onKeepAliveSuccess(keepAlive)
 
-        assertEquals(keepAlive.underTrialKeepAlive-1, optimalKeepAliveCalculator.currentUpperBound)
-        assertEquals(step/2, optimalKeepAliveCalculator.currentStep)
+        verify(stateHandler).isValidKeepAlive(keepAlive)
+        verify(stateHandler).updateKeepAliveSuccessState(keepAlive)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).updatePersistenceWithLatestState()
     }
 
     @Test
-    fun `test getOptimalKeepAlive when optimal keepalive is not found`() {
-        optimalKeepAliveCalculator.isOptimalKeepAlive = false
+    fun `test onKeepAliveFailure when keep alive failed is invalid`() {
+        val keepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(false)
+
+        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
+
+        verify(stateHandler).isValidKeepAlive(keepAlive)
+    }
+
+    @Test
+    fun `test onKeepAliveFailure when keep alive failed is valid and optimal keep alive is found`() {
+        val keepAlive = mock<KeepAlive>()
+        val optimalKeepAlive = KeepAlive(1, "test-network", 5)
+        val probeCount = 7
+        val convergenceTime = 29
+        whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(true)
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
+        whenever(stateHandler.getOptimalKeepAlive()).thenReturn(optimalKeepAlive)
+        whenever(stateHandler.getProbeCount()).thenReturn(probeCount)
+        whenever(stateHandler.getConvergenceTime()).thenReturn(convergenceTime)
+
+        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
+
+        verify(stateHandler).isValidKeepAlive(keepAlive)
+        verify(stateHandler).updateKeepAliveFailureState(keepAlive)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).getOptimalKeepAlive()
+        verify(stateHandler).getProbeCount()
+        verify(stateHandler).getConvergenceTime()
+        verify(optimalKeepAliveObserver).onOptimalKeepAliveFound(
+            timeMinutes = optimalKeepAlive.keepAliveMinutes,
+            probeCount = probeCount,
+            convergenceTime = convergenceTime
+        )
+        verify(stateHandler).updatePersistenceWithLatestState()
+    }
+
+    @Test
+    fun `test onKeepAliveFailure when keep alive failed is valid and optimal keep alive is not found`() {
+        val keepAlive = mock<KeepAlive>()
+        whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(true)
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
+
+        optimalKeepAliveCalculator.onKeepAliveFailure(keepAlive)
+
+        verify(stateHandler).isValidKeepAlive(keepAlive)
+        verify(stateHandler).updateKeepAliveFailureState(keepAlive)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).updatePersistenceWithLatestState()
+    }
+
+    @Test
+    fun `test getOptimalKeepAlive when optimal keep alive is not found`() {
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
 
         assertEquals(0, optimalKeepAliveCalculator.getOptimalKeepAlive())
+
+        verify(stateHandler).isOptimalKeepAliveFound()
     }
 
     @Test
-    fun `test getOptimalKeepAlive when optimal keepalive is found`() {
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.lastSuccessfulKA = 5
+    fun `test getOptimalKeepAlive when optimal keep alive is found`() {
+        val optimalKeepAlive = KeepAlive(1, "test-network", 5)
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
+        whenever(stateHandler.getOptimalKeepAlive()).thenReturn(optimalKeepAlive)
 
-        assertEquals(5, optimalKeepAliveCalculator.getOptimalKeepAlive())
+        assertEquals(optimalKeepAlive.keepAliveMinutes, optimalKeepAliveCalculator.getOptimalKeepAlive())
+
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).getOptimalKeepAlive()
     }
 
     @Test
-    fun `test onOptimalKeepAliveFailure when optimal keepalive is not found`() {
-        optimalKeepAliveCalculator.isOptimalKeepAlive = false
+    fun `test onOptimalKeepAliveFailure when optimal keep alive is not found`() {
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
 
         optimalKeepAliveCalculator.onOptimalKeepAliveFailure()
 
-        verifyZeroInteractions(keepAlivePersistence)
+        verify(stateHandler).isOptimalKeepAliveFound()
     }
 
     @Test
-    fun `test onOptimalKeepAliveFailure when optimal keepalive is found and optimalKAFailureCount is less than optimalKeepAliveResetLimit`() {
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit - 2
+    fun `test onOptimalKeepAliveFailure when optimal keep alive is found and failure limit is exceeded`() {
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
+        whenever(stateHandler.isOptimalKeepAliveFailureLimitExceeded()).thenReturn(true)
 
         optimalKeepAliveCalculator.onOptimalKeepAliveFailure()
 
-        verifyZeroInteractions(keepAlivePersistence)
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).updateOptimalKeepAliveFailureState()
+        verify(stateHandler).isOptimalKeepAliveFailureLimitExceeded()
+        verify(stateHandler).removeStateFromPersistence()
     }
 
     @Test
-    fun `test onOptimalKeepAliveFailure when optimal keepalive is found and optimalKAFailureCount is equal to optimalKeepAliveResetLimit`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit - 1
+    fun `test onOptimalKeepAliveFailure when optimal keep alive is found and failure limit is not exceeded`() {
+        whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
+        whenever(stateHandler.isOptimalKeepAliveFailureLimitExceeded()).thenReturn(false)
 
         optimalKeepAliveCalculator.onOptimalKeepAliveFailure()
 
-        verify(keepAlivePersistence).remove(getCurrentNetworKey())
-    }
-
-    @Test
-    fun `test onOptimalKeepAliveFailure when optimal keepalive is found and optimalKAFailureCount is greater than optimalKeepAliveResetLimit`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.isOptimalKeepAlive = true
-        optimalKeepAliveCalculator.optimalKAFailureCount = optimalKeepAliveResetLimit
-
-        optimalKeepAliveCalculator.onOptimalKeepAliveFailure()
-
-        verify(keepAlivePersistence).remove(getCurrentNetworKey())
-    }
-
-    @Test
-    fun `test getCurrentKeepAlive`() {
-        setCurrentNetworkInfo()
-        optimalKeepAliveCalculator.currentKA = 10
-        var currentKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        assertEquals(10, currentKeepAlive.underTrialKeepAlive)
-        verifyCurrentNetworkInfo()
-
-        setOldNetworkInfo()
-        optimalKeepAliveCalculator.currentKA = 12
-        currentKeepAlive = optimalKeepAliveCalculator.getCurrentKeepAlive()
-        assertEquals(12, currentKeepAlive.underTrialKeepAlive)
-        verifyOldNetworkInfo()
+        verify(stateHandler).isOptimalKeepAliveFound()
+        verify(stateHandler).updateOptimalKeepAliveFailureState()
+        verify(stateHandler).isOptimalKeepAliveFailureLimitExceeded()
     }
 
     @After
     fun teardown() {
-        verifyNoMoreInteractions(keepAlivePersistence, optimalKeepAliveObserver)
-    }
-
-    private fun setOldNetworkInfo() {
-        optimalKeepAliveCalculator.currentNetworkName = "old-network"
-        optimalKeepAliveCalculator.currentNetworkType = 0
-    }
-
-    private fun setCurrentNetworkInfo() {
-        optimalKeepAliveCalculator.currentNetworkName = "current-network"
-        optimalKeepAliveCalculator.currentNetworkType = 1
-    }
-
-    private fun getCurrentNetworKey(): String {
-        return "1:current-network"
-    }
-
-    private fun getOldNetworKey(): String {
-        return "0:old-network"
-    }
-
-    private fun verifyCurrentNetworkInfo() {
-        assertEquals(optimalKeepAliveCalculator.currentNetworkName , "current-network")
-        assertEquals(optimalKeepAliveCalculator.currentNetworkType , 1)
-    }
-
-    private fun verifyOldNetworkInfo() {
-        assertEquals(optimalKeepAliveCalculator.currentNetworkName , "old-network")
-        assertEquals(optimalKeepAliveCalculator.currentNetworkType , 0)
-    }
-
-    private fun getKeepAlivePersistenceModel(lowerBound: Int, upperBound: Int): KeepAlivePersistenceModel {
-        return KeepAlivePersistenceModel(
-            lastSuccessfulKeepAlive = 4,
-            networkType = 1,
-            networkName = "current-network",
-            lowerBound = lowerBound,
-            upperBound = upperBound,
-            isOptimalKeepAlive = true,
-            step = 2,
-            underTrialKeepAlive = 4,
-            keepAliveFailureCount = 0,
-            probeCount = 3,
-            convergenceTime = 10
+        verifyNoMoreInteractions(
+            stateHandler,
+            networkTracker,
+            networkUtils,
+            optimalKeepAliveObserver
         )
     }
 }

@@ -819,25 +819,6 @@ public final class com/gojek/mqtt/event/MqttEvent$OptimalKeepAliveFoundEvent : c
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/gojek/mqtt/event/MqttEvent$OptimalKeepAliveNotFoundEvent : com/gojek/mqtt/event/MqttEvent {
-	public fun <init> (IIILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
-	public synthetic fun <init> (IIILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public final fun copy (IIILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$OptimalKeepAliveNotFoundEvent;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$OptimalKeepAliveNotFoundEvent;IIILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$OptimalKeepAliveNotFoundEvent;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getConnectionInfo ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public final fun getConvergenceTime ()I
-	public final fun getProbeCount ()I
-	public final fun getTimeMinutes ()I
-	public fun hashCode ()I
-	public fun setConnectionInfo (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class com/gojek/mqtt/event/MqttEvent$SSLHandshakeSuccessEvent : com/gojek/mqtt/event/MqttEvent {
 	public fun <init> (ILjava/lang/String;JJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
 	public synthetic fun <init> (ILjava/lang/String;JJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

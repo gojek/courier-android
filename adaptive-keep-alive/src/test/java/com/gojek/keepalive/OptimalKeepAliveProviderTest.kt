@@ -45,7 +45,6 @@ class OptimalKeepAliveProviderTest {
 
         assertEquals(optimalKeepAliveMinutes*60, optimalKeepAliveProvider.getOptimalKASecondsForCurrentNetwork())
 
-        verify(keepAliveCalculator).init()
         verify(keepAliveCalculator).getOptimalKeepAlive()
     }
 
@@ -53,7 +52,6 @@ class OptimalKeepAliveProviderTest {
     fun `test onOptimalKeepAliveFailure should init keepAliveCalculator and invoke onOptimalKeepAliveFailure`() {
         optimalKeepAliveProvider.onOptimalKeepAliveFailure()
 
-        verify(keepAliveCalculator).init()
         verify(keepAliveCalculator).onOptimalKeepAliveFailure()
     }
 }

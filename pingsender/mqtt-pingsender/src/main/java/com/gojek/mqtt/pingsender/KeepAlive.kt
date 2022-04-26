@@ -7,8 +7,8 @@ import com.gojek.courier.extensions.fromMinutesToMillis
 data class KeepAlive(
     val networkType: Int,
     val networkName: String,
-    val underTrialKeepAlive: Int
+    val keepAliveMinutes: Int
 )
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-fun KeepAlive.keepAliveMillis() = underTrialKeepAlive.fromMinutesToMillis()
+fun KeepAlive.keepAliveMillis() = keepAliveMinutes.fromMinutesToMillis()

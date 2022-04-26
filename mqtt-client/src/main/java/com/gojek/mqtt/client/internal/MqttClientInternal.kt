@@ -16,7 +16,6 @@ import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.event.AdaptivePingEventHandler
 import com.gojek.mqtt.event.MqttEvent.OptimalKeepAliveFoundEvent
-import com.gojek.mqtt.event.MqttEvent.OptimalKeepAliveNotFoundEvent
 import com.gojek.mqtt.event.PingEventHandler
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
 import com.gojek.mqtt.model.MqttConnectOptions
@@ -55,22 +54,6 @@ internal class MqttClientInternal(
             mqttConfiguration.logger.d("MqttClient", "Optimal KA found: $timeMinutes")
             eventHandler.onEvent(
                 OptimalKeepAliveFoundEvent(
-                    timeMinutes,
-                    probeCount,
-                    convergenceTime
-                )
-            )
-            adaptiveMqttClient?.disconnect()
-        }
-
-        override fun onOptimalKeepAliveNotFound(
-            timeMinutes: Int,
-            probeCount: Int,
-            convergenceTime: Int
-        ) {
-            mqttConfiguration.logger.d("MqttClient", "Optimal KA not found: $timeMinutes")
-            eventHandler.onEvent(
-                OptimalKeepAliveNotFoundEvent(
                     timeMinutes,
                     probeCount,
                     convergenceTime

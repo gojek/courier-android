@@ -73,7 +73,6 @@ internal class AdaptiveAlarmPingSender(
     }
 
     override fun start() {
-        keepAliveCalculator.init()
         val action = PING_SENDER
         logger.d(TAG, "Register alarmreceiver to MqttService$action")
         /*
@@ -128,7 +127,7 @@ internal class AdaptiveAlarmPingSender(
             return
         }
 
-        adaptiveKeepAlive = keepAliveCalculator.getKeepAlive()
+        adaptiveKeepAlive = keepAliveCalculator.getUnderTrialKeepAlive()
         val delayInMilliseconds = adaptiveKeepAlive.keepAliveMillis()
         try {
             val nextAlarmInMilliseconds = if(pingSenderConfig.useElapsedRealTimeAlarm) {

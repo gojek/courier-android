@@ -1,6 +1,5 @@
 package com.gojek.keepalive.model
 
-import com.gojek.mqtt.pingsender.KeepAlive
 import com.google.gson.annotations.SerializedName
 
 internal data class KeepAlivePersistenceModel(
@@ -18,6 +17,8 @@ internal data class KeepAlivePersistenceModel(
     val lowerBound: Int,
     @SerializedName("upperBound")
     val upperBound: Int,
+    @SerializedName("currentUpperBound")
+    val currentUpperBound: Int,
     @SerializedName("step")
     val step: Int,
     @SerializedName("isOptimalKA")
@@ -27,7 +28,3 @@ internal data class KeepAlivePersistenceModel(
     @SerializedName("convergenceTime")
     val convergenceTime: Int
 )
-
-internal fun KeepAlivePersistenceModel.toKeepAlive(): KeepAlive {
-    return KeepAlive(networkType, networkName, underTrialKeepAlive)
-}

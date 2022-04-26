@@ -8,6 +8,7 @@ import com.gojek.keepalive.persistence.KeepAlivePersistenceImpl
 import com.gojek.keepalive.sharedpref.CourierSharedPreferencesFactory
 import com.gojek.keepalive.utils.NetworkUtils
 import com.gojek.mqtt.pingsender.KeepAliveCalculator
+import com.gojek.networktracker.NetworkStateTrackerFactory
 import com.google.gson.Gson
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -18,15 +19,18 @@ class KeepAliveCalculatorFactory {
         optimalKeepAliveObserver: OptimalKeepAliveObserver,
     ): KeepAliveCalculator {
         val sharedPreferences = CourierSharedPreferencesFactory.create(context, KEEP_ALIVE_PERSISTENCE)
-        return OptimalKeepAliveCalculator(
-            networkUtils = NetworkUtils(context),
+        val stateHandler = AdaptiveKeepAliveStateHandler(
             lowerBound = adaptiveKeepAliveConfig.lowerBoundMinutes,
             upperBound = adaptiveKeepAliveConfig.upperBoundMinutes,
             step = adaptiveKeepAliveConfig.stepMinutes,
             optimalKeepAliveResetLimit = adaptiveKeepAliveConfig.optimalKeepAliveResetLimit,
-            persistence = KeepAlivePersistenceImpl(sharedPreferences),
+            persistence = KeepAlivePersistenceImpl(sharedPreferences, Gson()),
+        )
+        return OptimalKeepAliveCalculator(
+            networkTracker = NetworkStateTrackerFactory.create(context),
+            networkUtils = NetworkUtils(),
+            stateHandler = stateHandler,
             optimalKeepAliveObserver = optimalKeepAliveObserver,
-            gson = Gson()
         )
     }
 }

@@ -1,6 +1,8 @@
 package com.gojek.keepalive.persistence
 
+import com.gojek.keepalive.model.KeepAlivePersistenceModel
 import com.gojek.keepalive.sharedpref.CourierSharedPreferences
+import com.google.gson.Gson
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
@@ -15,8 +17,9 @@ import kotlin.test.assertTrue
 @RunWith(MockitoJUnitRunner::class)
 class KeepAlivePersistenceImplTest {
     private val sharedPreferences = mock<CourierSharedPreferences>()
+    private val gson = mock<Gson>()
 
-    private val keepAlivePersistence = KeepAlivePersistenceImpl(sharedPreferences)
+    private val keepAlivePersistence = KeepAlivePersistenceImpl(sharedPreferences, gson)
 
     @Test
     fun `test has key should check the key in shared pref`() {
@@ -32,22 +35,28 @@ class KeepAlivePersistenceImplTest {
     @Test
     fun `test get key should get the key from shared pref`() {
         val key = "some-test-key"
-        val default = 10
-        val value = 20
+        val default = ""
+        val value = "actual-value"
+        val keepAlivePersistenceModel = mock<KeepAlivePersistenceModel>()
         whenever(sharedPreferences.get(key, default)).thenReturn(value)
+        whenever(gson.fromJson(value, KeepAlivePersistenceModel::class.java)).thenReturn(keepAlivePersistenceModel)
 
-        assertEquals(value, keepAlivePersistence.get(key, default))
+        assertEquals(keepAlivePersistenceModel, keepAlivePersistence.get(key))
 
         verify(sharedPreferences).get(key, default)
+        verify(gson).fromJson(value, KeepAlivePersistenceModel::class.java)
     }
 
     @Test
     fun `test put key should put the key in shared pref`() {
         val key = "some-test-key"
-        val value = 10
+        val value = "actual-value"
+        val keepAlivePersistenceModel = mock<KeepAlivePersistenceModel>()
+        whenever(gson.toJson(keepAlivePersistenceModel)).thenReturn(value)
 
-        keepAlivePersistence.put(key, value)
+        keepAlivePersistence.put(key, keepAlivePersistenceModel)
 
+        verify(gson).toJson(keepAlivePersistenceModel)
         verify(sharedPreferences).put(key, value)
     }
 

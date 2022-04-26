@@ -9,10 +9,4 @@ interface OptimalKeepAliveObserver {
         probeCount: Int,
         convergenceTime: Int
     )
-
-    fun onOptimalKeepAliveNotFound(
-        timeMinutes: Int,
-        probeCount: Int,
-        convergenceTime: Int
-    )
 }
