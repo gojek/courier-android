@@ -14,5 +14,6 @@ interface MqttClient {
     fun subscribe(topic: Pair<String, QoS>, vararg topics: Pair<String, QoS>)
     fun unsubscribe(topic: String, vararg topics: String)
     fun send(message: Message, topic: String, qos: QoS): Boolean
-    fun receive(listener: MessageListener)
+    fun addMessageListener(topic: String, listener: MessageListener)
+    fun removeMessageListener(topic: String, listener: MessageListener)
 }

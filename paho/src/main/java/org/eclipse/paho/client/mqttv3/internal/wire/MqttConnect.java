@@ -34,7 +34,7 @@ public class MqttConnect extends MqttWireMessage
 
 	private String protocolName;
 
-	private int protocolVersion;
+	private int protocolLevel;
 
 	private String clientId;
 
@@ -64,7 +64,7 @@ public class MqttConnect extends MqttWireMessage
 		DataInputStream dis = new DataInputStream(bais);
 
 		protocolName = decodeUTF8(dis);
-		protocolVersion = dis.readByte();
+		protocolLevel = dis.readByte();
 		byte connect_flags = dis.readByte();
 
 		cleanSession = ((connect_flags >> 1) & 1) > 0;
@@ -99,10 +99,10 @@ public class MqttConnect extends MqttWireMessage
 		dis.close();
 	}
 
-	public MqttConnect(String clientId, boolean cleanSession, int keepAliveInterval, String userName, char[] password, MqttMessage willMessage, String willDestination, String protocolName, int protocolVersion) {
+	public MqttConnect(String clientId, boolean cleanSession, int keepAliveInterval, String userName, char[] password, MqttMessage willMessage, String willDestination, String protocolName, int protocolLevel) {
 		super(MqttWireMessage.MESSAGE_TYPE_CONNECT);
 		this.protocolName = protocolName;
-		this.protocolVersion = protocolVersion;
+		this.protocolLevel = protocolLevel;
 		this.clientId = clientId;
 		this.cleanSession = cleanSession;
 		this.keepAliveInterval = keepAliveInterval;
@@ -137,7 +137,7 @@ public class MqttConnect extends MqttWireMessage
 			DataOutputStream dos = new DataOutputStream(baos);
 
 			encodeUTF8(dos, protocolName);
-			dos.write(protocolVersion);
+			dos.write(protocolLevel);
 
 			byte connectFlags = 0;
 

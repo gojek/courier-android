@@ -1,6 +1,7 @@
 plugins {
     id(ScriptPlugins.infrastructure)
     id("org.ajoberstar.grgit").version("4.1.1")
+    id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
 }
 
 buildscript {
@@ -8,8 +9,8 @@ buildscript {
         google()
         mavenCentral()
         mavenLocal()
+        maven(url = "https://plugins.gradle.org/m2/")
         maven(url = "https://ajoberstar.org/bintray-backup/")
-        // add jcenter repository here
     }
     dependencies {
         classpath("com.android.tools.build:gradle:${versions.agp}")
@@ -27,8 +28,6 @@ allprojects {
         google()
         mavenCentral()
         mavenLocal()
-        // add gojek public artifactory here
-        // add jcenter repository here
     }
 }
 
@@ -69,3 +68,5 @@ val clean by tasks.creating(Delete::class) {
     delete("${rootDir}/pingsender/alarm-pingsender/build")
     delete("${rootDir}/pingsender/timer-pingsender/build")
 }
+
+apply(from = "${rootDir}/gradle/publish-root.gradle")

@@ -84,9 +84,18 @@ class MqttCourierClientTest {
     }
 
     @Test
-    fun `test receive`() {
+    fun `test addMessageListener`() {
+        val topic = "test-topic"
         val listener = mock<MessageListener>()
-        mqttCourierClient.receive(listener)
-        verify(mqttClientInternal).receive(listener)
+        mqttCourierClient.addMessageListener(topic, listener)
+        verify(mqttClientInternal).addMessageListener(topic, listener)
+    }
+
+    @Test
+    fun `test removeMessageListener`() {
+        val topic = "test-topic"
+        val listener = mock<MessageListener>()
+        mqttCourierClient.removeMessageListener(topic, listener)
+        verify(mqttClientInternal).removeMessageListener(topic, listener)
     }
 }

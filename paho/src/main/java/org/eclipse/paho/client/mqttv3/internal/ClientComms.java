@@ -45,8 +45,6 @@ import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Handles client communications with the server. Sends and receives MQTT V3 messages.
@@ -289,7 +287,7 @@ public class ClientComms {
                 this.conOptions = options;
 
                 MqttConnect connect = new MqttConnect(client.getClientId(), options.isCleanSession(), options.getKeepAliveIntervalServer(), options.getUserName(), options.getPassword(),
-                        options.getWillMessage(), options.getWillDestination(), options.getProtocolName(), options.getProtocolVersion());
+                        options.getWillMessage(), options.getWillDestination(), options.getProtocolName(), options.getProtocolLevel());
 
                 this.clientState.setKeepAliveSecs(options.getKeepAliveInterval());
                 this.clientState.setCleanSession(options.isCleanSession());

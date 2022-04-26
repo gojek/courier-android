@@ -12,24 +12,13 @@ import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.MqttMessage
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.Observable
-import io.reactivex.processors.PublishProcessor
+import io.reactivex.FlowableOnSubscribe
 import io.reactivex.schedulers.Schedulers
 
 internal class Coordinator(
     private val client: MqttClient,
     private val logger: ILogger
 ) : StubInterface.Callback {
-
-    private val publishProcessor = PublishProcessor.create<MqttMessage>()
-
-    init {
-        client.receive(object : MessageListener {
-            override fun onMessageReceived(mqttMessage: MqttMessage) {
-                publishProcessor.onNext(mqttMessage)
-            }
-        })
-    }
 
     @Synchronized
     override fun send(stubMethod: StubMethod.Send, args: Array<Any>): Any {
@@ -45,10 +34,20 @@ internal class Coordinator(
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
 
-        val stream = Flowable.fromPublisher(publishProcessor)
-            .filter { topic == it.topic }
+        val flowable = Flowable.create(FlowableOnSubscribe<MqttMessage> { emitter ->
+            val listener = object : MessageListener {
+                override fun onMessageReceived(mqttMessage: MqttMessage) {
+                    if (emitter.isCancelled.not()) {
+                        emitter.onNext(mqttMessage)
+                    }
+                }
+            }
+            client.addMessageListener(topic, listener)
+            emitter.setCancellable { client.removeMessageListener(topic, listener) }
+        }, BackpressureStrategy.BUFFER)
+
+        val stream = flowable
             .map { it.message }
-            .onBackpressureBuffer()
             .observeOn(Schedulers.computation())
             .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty()  }
             .toStream()
@@ -69,10 +68,20 @@ internal class Coordinator(
         val topic = stubMethod.argumentProcessor.getTopic()
         client.subscribe(topic to stubMethod.qos)
 
-        val stream = Flowable.fromPublisher(publishProcessor)
-            .filter { topic == it.topic }
+        val flowable = Flowable.create(FlowableOnSubscribe<MqttMessage> { emitter ->
+            val listener = object : MessageListener {
+                override fun onMessageReceived(mqttMessage: MqttMessage) {
+                    if (emitter.isCancelled.not()) {
+                        emitter.onNext(mqttMessage)
+                    }
+                }
+            }
+            client.addMessageListener(topic, listener)
+            emitter.setCancellable { client.removeMessageListener(topic, listener) }
+        }, BackpressureStrategy.BUFFER)
+
+        val stream = flowable
             .map { it.message }
-            .onBackpressureBuffer()
             .observeOn(Schedulers.computation())
             .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty()  }
             .toStream()

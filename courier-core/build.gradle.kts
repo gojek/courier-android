@@ -1,13 +1,12 @@
 import plugin.KotlinLibraryConfigurationPlugin
 
 apply<KotlinLibraryConfigurationPlugin>()
-apply("$rootDir/gradle/publish-artifact-task-java.gradle")
 apply("$rootDir/gradle/script-ext.gradle")
 
 ext {
-    set("name", "courier-core")
-    set("publish", true)
-    set("version", ext.get("gitVersionName"))
+    set("PUBLISH_GROUP_ID", "com.gojek.courier")
+    set("PUBLISH_ARTIFACT_ID", "courier-core")
+    set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.0")
 }
 
@@ -28,3 +27,4 @@ dependencies {
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 
+apply(from = "${rootProject.projectDir}/gradle/publish-module.gradle")

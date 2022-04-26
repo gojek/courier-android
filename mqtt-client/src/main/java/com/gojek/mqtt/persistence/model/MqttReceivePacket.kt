@@ -12,7 +12,7 @@ internal data class MqttReceivePacket(
     @PrimaryKey(autoGenerate = true)
     var messageId: Long,
     @ColumnInfo(name = "ts")
-    var timestamp: Long,
+    var nanosTimestamp: Long,
     @ColumnInfo(name = "topic")
     var topic: String
 )

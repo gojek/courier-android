@@ -35,7 +35,6 @@ import com.gojek.mqtt.client.model.ConnectionState.CONNECTING
 import com.gojek.mqtt.client.model.ConnectionState.DISCONNECTED
 import com.gojek.mqtt.client.model.ConnectionState.DISCONNECTING
 import com.gojek.mqtt.client.model.ConnectionState.INITIALISED
-import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.connection.IMqttConnection
@@ -74,8 +73,6 @@ import com.gojek.mqtt.utils.MqttUtils
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
 import com.gojek.networktracker.NetworkStateTracker
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.subjects.PublishSubject
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException
@@ -109,8 +106,6 @@ internal class AndroidMqttClient(
 
     private lateinit var connectOptions: MqttConnectOptions
 
-    private val publishSubject = PublishSubject.create<MqttPacket>()
-    private val compositeDisposable = CompositeDisposable()
     private val experimentConfigs = mqttConfiguration.experimentConfigs
 
     @Volatile
@@ -177,7 +172,6 @@ internal class AndroidMqttClient(
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
                 policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
-                isMqttVersion4Enabled = experimentConfigs.isMqttVersion4Enabled
             )
 
         mqttConnection = MqttConnection(
@@ -197,10 +191,12 @@ internal class AndroidMqttClient(
         this.incomingMsgController =
             IncomingMsgControllerImpl(
                 mqttUtils,
-                publishSubject,
                 mqttPersistence,
                 logger,
-                mqttConfiguration.eventHandler
+                mqttConfiguration.eventHandler,
+                experimentConfigs.incomingMessagesTTLSecs,
+                experimentConfigs.incomingMessagesCleanupIntervalSecs,
+                clock
             )
         networkHandler.init()
         appStateManager.addAppStateListener(object: AppStateChangeListener {
@@ -322,12 +318,12 @@ internal class AndroidMqttClient(
         return true
     }
 
-    override fun receive(listener: MessageListener) {
-        compositeDisposable.add(publishSubject.subscribe {
-            listener.onMessageReceived(
-                MqttMessage(it.topic, com.gojek.courier.Message.Bytes(it.message))
-            )
-        })
+    override fun addMessageListener(topic: String, listener: MessageListener) {
+        incomingMsgController.registerListener(topic, listener)
+    }
+
+    override fun removeMessageListener(topic: String, listener: MessageListener) {
+        incomingMsgController.unregisterListener(topic, listener)
     }
 
     //This runs on Mqtt thread
@@ -558,7 +554,7 @@ internal class AndroidMqttClient(
                     MqttReceivePacket(
                         bytes,
                         0,
-                        System.currentTimeMillis(),
+                        clock.nanoTime(),
                         topic
                     )
                 mqttPersistence.addReceivedMessage(mqttPacket)
