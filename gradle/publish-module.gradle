@@ -55,11 +55,11 @@ afterEvaluate {
                 pom {
                     name = PUBLISH_ARTIFACT_ID
                     description = 'Courier'
-                    url = 'https://github.com/gojekfarm/courier-android'
+                    url = 'https://github.com/gojek/courier-android'
                     licenses {
                         license {
                             name = 'Courier License'
-                            url = 'https://github.com/gojekfarm/courier-android/blob/main/LICENSES/LICENSE'
+                            url = 'https://github.com/gojek/courier-android/blob/main/LICENSES/LICENSE'
                         }
                     }
                     developers {
@@ -70,9 +70,9 @@ afterEvaluate {
                         }
                     }
                     scm {
-                        connection = 'scm:git:github.com/gojekfarm/courier-android.git'
-                        developerConnection = 'scm:git:ssh://github.com/gojekfarm/courier-android.git'
-                        url = 'https://github.com/gojekfarm/courier-android/tree/main'
+                        connection = 'scm:git:github.com/gojek/courier-android.git'
+                        developerConnection = 'scm:git:ssh://github.com/gojek/courier-android.git'
+                        url = 'https://github.com/gojek/courier-android/tree/main'
                     }
                 }
             }

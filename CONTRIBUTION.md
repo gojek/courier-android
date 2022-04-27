@@ -35,9 +35,9 @@ Much Thanks! ❤❤❤
 
 GO-JEK Tech
 
-[1]: https://github.com/gojekfarm/courier-android
+[1]: https://github.com/gojek/courier-android
 [2]: https://opensource.org/licenses/MIT
-[3]: https://github.com/gojekfarm/courier-android/issues
+[3]: https://github.com/gojek/courier-android/issues
 [4]: https://kotlinlang.org/docs/coding-conventions.html
 [5]: http://gun.io/blog/how-to-github-fork-branch-and-pull-request
 [6]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
