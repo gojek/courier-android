@@ -9,9 +9,6 @@ import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
 import androidx.annotation.RequiresApi
-import com.gojek.appstatemanager.AppState
-import com.gojek.appstatemanager.AppStateChangeListener
-import com.gojek.appstatemanager.AppStateManager
 import com.gojek.courier.QoS
 import com.gojek.courier.exception.AuthApiException
 import com.gojek.courier.extensions.fromNanosToMillis
@@ -83,7 +80,6 @@ internal class AndroidMqttClient(
     private val context: Context,
     private val mqttConfiguration: MqttV3Configuration,
     private val networkStateTracker: NetworkStateTracker,
-    private val appStateManager: AppStateManager,
     private val mqttPingSender: MqttPingSender,
     private val isAdaptiveKAConnection: Boolean = false,
     private val keepAliveProvider: KeepAliveProvider,
@@ -199,15 +195,6 @@ internal class AndroidMqttClient(
                 clock
             )
         networkHandler.init()
-        appStateManager.addAppStateListener(object: AppStateChangeListener {
-            override fun onAppStateChange(appState: AppState) {
-                if(appState == AppState.FOREGROUND) {
-                    onForeground()
-                } else {
-                    onBackground()
-                }
-            }
-        })
     }
 
     // This can be invoked on any thread
@@ -487,18 +474,6 @@ internal class AndroidMqttClient(
             } else {
                 authFailureHandler.handleAuthFailure()
             }
-        }
-    }
-
-    fun onForeground() {
-        if (experimentConfigs.shouldConnectOnForeground) {
-            runnableScheduler.connectMqtt()
-        }
-    }
-
-    fun onBackground() {
-        if (experimentConfigs.shouldConnectOnBackground) {
-            runnableScheduler.connectMqtt()
         }
     }
 
