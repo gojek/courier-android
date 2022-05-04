@@ -25,19 +25,17 @@ public abstract interface class com/gojek/mqtt/client/MqttInterceptor {
 
 public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public fun <init> ()V
-	public fun <init> (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)V
-	public synthetic fun <init> (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)V
+	public synthetic fun <init> (ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
-	public final fun component2 ()Z
-	public final fun component3 ()Z
-	public final fun component4 ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
+	public final fun component2 ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
+	public final fun component3 ()I
+	public final fun component4 ()I
 	public final fun component5 ()I
-	public final fun component6 ()I
-	public final fun component7 ()I
-	public final fun component8 ()J
-	public final fun component9 ()J
-	public final fun copy (ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;ZZZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public final fun component6 ()J
+	public final fun component7 ()J
+	public final fun copy (ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActivityCheckIntervalSeconds ()I
 	public final fun getAdaptiveKeepAliveConfig ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
@@ -45,8 +43,6 @@ public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public final fun getIncomingMessagesCleanupIntervalSecs ()J
 	public final fun getIncomingMessagesTTLSecs ()J
 	public final fun getPolicyResetTimeSeconds ()I
-	public final fun getShouldConnectOnBackground ()Z
-	public final fun getShouldConnectOnForeground ()Z
 	public fun hashCode ()I
 	public final fun isPersistentSubscriptionStoreEnabled ()Z
 	public fun toString ()Ljava/lang/String;

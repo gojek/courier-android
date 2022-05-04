@@ -1,7 +1,6 @@
 package com.gojek.mqtt.client.internal
 
 import android.content.Context
-import com.gojek.appstatemanager.AppStateManagerFactory
 import com.gojek.courier.QoS
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.keepalive.NoOpKeepAliveFailureHandler
@@ -32,7 +31,6 @@ internal class MqttClientInternal(
 
     private val networkStateTracker =
         NetworkStateTrackerFactory.create(context.applicationContext, mqttConfiguration.logger)
-    private val appStateManager = AppStateManagerFactory.create()
 
     private val androidMqttClient: IAndroidMqttClient
 
@@ -69,7 +67,6 @@ internal class MqttClientInternal(
             context = context,
             mqttConfiguration = mqttConfiguration,
             networkStateTracker = networkStateTracker,
-            appStateManager = appStateManager,
             keepAliveProvider = keepAliveProvider,
             keepAliveFailureHandler = keepAliveFailureHandler,
             eventHandler = eventHandler,
@@ -138,7 +135,6 @@ internal class MqttClientInternal(
                                 context = context,
                                 mqttConfiguration = mqttConfiguration,
                                 networkStateTracker = networkStateTracker,
-                                appStateManager = appStateManager,
                                 keepAliveProvider = NonOptimalKeepAliveProvider(
                                     adaptiveKeepAliveConfig.upperBoundMinutes * 60
                                 ),

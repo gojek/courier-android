@@ -6,8 +6,6 @@ import com.gojek.mqtt.constants.DEFAULT_POLICY_RESET_TIME_SECS
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
 
 data class ExperimentConfigs(
-    val shouldConnectOnForeground: Boolean = true,
-    val shouldConnectOnBackground: Boolean = true,
     val isPersistentSubscriptionStoreEnabled: Boolean = true,
     val adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig? = null,
     val activityCheckIntervalSeconds: Int = DEFAULT_ACTIVITY_CHECK_INTERVAL_SECS,
