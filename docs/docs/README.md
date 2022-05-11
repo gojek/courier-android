@@ -42,7 +42,7 @@ More details about features in Courier library can be found [here][1]
 
 ### Sample App
 
-A demo application is added [here](./app/src/main/java/com/gojek/courier/app/ui/MainActivity.kt) which makes Courier connection with a [HiveMQ][2] public broker.
+A demo application is added [here][3] which makes Courier connection with a [HiveMQ][2] public broker.
 
 ### Download
 [![Maven Central](https://img.shields.io/maven-central/v/com.gojek.courier/courier.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.gojek.courier%22%20AND%20a:%courier%22)
@@ -154,3 +154,4 @@ All Courier modules except Paho are [MIT Licensed](LICENSE). Paho is [Eclipse Li
 
 [1]: https://medium.com/gojekengineering/courier-library-for-gojeks-information-superhighway-368dc5f052fa
 [2]: https://broker.mqttdashboard.com/
+[3]: https://github.com/gojek/courier-android/tree/main/app
