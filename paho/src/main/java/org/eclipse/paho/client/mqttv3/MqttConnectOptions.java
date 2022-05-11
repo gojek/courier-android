@@ -15,8 +15,11 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Properties;
 
 import javax.net.SocketFactory;
@@ -89,6 +92,8 @@ public class MqttConnectOptions
 	private int protocolLevel = 3;
 
 	private String[] serverURIs = null;
+
+	private List<UserProperty> userPropertyList;
 
 	/**
 	 * Constructs a new <code>MqttConnectOptions</code> object using the default values.
@@ -548,6 +553,14 @@ public class MqttConnectOptions
 
 	public int getProtocolLevel() {
 		return protocolLevel;
+	}
+
+	public List<UserProperty> getUserPropertyList() {
+		return userPropertyList;
+	}
+
+	public void setUserPropertyList(List<UserProperty> userPropertyList) {
+		this.userPropertyList = userPropertyList;
 	}
 
 	/**

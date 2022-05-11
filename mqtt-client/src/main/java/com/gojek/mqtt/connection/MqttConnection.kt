@@ -42,6 +42,7 @@ import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.MqttSecurityException
+import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty
 
 internal class MqttConnection(
     private val context: Context,
@@ -174,6 +175,7 @@ internal class MqttConnection(
             options!!.handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
             options!!.protocolName = mqttConnectOptions.version.protocolName
             options!!.protocolLevel = mqttConnectOptions.version.protocolLevel
+            options!!.userPropertyList = getUserPropertyList(connectOptions.userPropertiesMap)
             logger.d(TAG, "MQTT connecting on : " + mqtt!!.serverURI)
             updatePolicyParams = true
             connectStartTime = clock.nanoTime()
@@ -310,6 +312,14 @@ internal class MqttConnection(
             handleDisconnect()
             connectionConfig.connectionEventHandler.onMqttDisconnectComplete()
         }
+    }
+
+    private fun getUserPropertyList(userPropertiesMap: Map<String, String>): List<UserProperty> {
+        val userProperties = mutableListOf<UserProperty>()
+        userPropertiesMap.entries.forEach { entry ->
+            userProperties.add(UserProperty(entry.key, entry.value))
+        }
+        return userProperties
     }
 
     private fun isPasswordExpired(passwordExpiry: Long): Boolean {
