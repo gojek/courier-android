@@ -10,7 +10,7 @@ on:
 
 jobs:
   publish:
-    name: Release build and publish
+    name: Release build and publish artifacts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -52,3 +52,25 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
+
+  deploy:
+    name: Publish Github Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+
+      - name: Build website
+        run: |
+          cd docs
+          yarn install --frozen-lockfile
+          yarn build
+      - name: Release to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
