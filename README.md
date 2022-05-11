@@ -70,13 +70,13 @@ Declare a service interface for actions like Send, Receive, Subscribe, Unsubscri
 interface MessageService {
 	@Receive(topic = "topic/{id}/receive")
 	fun receive(@Path("id") identifier: String): Observable<Message>
-	
+
 	@Send(topic = "topic/{id}/send", qos = QoS.TWO)
 	fun send(@Path("id") identifier: String, @Data message: Message)
-	
+
 	@Subscribe(topic = "topic/{id}/receive", qos = QoS.ONE)
  	fun subscribe(@Path("id") identifier: String): Observable<Message>
- 	
+
 	@Unsubscribe(topics = ["topic/{id}/receive"])
  	fun unsubscribe(@Path("id") identifier: String)
 }
@@ -143,6 +143,29 @@ mqttClient.connect(connectOptions)
 ~~~ kotlin
 mqttClient.disconnect()
 ~~~
+
+## Non-standard Connection options
+
+### UserProperties in MqttConnectionOptions
+
+This option allows you to send user-properties in CONNECT packet for MQTT v3.1.1.
+
+~~~ kotlin
+val connectOptions = MqttConnectOptions(
+    serverUris = listOf(ServerUri(SERVER_URI, SERVER_PORT)),
+    clientId = clientId,
+    ...
+    userPropertiesMap = mapOf(
+                "key1" to "value1",
+                "key2" to "value2"
+    )
+)
+
+mqttClient.connect(connectOptions)
+~~~
+
+:warning: **
+This is a non-standard option. As far as the MQTT specification is concerned, user-properties support is added in MQTT v5. So to support this in MQTT v3.1.1, broker needs to have support for this as well.
 
 ## Contribution Guidelines
 
