@@ -10,7 +10,8 @@ data class MqttConnectOptions(
     val password: String,
     val isCleanSession: Boolean,
     val readTimeoutSecs: Int = -1,
-    val version: MqttVersion = VERSION_3_1_1
+    val version: MqttVersion = VERSION_3_1_1,
+    val userPropertiesMap: Map<String, String> = emptyMap()
 )
 
 enum class MqttVersion(internal val protocolName: String, internal val protocolLevel: Int) {

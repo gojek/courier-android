@@ -23,12 +23,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * An on-the-wire representation of an MQTT CONNECT message.
  */
 public class MqttConnect extends MqttWireMessage
 {
+
+	/** 38 - User Defined Pair (UTF-8 key value). */
+	public static final byte USER_DEFINED_PAIR_IDENTIFIER = 0x26;
 
 	public static String KEY = "Con";
 
@@ -49,6 +53,9 @@ public class MqttConnect extends MqttWireMessage
 	private int keepAliveInterval;
 
 	private String willDestination;
+
+	private List<UserProperty> userProperties;
+
 	/**
 	 * Constructor for an on the wire MQTT connect message
 	 * 
@@ -99,7 +106,18 @@ public class MqttConnect extends MqttWireMessage
 		dis.close();
 	}
 
-	public MqttConnect(String clientId, boolean cleanSession, int keepAliveInterval, String userName, char[] password, MqttMessage willMessage, String willDestination, String protocolName, int protocolLevel) {
+	public MqttConnect(
+			String clientId,
+			boolean cleanSession,
+			int keepAliveInterval,
+			String userName,
+			char[] password,
+			MqttMessage willMessage,
+			String willDestination,
+			String protocolName,
+			int protocolLevel,
+			List<UserProperty> userProperties
+	) {
 		super(MqttWireMessage.MESSAGE_TYPE_CONNECT);
 		this.protocolName = protocolName;
 		this.protocolLevel = protocolLevel;
@@ -110,6 +128,7 @@ public class MqttConnect extends MqttWireMessage
 		this.password = password;
 		this.willMessage = willMessage;
 		this.willDestination = willDestination;
+		this.userProperties = userProperties;
 	}
 
 	public String toString()
@@ -198,6 +217,15 @@ public class MqttConnect extends MqttWireMessage
 					encodeUTF8(dos, new String(password));
 				}
 			}
+
+			if (userProperties != null && !userProperties.isEmpty()) {
+				for (UserProperty property : userProperties) {
+					dos.writeByte(USER_DEFINED_PAIR_IDENTIFIER);
+					encodeUTF8(dos, property.getKey());
+					encodeUTF8(dos, property.getValue());
+				}
+			}
+
 			dos.flush();
 			return baos.toByteArray();
 		}

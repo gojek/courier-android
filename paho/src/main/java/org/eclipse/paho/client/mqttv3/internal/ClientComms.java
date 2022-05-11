@@ -287,7 +287,7 @@ public class ClientComms {
                 this.conOptions = options;
 
                 MqttConnect connect = new MqttConnect(client.getClientId(), options.isCleanSession(), options.getKeepAliveIntervalServer(), options.getUserName(), options.getPassword(),
-                        options.getWillMessage(), options.getWillDestination(), options.getProtocolName(), options.getProtocolLevel());
+                        options.getWillMessage(), options.getWillDestination(), options.getProtocolName(), options.getProtocolLevel(), options.getUserPropertyList());
 
                 this.clientState.setKeepAliveSecs(options.getKeepAliveInterval());
                 this.clientState.setCleanSession(options.isCleanSession());
