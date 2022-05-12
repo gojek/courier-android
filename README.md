@@ -1,3 +1,11 @@
+<p align="center">
+<img src="https://github.com/gojek/courier-android/blob/main/docs/static/img/courier-logo-full.svg#gh-light-mode-only" width="500"/>
+</p>
+
+<p align="center">
+<img src="https://github.com/gojek/courier-android/blob/main/docs/static/img/courier-logo-full.svg#gh-dark-mode-only" width="500"/>
+</p>
+
 ## About Courier
 
 Courier is a kotlin library for creating long running connections using MQTT protocol.
