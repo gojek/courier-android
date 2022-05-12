@@ -12,7 +12,7 @@ const config = {
   baseUrl: '/courier-android/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/courier-logo.ico',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -37,7 +37,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/gojek/courier-android/blob/docusauras/docs/',
+            'https://github.com/gojek/courier-android/edit/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -53,7 +53,7 @@ const config = {
         title: 'Courier',
         logo: {
           alt: 'Courier',
-          src: 'img/logo.svg',
+          src: 'img/courier-logo.svg',
         },
         items: [
           {
