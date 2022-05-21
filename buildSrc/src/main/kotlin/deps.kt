@@ -2,7 +2,7 @@
 
 object versions {
     const val jacoco = "0.8.6"
-    const val detekt = "1.7.4"
+    const val detekt = "1.18.0"
 
     const val kotlin = "1.4.30"
     const val agp = "7.0.3"

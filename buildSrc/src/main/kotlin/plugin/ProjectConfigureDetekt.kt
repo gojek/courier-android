@@ -17,9 +17,9 @@ internal fun Project.configureDetekt() {
         detekt {
             toolVersion = versions.detekt
             input = files(
-                "src/main/kotlin",
-                "src/test/kotlin",
-                "src/androidTest/kotlin"
+                "src/main/java",
+                "src/test/java",
+                "src/androidTest/java"
             )
             config = files(configFile)
             reports {

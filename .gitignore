@@ -8,3 +8,4 @@
 .externalNativeBuild
 .cxx
 *.exec
+report/
