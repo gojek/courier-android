@@ -24,11 +24,13 @@ class OptimalKeepAliveProviderTest {
 
     @Before
     fun setup() {
-        whenever(keepAliveCalculatorFactory.create(
-            context = context,
-            adaptiveKeepAliveConfig = adaptiveKeepAliveConfig,
-            optimalKeepAliveObserver = optimalKeepAliveObserver
-        )).thenReturn(keepAliveCalculator)
+        whenever(
+            keepAliveCalculatorFactory.create(
+                context = context,
+                adaptiveKeepAliveConfig = adaptiveKeepAliveConfig,
+                optimalKeepAliveObserver = optimalKeepAliveObserver
+            )
+        ).thenReturn(keepAliveCalculator)
 
         optimalKeepAliveProvider = OptimalKeepAliveProvider(
             context = context,
@@ -43,7 +45,7 @@ class OptimalKeepAliveProviderTest {
         val optimalKeepAliveMinutes = 5
         whenever(keepAliveCalculator.getOptimalKeepAlive()).thenReturn(optimalKeepAliveMinutes)
 
-        assertEquals(optimalKeepAliveMinutes*60, optimalKeepAliveProvider.getOptimalKASecondsForCurrentNetwork())
+        assertEquals(optimalKeepAliveMinutes * 60, optimalKeepAliveProvider.getOptimalKASecondsForCurrentNetwork())
 
         verify(keepAliveCalculator).getOptimalKeepAlive()
     }

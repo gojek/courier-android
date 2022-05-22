@@ -44,7 +44,7 @@ internal class MqttChuckRepositoryImpl(
                 mqttTransactionDao.insert(mqttTransaction)
                     .map { id ->
                         mqttTransaction.copy(
-                            id = if(id == -1L) 0 else id
+                            id = if (id == -1L) 0 else id
                         )
                     }
                     .toObservable()

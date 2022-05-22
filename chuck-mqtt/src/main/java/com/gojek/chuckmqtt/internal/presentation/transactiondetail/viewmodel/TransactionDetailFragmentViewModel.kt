@@ -10,7 +10,6 @@ import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.Transacti
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.GetTransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.ShareTransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult.*
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult.GetTransactionResult.GetTransactionLoadSuccess
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult.GetTransactionResult.GetTransactionLoading
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailViewEffect
@@ -73,7 +72,7 @@ internal class TransactionDetailFragmentViewModel(
                     TransactionDetailViewState.reset(prevState)
                         .copy(showLoadingView = true)
                 }
-                is ShareTransactionDetailResult -> prevState
+                is TransactionDetailResult.ShareTransactionDetailResult -> prevState
             }
         }
 
@@ -82,8 +81,8 @@ internal class TransactionDetailFragmentViewModel(
     }
 
     private fun effectFromResult(result: TransactionDetailResult): TransactionDetailViewEffect? {
-        return when(result) {
-            is ShareTransactionDetailResult -> {
+        return when (result) {
+            is TransactionDetailResult.ShareTransactionDetailResult -> {
                 ShareTransactionDetailViewEffect(result.transaction)
             }
             else -> null
@@ -107,4 +106,3 @@ internal class TransactionDetailFragmentViewModel(
         super.onCleared()
     }
 }
-

@@ -17,8 +17,8 @@ import androidx.core.text.HtmlCompat
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.base.fragment.FoodMviBaseFragment
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.ShareTransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.GetTransactionDetailIntent
+import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.ShareTransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailViewEffect
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailViewState
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.viewmodel.TransactionDetailFragmentViewModel
@@ -28,13 +28,13 @@ import com.gojek.chuckmqtt.internal.utils.highlightWithDefinedColors
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
-import kotlin.reflect.KClass
 import kotlinx.android.synthetic.main.activity_transaction_detail.send_receive_view
 import kotlinx.android.synthetic.main.activity_transaction_detail.toolbar_title
 import kotlinx.android.synthetic.main.fragment_transaction_detail.copy
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_body
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_info
 import kotlinx.android.synthetic.main.fragment_transaction_detail.transaction_detail_loader
+import kotlin.reflect.KClass
 
 internal class TransactionDetailFragment :
     FoodMviBaseFragment<TransactionDetailIntent, TransactionDetailViewState, TransactionDetailFragmentViewModel>(),
@@ -57,7 +57,8 @@ internal class TransactionDetailFragment :
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_transaction_detail, container, false)
@@ -74,7 +75,7 @@ internal class TransactionDetailFragment :
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.mqtt_chuck_transaction, menu)
         val searchMenuItem = menu.findItem(R.id.mqtt_search)
-        if(searchMenuItemVisible) {
+        if (searchMenuItemVisible) {
             searchMenuItem.isVisible = true
 
             val searchView = searchMenuItem.actionView as SearchView
@@ -109,7 +110,7 @@ internal class TransactionDetailFragment :
             transaction_detail_loader.hide()
         }
 
-        if(state.transaction.packetName == "PUBLISH") {
+        if (state.transaction.packetName == "PUBLISH") {
             searchMenuItemVisible = true
             requireActivity().invalidateOptionsMenu()
         }
@@ -163,7 +164,7 @@ internal class TransactionDetailFragment :
     }
 
     private fun handleViewEffects(effect: TransactionDetailViewEffect) {
-        when(effect) {
+        when (effect) {
             is TransactionDetailViewEffect.ShareTransactionDetailViewEffect -> {
                 share(effect.mqttTransactionUiModel.shareText)
             }

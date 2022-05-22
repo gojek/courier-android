@@ -53,7 +53,7 @@ internal class StubInterface(
         }
 
         private fun Class<*>.findStubMethods(): Map<Method, StubMethod> {
-            //Remove all default methods
+            // Remove all default methods
             val methods = declaredMethods.filterNot { runtimePlatform.isDefaultMethod(it) }
             val stubMethods = methods.mapNotNull { stubMethodFactory.create(it) }
             return methods.zip(stubMethods).toMap()

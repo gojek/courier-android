@@ -12,4 +12,4 @@ import com.gojek.courier.QoS
 annotation class Send(
     val topic: String,
     val qos: QoS = QoS.ZERO
-) 
+)

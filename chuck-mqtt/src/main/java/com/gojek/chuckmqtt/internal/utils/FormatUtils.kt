@@ -21,10 +21,10 @@ internal fun formatByteCount(bytes: Long, si: Boolean): String {
 }
 
 internal fun formatBody(body: String): String {
-     return try {
-         val je = JsonParser.parseString(body)
-         JsonConverter.instance.toJson(je)
-     } catch (e: Exception) {
-         body
-     }
+    return try {
+        val je = JsonParser.parseString(body)
+        JsonConverter.instance.toJson(je)
+    } catch (e: Exception) {
+        body
+    }
 }

@@ -4,7 +4,7 @@ internal class SendArgumentProcessor(
     private val pathMap: Map<String, Int>,
     private val topic: String,
     private val dataParameterIndex: Int
-): ArgumentProcessor() {
+) : ArgumentProcessor() {
     private var parsedTopic = topic
 
     override fun inject(args: Array<Any>) {

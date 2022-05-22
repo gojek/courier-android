@@ -20,7 +20,7 @@ internal class WorkManagerPingSender(
     private lateinit var logger: ILogger
 
     private var pingSenderEvents: IPingSenderEvents = NoOpPingSenderEvents()
-    
+
     override fun init(
         comms: ClientComms,
         logger: ILogger

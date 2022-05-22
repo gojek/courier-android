@@ -54,7 +54,7 @@ class WorkManagerPingSenderAdaptiveTest {
         pingSender.start()
 
         verify(pingWorkScheduler).schedulePingWork(keepAlive.keepAliveMillis(), timeoutSeconds)
-        verify(pingSenderEvents).mqttPingScheduled(keepAlive.keepAliveMillis()/1000, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).mqttPingScheduled(keepAlive.keepAliveMillis() / 1000, keepAlive.keepAliveMillis() / 1000)
     }
 
     @Test
@@ -80,8 +80,8 @@ class WorkManagerPingSenderAdaptiveTest {
             // do nothing
         }
 
-        verify(pingSenderEvents).mqttPingInitiated(testUri, keepAlive.keepAliveMillis()/1000)
-        verify(pingSenderEvents).pingMqttTokenNull(testUri, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).mqttPingInitiated(testUri, keepAlive.keepAliveMillis() / 1000)
+        verify(pingSenderEvents).pingMqttTokenNull(testUri, keepAlive.keepAliveMillis() / 1000)
     }
 
     @Test
@@ -109,17 +109,17 @@ class WorkManagerPingSenderAdaptiveTest {
             success = it
         }
 
-        verify(pingSenderEvents).mqttPingInitiated(testUri, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).mqttPingInitiated(testUri, keepAlive.keepAliveMillis() / 1000)
 
         val argumentCaptor = argumentCaptor<IMqttActionListener>()
         verify(mqttToken).actionCallback = argumentCaptor.capture()
         argumentCaptor.lastValue.onSuccess(mqttToken)
         assertTrue(success!!)
-        verify(pingSenderEvents).pingEventSuccess(testUri, 10, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).pingEventSuccess(testUri, 10, keepAlive.keepAliveMillis() / 1000)
         verify(keepAliveCalculator).onKeepAliveSuccess(keepAlive)
 
         verify(pingWorkScheduler).schedulePingWork(keepAlive.keepAliveMillis(), timeoutSeconds)
-        verify(pingSenderEvents).mqttPingScheduled(keepAlive.keepAliveMillis()/1000, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).mqttPingScheduled(keepAlive.keepAliveMillis() / 1000, keepAlive.keepAliveMillis() / 1000)
     }
 
     @Test
@@ -144,13 +144,13 @@ class WorkManagerPingSenderAdaptiveTest {
             success = it
         }
 
-        verify(pingSenderEvents).mqttPingInitiated(testUri, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).mqttPingInitiated(testUri, keepAlive.keepAliveMillis() / 1000)
 
         val argumentCaptor = argumentCaptor<IMqttActionListener>()
         verify(mqttToken).actionCallback = argumentCaptor.capture()
         val exception = Exception("test")
         argumentCaptor.lastValue.onFailure(mqttToken, exception)
         assertFalse(success!!)
-        verify(pingSenderEvents).pingEventFailure(testUri, 10, exception, keepAlive.keepAliveMillis()/1000)
+        verify(pingSenderEvents).pingEventFailure(testUri, 10, exception, keepAlive.keepAliveMillis() / 1000)
     }
 }

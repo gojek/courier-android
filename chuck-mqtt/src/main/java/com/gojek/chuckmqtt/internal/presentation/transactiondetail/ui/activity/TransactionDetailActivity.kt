@@ -43,5 +43,4 @@ internal class TransactionDetailActivity : BaseChuckMqttActivity() {
             context.startActivity(intent)
         }
     }
-
 }

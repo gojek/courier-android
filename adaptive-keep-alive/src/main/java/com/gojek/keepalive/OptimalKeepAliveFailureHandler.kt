@@ -5,7 +5,7 @@ import androidx.annotation.RestrictTo
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 class OptimalKeepAliveFailureHandler(
     private val optimalKeepAliveProvider: OptimalKeepAliveProvider
-): KeepAliveFailureHandler {
+) : KeepAliveFailureHandler {
     override fun handleKeepAliveFailure() {
         optimalKeepAliveProvider.onOptimalKeepAliveFailure()
     }

@@ -2,7 +2,7 @@ package com.gojek.chuckmqtt.internal.presentation.base.activity
 
 import androidx.appcompat.app.AppCompatActivity
 
-internal abstract class BaseChuckMqttActivity: AppCompatActivity() {
+internal abstract class BaseChuckMqttActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()

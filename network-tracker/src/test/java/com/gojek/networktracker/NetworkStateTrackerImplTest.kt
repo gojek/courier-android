@@ -2,14 +2,19 @@ package com.gojek.networktracker
 
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.ConnectivityManager.CONNECTIVITY_ACTION
 import android.net.ConnectivityManager.NetworkCallback
 import com.gojek.courier.logging.ILogger
 import com.gojek.networktracker.model.NetworkState
 import com.gojek.networktracker.util.BuildInfoProvider
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doNothing
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -133,7 +138,7 @@ class NetworkStateTrackerImplTest {
     fun `test isNetworkCallbackSupported should invoke buildInfoProvider`() {
         networkStateTracker.isNetworkCallbackSupported()
 
-        //Invoked once in init block
+        // Invoked once in init block
         verify(buildInfoProvider, times(2)).isAndroidNAndAbove()
     }
 }

@@ -8,14 +8,14 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 @RunWith(MockitoJUnitRunner::class)
 class AdaptiveKeepAliveStateHandlerTest {
@@ -103,7 +103,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         setOldNetworkInfo()
         whenever(keepAlivePersistence.has(getCurrentNetworkKey())).thenReturn(true)
         whenever(keepAlivePersistence.get(getCurrentNetworkKey()))
-            .thenReturn(getKeepAlivePersistenceModel(lowerBound, upperBound+1))
+            .thenReturn(getKeepAlivePersistenceModel(lowerBound, upperBound + 1))
 
         val oldKeepAlive = adaptiveKeepAliveStateHandler.getCurrentKeepAlive()
         adaptiveKeepAliveStateHandler.onNetworkChanged(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
@@ -121,7 +121,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         setOldNetworkInfo()
         whenever(keepAlivePersistence.has(getCurrentNetworkKey())).thenReturn(true)
         whenever(keepAlivePersistence.get(getCurrentNetworkKey()))
-            .thenReturn(getKeepAlivePersistenceModel(lowerBound+1, upperBound))
+            .thenReturn(getKeepAlivePersistenceModel(lowerBound + 1, upperBound))
 
         val oldKeepAlive = adaptiveKeepAliveStateHandler.getCurrentKeepAlive()
         adaptiveKeepAliveStateHandler.onNetworkChanged(CURRENT_NETWORK_TYPE, CURRENT_NETWORK)
@@ -644,13 +644,13 @@ class AdaptiveKeepAliveStateHandlerTest {
     }
 
     private fun verifyCurrentNetworkInfo() {
-        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkName , CURRENT_NETWORK)
-        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkType , CURRENT_NETWORK_TYPE)
+        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkName, CURRENT_NETWORK)
+        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkType, CURRENT_NETWORK_TYPE)
     }
 
     private fun verifyOldNetworkInfo() {
-        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkName , OLD_NETWORK)
-        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkType , OLD_NETWORK_TYPE)
+        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkName, OLD_NETWORK)
+        assertEquals(adaptiveKeepAliveStateHandler.state.currentNetworkType, OLD_NETWORK_TYPE)
     }
 
     private fun getKeepAlivePersistenceModel(lowerBound: Int, upperBound: Int): KeepAlivePersistenceModel {

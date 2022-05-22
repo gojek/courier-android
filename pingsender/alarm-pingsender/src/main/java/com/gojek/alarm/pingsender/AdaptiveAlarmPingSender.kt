@@ -99,7 +99,7 @@ internal class AdaptiveAlarmPingSender(
             val alarmManager =
                 applicationContext.getSystemService(Service.ALARM_SERVICE) as AlarmManager
 
-            //pending intent can be null if we get a security exception in onstart-->defensive check
+            // pending intent can be null if we get a security exception in onstart-->defensive check
             if (pendingIntent != null) {
                 alarmManager.cancel(pendingIntent)
             }
@@ -115,7 +115,7 @@ internal class AdaptiveAlarmPingSender(
             try {
                 applicationContext.unregisterReceiver(alarmReceiver)
             } catch (e: IllegalArgumentException) {
-                //Ignore unregister errors.
+                // Ignore unregister errors.
             }
         }
     }
@@ -130,7 +130,7 @@ internal class AdaptiveAlarmPingSender(
         adaptiveKeepAlive = keepAliveCalculator.getUnderTrialKeepAlive()
         val delayInMilliseconds = adaptiveKeepAlive.keepAliveMillis()
         try {
-            val nextAlarmInMilliseconds = if(pingSenderConfig.useElapsedRealTimeAlarm) {
+            val nextAlarmInMilliseconds = if (pingSenderConfig.useElapsedRealTimeAlarm) {
                 SystemClock.elapsedRealtime() + delayInMilliseconds
             } else {
                 System.currentTimeMillis() + delayInMilliseconds
@@ -249,10 +249,10 @@ internal class AdaptiveAlarmPingSender(
                 override fun onSuccess(asyncActionToken: IMqttToken) {
                     logger.d(
                         TAG,
-                        "Success. Release lock(" + wakeLockTag + "):"
-                                + System.currentTimeMillis()
+                        "Success. Release lock(" + wakeLockTag + "):" +
+                            System.currentTimeMillis()
                     )
-                    //Release wakelock when it is done.
+                    // Release wakelock when it is done.
                     if (wakelock != null && wakelock!!.isHeld) {
                         wakelock!!.release()
                     }
@@ -269,10 +269,10 @@ internal class AdaptiveAlarmPingSender(
                 ) {
                     logger.w(
                         TAG,
-                        "Failure. Release lock(" + wakeLockTag + "):"
-                                + System.currentTimeMillis()
+                        "Failure. Release lock(" + wakeLockTag + "):" +
+                            System.currentTimeMillis()
                     )
-                    //Release wakelock when it is done.
+                    // Release wakelock when it is done.
                     if (wakelock != null && wakelock!!.isHeld) {
                         wakelock!!.release()
                     }
@@ -290,7 +290,7 @@ internal class AdaptiveAlarmPingSender(
         private const val MQTT = "com.gojek.mqtt.adaptive"
         private const val PING_SENDER = "$MQTT.pingSender"
 
-        //Constant for wakelock
+        // Constant for wakelock
         private const val PING_WAKELOCK = "$MQTT.client"
         private const val wakeLockTag = PING_WAKELOCK
     }

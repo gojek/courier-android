@@ -10,10 +10,13 @@ ext {
     set("PUBLISH_ARTIFACT_ID", "workmanager-pingsender")
     set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.8")
-    set("fileFilter", listOf(
-        "**/**Factory*",
-        "**/**Config*"
-    ))
+    set(
+        "fileFilter",
+        listOf(
+            "**/**Factory*",
+            "**/**Config*"
+        )
+    )
 }
 
 plugins {

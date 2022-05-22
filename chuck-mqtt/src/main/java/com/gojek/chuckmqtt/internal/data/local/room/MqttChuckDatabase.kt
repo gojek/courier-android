@@ -20,6 +20,4 @@ internal abstract class MqttChuckDatabase : RoomDatabase() {
                 .build()
         }
     }
-
-
 }

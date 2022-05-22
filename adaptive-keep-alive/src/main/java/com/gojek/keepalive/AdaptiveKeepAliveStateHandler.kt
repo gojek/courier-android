@@ -140,7 +140,7 @@ internal class AdaptiveKeepAliveStateHandler(
         val keepAlive = minOf(state.lastSuccessfulKA + state.currentStep, state.currentUpperBound)
         state = if (keepAlive == state.currentKA) {
             state.copy(
-                currentKAFailureCount = state.currentKAFailureCount+1
+                currentKAFailureCount = state.currentKAFailureCount + 1
             )
         } else {
             state.copy(
@@ -186,9 +186,9 @@ internal class AdaptiveKeepAliveStateHandler(
     }
 
     fun isValidKeepAlive(keepAlive: KeepAlive): Boolean {
-        return keepAlive.networkType == state.currentNetworkType
-                && keepAlive.networkName == state.currentNetworkName
-                && keepAlive.keepAliveMinutes == state.currentKA
+        return keepAlive.networkType == state.currentNetworkType &&
+            keepAlive.networkName == state.currentNetworkName &&
+            keepAlive.keepAliveMinutes == state.currentKA
     }
 
     @VisibleForTesting

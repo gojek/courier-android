@@ -52,7 +52,7 @@ class PingWorkSchedulerTest {
     }
 }
 
-internal class TestPingWorkScheduler(workManager: WorkManager): PingWorkScheduler(workManager) {
+internal class TestPingWorkScheduler(workManager: WorkManager) : PingWorkScheduler(workManager) {
     override val workName: String
         get() = "test-work"
     override val workerClass: Class<out Worker>

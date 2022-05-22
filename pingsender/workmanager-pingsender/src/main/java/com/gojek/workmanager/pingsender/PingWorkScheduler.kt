@@ -25,7 +25,7 @@ internal abstract class PingWorkScheduler(private val workManager: WorkManager) 
             workName
         )
     }
-    
+
     abstract val workName: String
     abstract val workerClass: Class<out Worker>
 }

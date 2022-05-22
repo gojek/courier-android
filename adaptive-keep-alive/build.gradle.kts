@@ -10,14 +10,17 @@ ext {
     set("PUBLISH_ARTIFACT_ID", "adaptive-keep-alive")
     set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.9")
-    set("fileFilter", listOf(
-        "**/utils/**",
-        "**/model/**",
-        "**/config/**",
-        "**/constants/**",
-        "**/**NoOp*",
-        "**/**Factory*"
-    ))
+    set(
+        "fileFilter",
+        listOf(
+            "**/utils/**",
+            "**/model/**",
+            "**/config/**",
+            "**/constants/**",
+            "**/**NoOp*",
+            "**/**Factory*"
+        )
+    )
 }
 
 plugins {

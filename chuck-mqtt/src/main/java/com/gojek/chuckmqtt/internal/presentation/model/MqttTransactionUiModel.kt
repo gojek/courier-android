@@ -25,4 +25,3 @@ internal data class MqttTransactionUiModel(
         )
     }
 }
-

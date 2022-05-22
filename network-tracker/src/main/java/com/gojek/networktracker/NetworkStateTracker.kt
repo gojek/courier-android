@@ -35,7 +35,7 @@ internal class NetworkStateTrackerImpl(
     private val mAppContext: Context,
     private val logger: ILogger,
     private val buildInfoProvider: BuildInfoProvider = BuildInfoProvider()
-): NetworkStateTracker {
+) : NetworkStateTracker {
     private val mConnectivityManager =
         mAppContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -74,7 +74,8 @@ internal class NetworkStateTrackerImpl(
             if (mListeners.add(listener) && mListeners.size == 1) {
                 mCurrentState = getInitialState()
                 logger.d(
-                    "NetworkStateTracker", String.format(
+                    "NetworkStateTracker",
+                    String.format(
                         "%s: initial state = %s",
                         javaClass.simpleName,
                         mCurrentState
@@ -192,7 +193,6 @@ internal class NetworkStateTrackerImpl(
         }
     }
 
-
     @VisibleForTesting
     internal fun isNetworkCallbackSupported(): Boolean {
         return buildInfoProvider.isAndroidNAndAbove()
@@ -216,8 +216,10 @@ internal class NetworkStateTrackerImpl(
             val network: Network? = mConnectivityManager.activeNetwork
             val capabilities =
                 mConnectivityManager.getNetworkCapabilities(network)
-            (capabilities != null
-                    && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
+            (
+                capabilities != null &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                )
         } catch (exception: SecurityException) {
             // b/163342798
             logger.e("NetworkStateTracker", "Unable to validate active network", exception)
@@ -229,7 +231,8 @@ internal class NetworkStateTrackerImpl(
     @VisibleForTesting
     internal inner class NetworkStateCallback : NetworkCallback() {
         override fun onCapabilitiesChanged(
-            @NonNull network: Network, @NonNull capabilities: NetworkCapabilities
+            @NonNull network: Network,
+            @NonNull capabilities: NetworkCapabilities
         ) {
             // The Network parameter is unreliable when a VPN app is running - use active network.
             logger.d(

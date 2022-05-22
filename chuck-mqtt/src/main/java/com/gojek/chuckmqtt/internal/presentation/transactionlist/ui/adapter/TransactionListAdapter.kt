@@ -56,7 +56,7 @@ internal class TransactionListAdapter(
                     mqtt_content.text = packetPreview
                     chucker_time_start.text = transmissionTime
                     chucker_size.text = bytesString
-                    if(isSent) {
+                    if (isSent) {
                         send_receive_view.setImageResource(R.drawable.mqtt_ic_message_sent)
                     } else {
                         send_receive_view.setImageResource(R.drawable.mqtt_ic_message_received)
@@ -73,15 +73,17 @@ internal class TransactionListAdapter(
         val previousList = transactions
         this.transactions = transactionListNew
 
-        DiffUtil.calculateDiff(GenericDiffUtilCallback(
-            oldList = previousList,
-            newList = transactionListNew,
-            itemComparator = { old, new ->
-                old == new
-            },
-            itemContentComparator = { old, new ->
-                old == new
-            }
-        )).dispatchUpdatesTo(this)
+        DiffUtil.calculateDiff(
+            GenericDiffUtilCallback(
+                oldList = previousList,
+                newList = transactionListNew,
+                itemComparator = { old, new ->
+                    old == new
+                },
+                itemContentComparator = { old, new ->
+                    old == new
+                }
+            )
+        ).dispatchUpdatesTo(this)
     }
 }

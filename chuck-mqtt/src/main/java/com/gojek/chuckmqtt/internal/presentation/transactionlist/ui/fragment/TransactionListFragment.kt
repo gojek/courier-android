@@ -25,9 +25,9 @@ import com.gojek.chuckmqtt.internal.utils.extensions.ifTrue
 import com.gojek.chuckmqtt.internal.utils.extensions.show
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
-import kotlin.reflect.KClass
 import kotlinx.android.synthetic.main.fragment_transaction_list.transaction_list
 import kotlinx.android.synthetic.main.fragment_transaction_list.transaction_list_loader
+import kotlin.reflect.KClass
 
 internal class TransactionListFragment :
     FoodMviBaseFragment<TransactionListIntent, TransactionListViewState, TransactionListFragmentViewModel>() {
@@ -42,7 +42,8 @@ internal class TransactionListFragment :
         setHasOptionsMenu(true)
     }
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_transaction_list, container, false)
@@ -104,7 +105,6 @@ internal class TransactionListFragment :
         @JvmStatic
         fun newInstance() = TransactionListFragment()
     }
-
 
     override fun intents(): Observable<TransactionListIntent> {
         return intents

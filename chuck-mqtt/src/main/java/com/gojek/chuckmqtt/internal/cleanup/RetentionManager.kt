@@ -54,7 +54,7 @@ internal class RetentionManager @JvmOverloads constructor(
     private fun getLastCleanup(now: Long): Long {
         if (lastCleanup == 0L) {
             val storedLastCleanupTime = prefs.getLong(KEY_LAST_CLEANUP, 0L)
-            if( storedLastCleanupTime == 0L) {
+            if (storedLastCleanupTime == 0L) {
                 updateLastCleanup(now)
             } else {
                 lastCleanup = storedLastCleanupTime

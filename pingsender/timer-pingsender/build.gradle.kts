@@ -10,9 +10,12 @@ ext {
     set("PUBLISH_ARTIFACT_ID", "timer-pingsender")
     set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.9")
-    set("fileFilter", listOf(
-        "**/**Factory*"
-    ))
+    set(
+        "fileFilter",
+        listOf(
+            "**/**Factory*"
+        )
+    )
 }
 
 plugins {

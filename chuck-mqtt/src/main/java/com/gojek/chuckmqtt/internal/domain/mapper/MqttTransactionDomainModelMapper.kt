@@ -22,5 +22,4 @@ internal class MqttTransactionDomainModelMapper : Mapper<MqttTransaction, MqttTr
     private fun mqttWireMessageFromBytes(mqttWireMessageBytes: ByteArray): MqttWireMessage {
         return MqttWireMessage.createWireMessage(mqttWireMessageBytes, null)
     }
-
 }

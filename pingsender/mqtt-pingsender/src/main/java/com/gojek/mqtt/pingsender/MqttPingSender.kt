@@ -3,7 +3,6 @@ package com.gojek.mqtt.pingsender
 import androidx.annotation.RestrictTo
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.internal.ClientComms
-
 import org.eclipse.paho.client.mqttv3.MqttPingSender as PahoPingSender
 
 interface MqttPingSender {

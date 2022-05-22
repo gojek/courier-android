@@ -12,12 +12,12 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
-import kotlin.test.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
+import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
 class OptimalKeepAliveCalculatorTest {

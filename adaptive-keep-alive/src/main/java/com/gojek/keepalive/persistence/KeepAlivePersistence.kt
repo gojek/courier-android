@@ -14,7 +14,7 @@ internal interface KeepAlivePersistence {
 internal class KeepAlivePersistenceImpl(
     private val sharedPreferences: CourierSharedPreferences,
     private val gson: Gson
-): KeepAlivePersistence {
+) : KeepAlivePersistence {
 
     override fun has(key: String): Boolean {
         return sharedPreferences.has(key)
