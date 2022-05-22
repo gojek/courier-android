@@ -1,12 +1,10 @@
 package com.gojek.mqtt.connection
 
 import com.gojek.courier.QoS
-import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.mqtt.client.IMessageReceiveListener
-import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.client.model.MqttSendPacket
+import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.policies.hostfallback.IHostFallbackPolicy
-import com.gojek.mqtt.subscription.SubscriptionStoreListener
 
 internal interface IMqttConnection {
     fun connect(

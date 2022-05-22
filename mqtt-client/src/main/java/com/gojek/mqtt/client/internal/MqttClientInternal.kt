@@ -20,7 +20,6 @@ import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 import com.gojek.networktracker.NetworkStateTrackerFactory
-
 import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
 
 internal class MqttClientInternal(
@@ -124,7 +123,7 @@ internal class MqttClientInternal(
                 val keepAliveSeconds =
                     optimalKeepAliveProvider!!.getOptimalKASecondsForCurrentNetwork()
 
-                if (keepAliveSeconds != 0) { //Optimal keep alive is already known
+                if (keepAliveSeconds != 0) { // Optimal keep alive is already known
                     keepAliveFailureHandler =
                         OptimalKeepAliveFailureHandler(optimalKeepAliveProvider!!)
                     keepAliveProvider = OptimalKeepAliveProvider(keepAliveSeconds)

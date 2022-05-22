@@ -26,7 +26,6 @@ import com.gojek.mqtt.event.MqttEvent.SSLSocketSuccessEvent
 import com.gojek.mqtt.event.MqttEvent.SocketConnectAttemptEvent
 import com.gojek.mqtt.event.MqttEvent.SocketConnectFailureEvent
 import com.gojek.mqtt.event.MqttEvent.SocketConnectSuccessEvent
-import com.gojek.mqtt.exception.CourierException
 import com.gojek.mqtt.exception.toCourierException
 import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.network.NetworkHandler

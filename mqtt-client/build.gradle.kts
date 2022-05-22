@@ -10,15 +10,18 @@ ext {
     set("PUBLISH_ARTIFACT_ID", "mqtt-client")
     set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.1")
-    set("fileFilter", listOf(
-        "**/logging/**",
-        "**/utils/**",
-        "**/factory/**",
-        "**/config/**",
-        "**/model/**",
-        "**/constants/**",
-        "**/**Config*"
-    ))
+    set(
+        "fileFilter",
+        listOf(
+            "**/logging/**",
+            "**/utils/**",
+            "**/factory/**",
+            "**/config/**",
+            "**/model/**",
+            "**/constants/**",
+            "**/**Config*"
+        )
+    )
 }
 
 plugins {

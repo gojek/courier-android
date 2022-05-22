@@ -12,7 +12,7 @@ import com.gojek.mqtt.pingsender.IPingSenderEvents
 
 internal class PingEventHandler(
     private val eventHandler: EventHandler
-): IPingSenderEvents {
+) : IPingSenderEvents {
     override fun exceptionInStart(e: Exception) {
         eventHandler.onEvent(
             MqttPingExceptionEvent(

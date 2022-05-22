@@ -22,7 +22,8 @@ internal class HostFallbackPolicy(
 
     override fun onConnectFailure(exception: Throwable) {
         if (exception is MqttException &&
-            exception.reasonCode.toShort() == REASON_CODE_CLIENT_EXCEPTION) {
+            exception.reasonCode.toShort() == REASON_CODE_CLIENT_EXCEPTION
+        ) {
             currentIndex = (currentIndex + 1) % serverUriList.size
         }
     }

@@ -26,26 +26,26 @@ class HostFallbackPolicyTest {
         )
         hostFallbackPolicy = HostFallbackPolicy(serverUris)
 
-        //Test getServerUri should return the serverUri at index 0 for the first time
+        // Test getServerUri should return the serverUri at index 0 for the first time
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
 
-        //Test onConnectFailure with non MqttException should not change the index
+        // Test onConnectFailure with non MqttException should not change the index
         hostFallbackPolicy.onConnectFailure(Exception("Test"))
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
 
-        //Test onConnectFailure with MqttException (rc != 0) should not change the index
+        // Test onConnectFailure with MqttException (rc != 0) should not change the index
         hostFallbackPolicy.onConnectFailure(MqttException(3000))
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
 
-        //Test onConnectFailure with MqttException (rc = 0) should change the index
+        // Test onConnectFailure with MqttException (rc = 0) should change the index
         hostFallbackPolicy.onConnectFailure(MqttException(0))
         assertEquals("ssl://test_uri:2000", hostFallbackPolicy.getServerUri().toString())
 
-        //Test onConnectFailure with MqttException (rc = 0) should change the index
+        // Test onConnectFailure with MqttException (rc = 0) should change the index
         hostFallbackPolicy.onConnectFailure(MqttException(0))
         assertEquals("ssl://test_uri2:1000", hostFallbackPolicy.getServerUri().toString())
 
-        //Test onConnectFailure with MqttException (rc = 0) should bring the index to 0
+        // Test onConnectFailure with MqttException (rc = 0) should bring the index to 0
         hostFallbackPolicy.onConnectFailure(MqttException(0))
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
     }
@@ -65,5 +65,4 @@ class HostFallbackPolicyTest {
         hostFallbackPolicy.resetParams()
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
     }
-
 }

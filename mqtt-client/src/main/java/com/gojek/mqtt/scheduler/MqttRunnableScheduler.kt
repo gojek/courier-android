@@ -4,8 +4,8 @@ import android.os.Handler
 import android.os.HandlerThread
 import com.gojek.courier.QoS
 import com.gojek.courier.logging.ILogger
-import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.client.IClientSchedulerBridge
+import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.HandlerThreadNotAliveEvent
 import com.gojek.mqtt.policies.connectretrytime.ConnectRetryTimeConfig
@@ -124,7 +124,6 @@ internal class MqttRunnableScheduler(
         } catch (ex: Exception) {
             logger.e(TAG, "Exception scheduleUnsubscribe", ex)
         }
-
     }
 
     override fun scheduleResetParams(delayMillis: Long) {

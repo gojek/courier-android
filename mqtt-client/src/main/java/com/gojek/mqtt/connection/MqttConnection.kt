@@ -155,7 +155,7 @@ internal class MqttConnection(
             if (options == null) {
                 options = MqttConnectOptions()
             }
-            //Setting some connection options which we need to reset on every connect
+            // Setting some connection options which we need to reset on every connect
             if (isSSL()) {
                 options!!.socketFactory = connectionConfig.socketFactory
             } else {
@@ -167,10 +167,10 @@ internal class MqttConnection(
             options!!.keepAliveInterval = connectOptions.keepAlive.timeSeconds
             options!!.keepAliveIntervalServer = connectOptions.keepAlive.timeSeconds
             options!!.readTimeout = if (connectOptions.readTimeoutSecs == -1) {
-                                        connectOptions.keepAlive.timeSeconds + 60
-                                    } else {
-                                        connectOptions.readTimeoutSecs
-                                    }
+                connectOptions.keepAlive.timeSeconds + 60
+            } else {
+                connectOptions.readTimeoutSecs
+            }
             options!!.connectionTimeout = connectTimeoutPolicy.getConnectTimeOut()
             options!!.handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
             options!!.protocolName = mqttConnectOptions.version.protocolName
@@ -249,7 +249,8 @@ internal class MqttConnection(
                     val packet = token.userContext as MqttSendPacket
                     messageSendListener.notifyWrittenOnSocket(packet)
                 }
-            })
+            }
+        )
     }
 
     override fun handleException(exception: Exception?, reconnect: Boolean) {
@@ -467,7 +468,7 @@ internal class MqttConnection(
     }
 
     override fun unsubscribe(topics: Set<String>) {
-        if(topics.isNotEmpty()) {
+        if (topics.isNotEmpty()) {
             val unsubscribeStartTime = clock.nanoTime()
             try {
                 logger.d(TAG, "Unsubscribing to topics: $topics")
@@ -505,7 +506,7 @@ internal class MqttConnection(
                     logger.e(TAG, "Subscribe unsuccessful. Will retry again")
                     runnableScheduler.scheduleSubscribe(10, topicMap)
                 } else {
-                    //Reconnect
+                    // Reconnect
                     logger.e(TAG, "Subscribe unsuccessful. Will reconnect again")
                     val context = iMqttToken.userContext as MqttContext
                     connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
@@ -540,7 +541,7 @@ internal class MqttConnection(
                     logger.e(TAG, "Unsubscribe unsuccessful. Will retry again")
                     runnableScheduler.scheduleUnsubscribe(10, topics)
                 } else {
-                    //Reconnect
+                    // Reconnect
                     logger.e(TAG, "Unsubscribe unsuccessful. Will reconnect again")
                     val context = iMqttToken.userContext as MqttContext
                     connectionConfig.connectionEventHandler.onMqttUnsubscribeFailure(

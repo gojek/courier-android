@@ -56,5 +56,4 @@ class ConnectRetryTimePolicy(
         reconnectTime.set(0)
         retryCount.set(0)
     }
-
 }

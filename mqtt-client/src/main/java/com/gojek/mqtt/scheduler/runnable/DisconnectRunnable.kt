@@ -1,7 +1,7 @@
 package com.gojek.mqtt.scheduler.runnable
 
-import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.client.IClientSchedulerBridge
+import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 
 internal class DisconnectRunnable(
     private val clientSchedulerBridge: IClientSchedulerBridge

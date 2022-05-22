@@ -1,3 +1,3 @@
 package com.gojek.mqtt.event
 
-internal class NoOpEventHandler: EventHandler
+internal class NoOpEventHandler : EventHandler

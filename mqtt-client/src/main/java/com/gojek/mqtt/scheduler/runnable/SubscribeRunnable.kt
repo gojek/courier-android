@@ -7,7 +7,7 @@ internal class SubscribeRunnable(
     private val clientSchedulerBridge: IClientSchedulerBridge,
     private val topicMap: Map<String, QoS>
 ) : Runnable {
-        override fun run() {
-            clientSchedulerBridge.subscribeMqtt(topicMap)
-        }
+    override fun run() {
+        clientSchedulerBridge.subscribeMqtt(topicMap)
     }
+}

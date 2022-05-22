@@ -19,5 +19,5 @@ private sealed class State(
     object UninitialisedState : State()
     class InitialisedState(
         override val connectionInfo: ConnectionInfo
-    ): State(connectionInfo)
+    ) : State(connectionInfo)
 }

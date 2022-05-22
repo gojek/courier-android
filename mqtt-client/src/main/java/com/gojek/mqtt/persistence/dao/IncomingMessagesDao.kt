@@ -1,7 +1,6 @@
 package com.gojek.mqtt.persistence.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.gojek.mqtt.persistence.model.MqttReceivePacket

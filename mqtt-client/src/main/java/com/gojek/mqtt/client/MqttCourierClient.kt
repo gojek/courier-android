@@ -10,7 +10,7 @@ import com.gojek.mqtt.model.MqttPacket
 
 internal class MqttCourierClient(
     private val mqttClient: MqttClientInternal
-): MqttClient {
+) : MqttClient {
     override fun connect(connectOptions: MqttConnectOptions) {
         mqttClient.connect(connectOptions)
     }

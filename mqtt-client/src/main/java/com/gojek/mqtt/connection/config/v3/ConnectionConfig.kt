@@ -1,10 +1,10 @@
 package com.gojek.mqtt.connection.config.v3
 
 import com.gojek.courier.logging.ILogger
-import com.gojek.mqtt.constants.DISCONNECT_TIMEOUT_MILLIS
-import com.gojek.mqtt.constants.QUIESCE_TIME_MILLIS
 import com.gojek.mqtt.client.config.PersistenceOptions
 import com.gojek.mqtt.connection.event.ConnectionEventHandler
+import com.gojek.mqtt.constants.DISCONNECT_TIMEOUT_MILLIS
+import com.gojek.mqtt.constants.QUIESCE_TIME_MILLIS
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.subscriptionretry.ISubscriptionRetryPolicy

@@ -5,13 +5,11 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage
 
 internal class PahoLogger(
     private val logger: com.gojek.courier.logging.ILogger
-): ILogger {
+) : ILogger {
     override fun wtf(tag: String, msg: String, tr: Throwable) {
-        
     }
 
     override fun wtf(tag: String, msg: String) {
-        
     }
 
     override fun logEvent(
@@ -26,7 +24,6 @@ internal class PahoLogger(
         threadId: String,
         uniqueMsgId: Int
     ) {
-        
     }
 
     override fun w(tag: String, msg: String) {
@@ -50,15 +47,12 @@ internal class PahoLogger(
     }
 
     override fun logMessageReceivedData(message: MqttWireMessage?) {
-        
     }
 
     override fun logMessageSentData(message: MqttWireMessage?) {
-        
     }
 
     override fun setAppKillTime(time: Long) {
-        
     }
 
     override fun i(tag: String, msg: String) {
@@ -97,14 +91,11 @@ internal class PahoLogger(
         fastReconnectCheckStartTime: Long,
         lastInboundActivity: Long
     ) {
-        
     }
 
     override fun logInitEvent(eventType: String, ts: Long, endPoint: String) {
-        
     }
 
     override fun logMqttThreadEvent(eventType: String, timeTaken: Long, threadId: String) {
-        
     }
 }

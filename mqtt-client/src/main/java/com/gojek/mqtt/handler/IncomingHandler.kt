@@ -4,10 +4,10 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.gojek.courier.logging.ILogger
-import com.gojek.mqtt.constants.MESSAGE
-import com.gojek.mqtt.constants.MSG_APP_PUBLISH
 import com.gojek.mqtt.client.IClientSchedulerBridge
 import com.gojek.mqtt.client.model.MqttSendPacket
+import com.gojek.mqtt.constants.MESSAGE
+import com.gojek.mqtt.constants.MSG_APP_PUBLISH
 
 internal class IncomingHandler(
     looper: Looper,

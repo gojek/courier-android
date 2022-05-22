@@ -2,7 +2,6 @@ package com.gojek.mqtt.exception.handler.v3.impl
 
 import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.constants.SERVER_UNAVAILABLE_MAX_CONNECT_TIME
-import com.gojek.mqtt.constants.UNRESOLVED_EXCEPTION
 import com.gojek.mqtt.exception.handler.v3.MqttExceptionHandler
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.scheduler.IRunnableScheduler
@@ -13,14 +12,13 @@ import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 import java.util.*
 import javax.net.ssl.SSLHandshakeException
-import javax.net.ssl.SSLPeerUnverifiedException
 
 internal class MqttExceptionHandlerImpl(
     private val runnableScheduler: IRunnableScheduler,
     private val connectRetryTimePolicy: IConnectRetryTimePolicy,
     private val logger: ILogger,
     private val random: Random = Random()
-): MqttExceptionHandler {
+) : MqttExceptionHandler {
 
     override fun handleException(mqttException: MqttException, reconnect: Boolean) {
         when (mqttException.reasonCode.toShort()) {
@@ -67,7 +65,7 @@ internal class MqttExceptionHandlerImpl(
                     runnableScheduler.connectMqtt()
                 }
             }
-            MqttException.REASON_CODE_CLIENT_TIMEOUT ->                 // Till this point disconnect has already happened. This could happen in PING or other TIMEOUT happen such as CONNECT, DISCONNECT
+            MqttException.REASON_CODE_CLIENT_TIMEOUT -> // Till this point disconnect has already happened. This could happen in PING or other TIMEOUT happen such as CONNECT, DISCONNECT
                 if (reconnect) {
                     runnableScheduler.connectMqtt()
                 }

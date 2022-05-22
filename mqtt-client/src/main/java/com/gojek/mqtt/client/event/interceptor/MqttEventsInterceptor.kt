@@ -2,7 +2,6 @@ package com.gojek.mqtt.client.event.interceptor
 
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
-import java.util.LinkedList
 import java.util.concurrent.CopyOnWriteArrayList
 
 internal class MqttEventsInterceptor(private val eventHandler: EventHandler) : EventHandler {

@@ -26,7 +26,7 @@ internal class IncomingMsgControllerImpl(
     private val ttlSeconds: Long,
     private val cleanupIntervalSeconds: Long,
     private val clock: Clock
-): IncomingMsgController {
+) : IncomingMsgController {
     private val handleMsgThreadPool = ThreadPoolExecutor(
         1,
         1,

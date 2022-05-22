@@ -11,8 +11,8 @@ import com.gojek.mqtt.persistence.model.MqttReceivePacket
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence
 import org.eclipse.paho.client.mqttv3.MqttPersistable
 import org.eclipse.paho.client.mqttv3.internal.MqttPersistentData
-import java.util.Enumeration
 import java.util.Collections
+import java.util.Enumeration
 
 internal class PahoPersistence(private val context: Context) :
     MqttClientPersistence, IMqttReceivePersistence {
@@ -75,7 +75,7 @@ internal class PahoPersistence(private val context: Context) :
     override fun containsKey(key: String): Boolean {
         return pahoMessagesDao.containsMessage(key) > 1
     }
-    
+
     override fun addReceivedMessage(mqttPacket: MqttReceivePacket) {
         incomingMessagesDao.addMessage(mqttPacket)
     }

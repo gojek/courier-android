@@ -5,7 +5,7 @@ import org.eclipse.paho.client.mqttv3.IPahoEvents
 
 internal class PahoEventHandler(
     private val connectionEventHandler: ConnectionEventHandler
-): IPahoEvents {
+) : IPahoEvents {
     override fun onSSLSocketAttempt(port: Int, host: String?, timeout: Long) {
         connectionEventHandler.onSSLSocketAttempt(port, host, timeout)
     }

@@ -85,7 +85,7 @@ internal class AndroidMqttClient(
     private val isAdaptiveKAConnection: Boolean = false,
     private val keepAliveProvider: KeepAliveProvider,
     keepAliveFailureHandler: KeepAliveFailureHandler
-): IAndroidMqttClient, IClientSchedulerBridge {
+) : IAndroidMqttClient, IClientSchedulerBridge {
 
     private val runnableScheduler: IRunnableScheduler
     private val mqttConnection: IMqttConnection
@@ -111,7 +111,7 @@ internal class AndroidMqttClient(
     @Volatile
     private var isInitialised = false
 
-    //Accessed only from mqtt thread
+    // Accessed only from mqtt thread
     private var forceRefresh = false
 
     private val subscriptionStore: SubscriptionStore =
@@ -227,7 +227,7 @@ internal class AndroidMqttClient(
         runnableScheduler.connectMqtt(timeMillis)
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun sendMessage(mqttPacket: MqttSendPacket) {
 
         if (!isConnected()) {
@@ -302,7 +302,7 @@ internal class AndroidMqttClient(
             mMessenger.send(msg)
         } catch (e: RemoteException) {
             /* Service is dead. What to do? */
-            logger.e(TAG,"Remote Service dead", e)
+            logger.e(TAG, "Remote Service dead", e)
             return false
         }
 
@@ -321,12 +321,12 @@ internal class AndroidMqttClient(
         this.globalListener = listener
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun connectMqtt() {
         val startTime = clock.nanoTime()
         try {
             logger.d(TAG, "Sending onConnectAttempt event")
-            if(!isInitialised) {
+            if (!isInitialised) {
                 logger.d(TAG, "Mqtt Client not initialised")
                 mqttConfiguration.eventHandler.onEvent(
                     MqttConnectDiscardedEvent(
@@ -388,7 +388,7 @@ internal class AndroidMqttClient(
         }
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun disconnectMqtt(clearState: Boolean) {
         mqttConfiguration.eventHandler.onEvent(MqttDisconnectEvent())
         mqttConnection.disconnect()
@@ -399,12 +399,12 @@ internal class AndroidMqttClient(
         }
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun handleMqttException(exception: Exception?, reconnect: Boolean) {
         mqttConnection.handleException(exception, reconnect)
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun isConnected(): Boolean {
         return mqttConnection.isConnected()
     }
@@ -439,12 +439,12 @@ internal class AndroidMqttClient(
         }
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun isConnecting(): Boolean {
         return mqttConnection.isConnecting()
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun checkActivity() {
         mqttConnection.checkActivity()
     }
@@ -454,26 +454,26 @@ internal class AndroidMqttClient(
         runnableScheduler.scheduleNextActivityCheck()
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun subscribeMqtt(topicMap: Map<String, QoS>) {
         if (mqttConnection.isConnected()) {
             mqttConnection.subscribe(topicMap)
         }
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun unsubscribeMqtt(topics: Set<String>) {
         if (mqttConnection.isConnected()) {
             mqttConnection.unsubscribe(topics)
         }
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun resetParams() {
         mqttConnection.resetParams()
     }
 
-    //This runs on Mqtt thread
+    // This runs on Mqtt thread
     override fun handleAuthFailure() {
         with(mqttConfiguration) {
             if (authFailureHandler == null) {
@@ -524,7 +524,7 @@ internal class AndroidMqttClient(
         return mqttConnectOptions
     }
 
-    inner class MqttMessageReceiverListener:
+    inner class MqttMessageReceiverListener :
         IMessageReceiveListener {
         override fun messageArrived(topic: String, byteArray: ByteArray): Boolean {
             try {
@@ -543,7 +543,7 @@ internal class AndroidMqttClient(
                 mqttPersistence.addReceivedMessage(mqttPacket)
                 globalListener?.onMessageReceived(mqttPacket.toMqttMessage())
                 triggerHandleMessage()
-            } catch (e: IllegalStateException){
+            } catch (e: IllegalStateException) {
                 mqttConfiguration.eventHandler.onEvent(
                     MqttMessageReceiveErrorEvent(topic, byteArray.size, e.toCourierException())
                 )
@@ -560,7 +560,7 @@ internal class AndroidMqttClient(
         }
     }
 
-    inner class MqttMessageSendListener:
+    inner class MqttMessageSendListener :
         IMessageSendListener {
         override fun onSuccess(packet: MqttSendPacket) {
             with(packet) {

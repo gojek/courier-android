@@ -3,7 +3,6 @@ package com.gojek.mqtt.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.TelephonyManager
 
@@ -92,7 +91,7 @@ internal class NetworkUtils() {
 
     fun getNetworkName(context: Context): String {
         return try {
-            if(isOnWifi(context)) {
+            if (isOnWifi(context)) {
                 "wifi"
             } else {
                 val connectivityManager =
