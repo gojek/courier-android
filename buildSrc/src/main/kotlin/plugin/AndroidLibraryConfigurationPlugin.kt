@@ -10,5 +10,6 @@ class AndroidLibraryConfigurationPlugin : Plugin<Project> {
         project.configureUnitTest()
         project.configureJacocoAndroid()
         project.configureDetekt()
+        project.configureKtlint()
     }
 }
