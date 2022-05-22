@@ -38,5 +38,4 @@ class ProtobufMessageAdapterTest {
         val byteArray = ByteArray(0)
         protobufMessageAdapter.fromMessage(Message.Bytes(byteArray))
     }
-
 }
