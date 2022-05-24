@@ -19,10 +19,50 @@ const sidebars = {
   // But you can create a sidebar manually
   tutorialSidebar: [
     {
-      type: 'category',
-      label: 'Documentation',
-      items: ['README', 'CONTRIBUTION', 'LICENSE'],
+      type: 'doc',
+      label: 'Introduction',
+      id: "Introduction"
     },
+    {
+      type: 'category',
+      label: 'Getting Started',
+      items: ["Installation", "SampleApp"],
+    },
+    {
+      type: 'category',
+      label: 'Guides',
+      items: [
+        "ConnectionSetup",
+        "MqttConfiguration",
+        "CourierService",
+        "SubscribeUnsubscribe",
+        "SendReceiveMessage",
+        "MessageStreamAdapters",
+        "ExperimentConfigs",
+        "Authenticator"
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Features',
+      items: [
+        "AdaptiveKeepAlive",
+        "PingSender",
+        "SubscriptionStore",
+        "MqttChuck",
+        "QoS",
+      ],
+    },
+    {
+      type: 'doc',
+      label: 'Contribution',
+      id: "CONTRIBUTION"
+    },
+     {
+       type: 'doc',
+       label: 'License',
+       id: "LICENSE"
+     },
   ],
 };
 

@@ -59,7 +59,7 @@ const config = {
           {
             type: 'doc',
             position: 'left',
-            docId: 'README',
+            docId: 'Introduction',
             label: 'Docs',
           },
           {
@@ -75,6 +75,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['kotlin'],
       },
     }),
 };

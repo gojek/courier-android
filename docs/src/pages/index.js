@@ -17,7 +17,7 @@ const HomepageHeader = () => {
             <div className={clsx('col col--5')}>
               <div className="homeTitle">{siteConfig.title}</div>
               <small className="homeSubTitle">{siteConfig.tagline}</small>
-              <a className="button" href="docs">Documentation</a>
+              <a className="button" href="docs/Introduction">Documentation</a>
             </div>
             <div className={clsx('col col--1')}></div>
             <div className={clsx('col col--6')}>
