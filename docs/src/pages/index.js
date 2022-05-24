@@ -17,7 +17,7 @@ const HomepageHeader = () => {
             <div className={clsx('col col--5')}>
               <div className="homeTitle">{siteConfig.title}</div>
               <small className="homeSubTitle">{siteConfig.tagline}</small>
-              <a className="button" href="docs">Documentation</a>
+              <a className="button" href="docs/Introduction">Documentation</a>
             </div>
             <div className={clsx('col col--1')}></div>
             <div className={clsx('col col--6')}>
@@ -32,10 +32,11 @@ const HomepageHeader = () => {
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+    <Layout title={`${siteConfig.title}`}>
       <HomepageHeader />
+      <div id="docs">
+        <HomepageFeatures />
+      </div>
     </Layout>
   );
 }

@@ -40,9 +40,9 @@ data class MqttV3Configuration(
     override val authFailureHandler: AuthFailureHandler? = null,
     override val eventHandler: EventHandler = NoOpEventHandler(),
     override val pingSender: MqttPingSender,
-    override val mqttInterceptorList: List<MqttInterceptor>,
+    override val mqttInterceptorList: List<MqttInterceptor> = emptyList(),
     override val persistenceOptions: PersistenceOptions = PahoPersistenceOptions(),
-    override val experimentConfigs: ExperimentConfigs
+    override val experimentConfigs: ExperimentConfigs = ExperimentConfigs()
 ) : MqttConfiguration(
     connectRetryTimePolicy = connectRetryTimePolicy,
     connectTimeoutPolicy = connectTimeoutPolicy,

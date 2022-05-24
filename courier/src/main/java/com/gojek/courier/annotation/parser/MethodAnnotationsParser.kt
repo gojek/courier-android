@@ -161,7 +161,7 @@ internal class MethodAnnotationsParser(
 
     private fun parseUnsubscribeMethodAnnotations(method: Method) {
         method.requireReturnTypeIsOneOf(Void.TYPE) {
-            "Send method must return Void: $method"
+            "Unsubscribe method must return Void: $method"
         }
 
         val annotation = method.annotations.first()

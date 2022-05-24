@@ -6,9 +6,9 @@ import com.gojek.chuckmqtt.external.MqttChuckConfig
 import com.gojek.chuckmqtt.external.MqttChuckInterceptor
 import com.gojek.chuckmqtt.external.Period
 import com.gojek.courier.Courier
-import com.gojek.courier.Message
-import com.gojek.courier.QoS
 import com.gojek.courier.app.R
+import com.gojek.courier.app.data.network.CourierService
+import com.gojek.courier.app.data.network.model.Message
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.messageadapter.gson.GsonMessageAdapterFactory
 import com.gojek.courier.streamadapter.rxjava2.RxJava2StreamAdapterFactory
@@ -18,6 +18,8 @@ import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.factory.MqttClientFactory
+import com.gojek.mqtt.client.listener.MessageListener
+import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
@@ -44,11 +46,12 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mqttClient: MqttClient
+    private lateinit var courierService: CourierService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        initialiseMqtt()
+        initialiseCourier()
         connect.setOnClickListener {
             var clientId = clientId.text.toString()
             if(clientId.isEmpty()) {
@@ -75,15 +78,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         send.setOnClickListener {
-            mqttClient.send(Message.Bytes(message.text.toString().toByteArray()), topic.text.toString(), QoS.ONE)
+            courierService.publish(
+                topic = topic.text.toString(),
+                message = Message(123, message.text.toString())
+            )
         }
 
         subscribe.setOnClickListener {
-            mqttClient.subscribe(topic.text.toString() to QoS.ONE)
+            courierService.subscribe(topic = topic.text.toString())
         }
 
         unsubscribe.setOnClickListener {
-            mqttClient.unsubscribe(topic.text.toString())
+            courierService.unsubscribe(topic = topic.text.toString())
         }
     }
 
@@ -102,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         mqttClient.connect(connectOptions)
     }
 
-    private fun initialiseMqtt() {
+    private fun initialiseCourier() {
         val mqttConfig = MqttV3Configuration(
             socketFactory = null,
             logger = getLogger(),
@@ -141,6 +147,7 @@ class MainActivity : AppCompatActivity() {
             logger = getLogger()
         )
         val courier = Courier(configuration)
+        courierService = courier.create()
     }
 
     private val eventHandler = object : EventHandler {

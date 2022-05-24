@@ -16,7 +16,7 @@ class HttpAuthenticatorFactory private constructor() {
             responseHandler: ResponseHandler,
             eventHandler: EventHandler,
             authRetryPolicy: AuthRetryPolicy = DefaultAuthRetryPolicy(),
-            headerMap: Map<String, String>
+            headerMap: Map<String, String> = emptyMap()
         ): Authenticator {
             val apiService = retrofit.create(ApiService::class.java)
             return HttpAuthenticator(

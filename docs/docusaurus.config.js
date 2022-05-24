@@ -6,7 +6,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Courier',
+  title: 'Courier Android',
   tagline: 'Information Superhighway',
   url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/courier-android/',
@@ -59,8 +59,20 @@ const config = {
           {
             type: 'doc',
             position: 'left',
-            docId: 'README',
+            docId: 'Introduction',
             label: 'Docs',
+          },
+          {
+            type: 'doc',
+            position: 'left',
+            docId: 'AdaptiveKeepAlive',
+            label: 'Features',
+          },
+          {
+            type: 'doc',
+            position: 'left',
+            docId: 'ConnectionSetup',
+            label: 'Guides',
           },
           {
             href: 'https://github.com/gojek/courier-android',
@@ -70,11 +82,29 @@ const config = {
         ],
       },
       footer: {
+        style: 'dark',
+        links: [
+          {
+            title: 'Docs',
+            items: [
+              { label: 'Getting Started', to: '/docs/Installation' },
+              { label: 'Guides', to: '/docs/ConnectionSetup' },
+              { label: 'Features', to: '/docs/AdaptiveKeepAlive' },
+            ],
+          },
+          {
+            title: 'Community',
+            items: [
+              { label: 'Github', href: 'https://github.com/gojek/courier-android', },
+            ],
+          },
+        ],
         copyright: `Copyright © ${new Date().getFullYear()} Gojek`,
       },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['kotlin'],
       },
     }),
 };
