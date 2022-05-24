@@ -24,6 +24,10 @@ MQTT has 3 built-in QoS levels for Reliable Message Delivery:
 
 * **QoS 2(Exactly once)** - the sender and receiver engage in a two-level handshake to ensure only one copy of the message is received (assured delivery).
 
+## Detailed Documentation
+
+Find the detailed documentation here - https://gojek.github.io/courier-android/
+
 ## Features
 
 * Clean API
