@@ -1,6 +1,6 @@
 # Sample App
 
-A sample application is added [here][1] which makes Courier connection with a [HiveMQ][2] public broker. It demonstrates multiple functionalities of Courier like Connect, Disconnect, Publish, Subscribe and Unsubscribe.
+A sample application is added [here][2] which makes Courier connection with a [HiveMQ][1] public broker. It demonstrates multiple functionalities of Courier like Connect, Disconnect, Publish, Subscribe and Unsubscribe.
 
 ![image demo](./../static/img/sample-app-interface.png)
 

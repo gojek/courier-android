@@ -14,9 +14,27 @@ Courier library provides the following message adapters:
 
 - courier-message-adapter-protobuf
 
-You can also create your own custom message adapter by implementing the MessageAdapter interface.
+You can also create your own custom message adapter by implementing the MessageAdapter.Factory interface.
 
-// Add example
+~~~ kotlin
+class MyCustomMessageAdapterFactory : MessageAdapter.Factory {
+
+    override fun create(type: Type, annotations: Array<Annotation>): MessageAdapter<*> {
+        return MyCustomMessageAdapter()
+    }
+}
+
+private class MyCustomMessageAdapter<T> constructor() : MessageAdapter<T> {
+
+    override fun fromMessage(message: Message): T {
+        // convert message to custom type
+    }
+
+    override fun toMessage(data: T): Message {
+        // convert custom type to message
+    }
+}
+~~~
 
 ## Stream Adapter
 
@@ -28,6 +46,20 @@ Courier library provides the following stream adapters:
 
 - courier-stream-adapter-coroutines
 
-You can also create your own custom Stream adapter by implementing the StreamAdapter interface.
+You can also create your own custom Stream adapter by implementing the StreamAdapter.Factory interface.
 
-// Add example
+~~~ kotlin
+class MyCustomStreamAdapterFactory : StreamAdapter.Factory {
+
+    override fun create(type: Type): StreamAdapter<Any, Any> {
+        return MyCustomStreamAdapter()
+    }
+}
+
+private class MyCustomStreamAdapter<T> : StreamAdapter<T, Any> {
+
+    override fun adapt(stream: Stream<T>): Any {
+        // convert stream to custom stream
+    }
+}
+~~~

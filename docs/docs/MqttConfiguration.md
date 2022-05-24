@@ -28,4 +28,4 @@ As we have seen earlier, [MqttClient][1] requires an instance of [MqttV3Configur
 
 [1]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/client/MqttClient.kt
 [2]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/client/config/v3/MqttV3Configuration.kt
-[3]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/pingsender/MqttPingSender.kt
+[3]: https://github.com/gojek/courier-android/blob/main/pingsender/mqtt-pingsender/src/main/java/com/gojek/mqtt/pingsender/MqttPingSender.kt
