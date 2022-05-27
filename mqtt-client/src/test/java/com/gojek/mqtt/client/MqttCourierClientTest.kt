@@ -98,4 +98,11 @@ class MqttCourierClientTest {
         mqttCourierClient.removeMessageListener(topic, listener)
         verify(mqttClientInternal).removeMessageListener(topic, listener)
     }
+
+    @Test
+    fun `test addGlobalMessageListener`() {
+        val listener = mock<MessageListener>()
+        mqttCourierClient.addGlobalMessageListener(listener)
+        verify(mqttClientInternal).addGlobalMessageListener(listener)
+    }
 }

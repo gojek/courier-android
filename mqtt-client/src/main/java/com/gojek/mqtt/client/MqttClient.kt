@@ -16,4 +16,5 @@ interface MqttClient {
     fun send(message: Message, topic: String, qos: QoS): Boolean
     fun addMessageListener(topic: String, listener: MessageListener)
     fun removeMessageListener(topic: String, listener: MessageListener)
+    fun addGlobalMessageListener(listener: MessageListener)
 }

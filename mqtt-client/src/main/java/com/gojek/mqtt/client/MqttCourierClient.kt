@@ -46,4 +46,8 @@ internal class MqttCourierClient(
     override fun removeMessageListener(topic: String, listener: MessageListener) {
         mqttClient.removeMessageListener(topic, listener)
     }
+
+    override fun addGlobalMessageListener(listener: MessageListener) {
+        mqttClient.addGlobalMessageListener(listener)
+    }
 }

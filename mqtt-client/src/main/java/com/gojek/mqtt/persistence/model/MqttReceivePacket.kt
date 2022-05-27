@@ -3,6 +3,8 @@ package com.gojek.mqtt.persistence.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.gojek.courier.Message
+import com.gojek.mqtt.client.model.MqttMessage
 
 @Entity(tableName = "incoming_messages")
 internal data class MqttReceivePacket(
@@ -16,3 +18,6 @@ internal data class MqttReceivePacket(
     @ColumnInfo(name = "topic")
     var topic: String
 )
+
+internal fun MqttReceivePacket.toMqttMessage() =
+    MqttMessage(this.topic, Message.Bytes(this.message))

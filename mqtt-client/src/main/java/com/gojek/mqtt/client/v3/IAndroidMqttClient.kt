@@ -17,6 +17,7 @@ internal interface IAndroidMqttClient {
     fun send(mqttPacket: MqttPacket): Boolean
     fun addMessageListener(topic: String, listener: MessageListener)
     fun removeMessageListener(topic: String, listener: MessageListener)
+    fun addGlobalMessageListener(listener: MessageListener)
     fun isConnected(): Boolean
     fun subscribe(topicMap: Map<String, QoS>)
     fun unsubscribe(topics: List<String>)

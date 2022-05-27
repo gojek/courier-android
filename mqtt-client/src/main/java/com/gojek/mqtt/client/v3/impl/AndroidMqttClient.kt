@@ -57,6 +57,7 @@ import com.gojek.mqtt.model.MqttPacket
 import com.gojek.mqtt.network.NetworkHandler
 import com.gojek.mqtt.persistence.impl.PahoPersistence
 import com.gojek.mqtt.persistence.model.MqttReceivePacket
+import com.gojek.mqtt.persistence.model.toMqttMessage
 import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.policies.hostfallback.HostFallbackPolicy
 import com.gojek.mqtt.policies.hostfallback.IHostFallbackPolicy
@@ -103,6 +104,9 @@ internal class AndroidMqttClient(
     private lateinit var connectOptions: MqttConnectOptions
 
     private val experimentConfigs = mqttConfiguration.experimentConfigs
+
+    @Volatile
+    private var globalListener: MessageListener? = null
 
     @Volatile
     private var isInitialised = false
@@ -311,6 +315,10 @@ internal class AndroidMqttClient(
 
     override fun removeMessageListener(topic: String, listener: MessageListener) {
         incomingMsgController.unregisterListener(topic, listener)
+    }
+
+    override fun addGlobalMessageListener(listener: MessageListener) {
+        this.globalListener = listener
     }
 
     //This runs on Mqtt thread
@@ -533,6 +541,7 @@ internal class AndroidMqttClient(
                         topic
                     )
                 mqttPersistence.addReceivedMessage(mqttPacket)
+                globalListener?.onMessageReceived(mqttPacket.toMqttMessage())
                 triggerHandleMessage()
             } catch (e: IllegalStateException){
                 mqttConfiguration.eventHandler.onEvent(
