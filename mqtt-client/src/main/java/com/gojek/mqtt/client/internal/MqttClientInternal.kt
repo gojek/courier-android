@@ -109,6 +109,10 @@ internal class MqttClientInternal(
         return androidMqttClient.removeMessageListener(topic, listener)
     }
 
+    fun addGlobalMessageListener(listener: MessageListener) {
+        return androidMqttClient.addGlobalMessageListener(listener)
+    }
+
     fun getCurrentState(): ConnectionState {
         return androidMqttClient.getCurrentState()
     }

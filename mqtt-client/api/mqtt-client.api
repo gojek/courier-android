@@ -3,6 +3,7 @@ public abstract interface class com/gojek/mqtt/auth/Authenticator {
 }
 
 public abstract interface class com/gojek/mqtt/client/MqttClient {
+	public abstract fun addGlobalMessageListener (Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun addMessageListener (Ljava/lang/String;Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun connect (Lcom/gojek/mqtt/model/MqttConnectOptions;)V
 	public abstract fun disconnect (Z)V

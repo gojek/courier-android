@@ -1,23 +1,17 @@
 package com.gojek.mqtt.client
 
-import android.os.HandlerThread
-import android.os.Process
-import android.os.Process.THREAD_PRIORITY_BACKGROUND
-import android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE
-import com.gojek.courier.Message
 import com.gojek.courier.extensions.fromSecondsToNanos
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
 import com.gojek.mqtt.client.listener.MessageListener
-import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.MqttMessageReceiveErrorEvent
 import com.gojek.mqtt.exception.toCourierException
 import com.gojek.mqtt.persistence.IMqttReceivePersistence
 import com.gojek.mqtt.persistence.model.MqttReceivePacket
+import com.gojek.mqtt.persistence.model.toMqttMessage
 import com.gojek.mqtt.utils.MqttUtils
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
@@ -134,9 +128,7 @@ internal class IncomingMsgControllerImpl(
         try {
             listenerMap[message.topic]!!.forEach {
                 notified = true
-                it.onMessageReceived(
-                    MqttMessage(message.topic, Message.Bytes(message.message))
-                )
+                it.onMessageReceived(message.toMqttMessage())
             }
             return notified
         } catch (e: Throwable) {
