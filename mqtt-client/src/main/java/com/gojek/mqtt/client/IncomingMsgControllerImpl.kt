@@ -133,7 +133,11 @@ internal class IncomingMsgControllerImpl(
             return notified
         } catch (e: Throwable) {
             logger.d(TAG, "Exception while processing message $e")
-            eventHandler.onEvent(MqttMessageReceiveErrorEvent(message.topic, message.message.size, e.toCourierException()))
+            eventHandler.onEvent(
+                MqttMessageReceiveErrorEvent(
+                    message.topic, message.message.size, e.toCourierException()
+                )
+            )
         }
         return notified
     }

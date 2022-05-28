@@ -22,7 +22,8 @@ internal class DisconnectRunnable(
             clientSchedulerBridge.disconnectMqtt(clearState)
         } finally {
             if (reconnect) {
-                clientSchedulerBridge.connect(MQTT_WAIT_BEFORE_RECONNECT_TIME_MS) // try reconnection after 10 ms
+                // try reconnection after 10 ms
+                clientSchedulerBridge.connect(MQTT_WAIT_BEFORE_RECONNECT_TIME_MS)
             }
         }
         reconnect = true // resetting value after run

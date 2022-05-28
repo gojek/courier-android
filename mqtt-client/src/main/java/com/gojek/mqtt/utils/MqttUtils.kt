@@ -1,11 +1,6 @@
 package com.gojek.mqtt.utils
 
-import android.content.Context
-import android.os.Build
 import android.os.Process
-import androidx.core.content.PermissionChecker
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ProcessLifecycleOwner
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -19,7 +14,8 @@ internal class MqttUtils {
             if (bytes == null || bytes.size < 2) {
                 false
             } else {
-                bytes[0] == GZIPInputStream.GZIP_MAGIC.toByte() && bytes[1] == (GZIPInputStream.GZIP_MAGIC shr 8).toByte()
+                bytes[0] == GZIPInputStream.GZIP_MAGIC.toByte() &&
+                    bytes[1] == (GZIPInputStream.GZIP_MAGIC shr 8).toByte()
             }
         } catch (e: Exception) {
             false
@@ -58,18 +54,6 @@ internal class MqttUtils {
         }
     }
 
-    val isKitkatOrHigher: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-
-    val isMarshmallowOrHigher: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-
-    val isLollipopOrHigher: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-
-    val isOreoOrHigher: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-
     /**
      * Checks that an Iterable is both non-null and non-empty. This method does not check individual elements in the Iterable, it just checks that the Iterable has at least one
      * element.
@@ -100,17 +84,4 @@ internal class MqttUtils {
             }
         }
     }
-
-    fun isPermissionGranted(
-        context: Context,
-        permission: String
-    ): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || PermissionChecker.checkSelfPermission(
-            context,
-            permission
-        ) === PermissionChecker.PERMISSION_GRANTED
-    }
-
-    val isAppInForeground: Boolean
-        get() = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)
 }

@@ -63,7 +63,12 @@ internal class AdaptivePingEventHandler(
         )
     }
 
-    override fun pingEventFailure(serverUri: String, timeTaken: Long, exception: Throwable, keepAliveSecs: Long) {
+    override fun pingEventFailure(
+        serverUri: String,
+        timeTaken: Long,
+        exception: Throwable,
+        keepAliveSecs: Long
+    ) {
         eventHandler.onEvent(
             MqttPingFailureEvent(
                 serverUri = serverUri,

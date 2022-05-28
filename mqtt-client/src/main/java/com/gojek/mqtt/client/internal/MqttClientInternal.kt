@@ -7,6 +7,7 @@ import com.gojek.keepalive.NoOpKeepAliveFailureHandler
 import com.gojek.keepalive.OptimalKeepAliveFailureHandler
 import com.gojek.keepalive.OptimalKeepAliveObserver
 import com.gojek.keepalive.OptimalKeepAliveProvider
+import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.event.interceptor.MqttEventsInterceptor
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
@@ -20,7 +21,6 @@ import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 import com.gojek.networktracker.NetworkStateTrackerFactory
-import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
 
 internal class MqttClientInternal(
     private val context: Context,
@@ -150,7 +150,9 @@ internal class MqttClientInternal(
         }
     }
 
-    private fun initialiseOptimalKeepAliveProvider(adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig) {
+    private fun initialiseOptimalKeepAliveProvider(
+        adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig
+    ) {
         optimalKeepAliveProvider ?: kotlin.run {
             optimalKeepAliveProvider = OptimalKeepAliveProvider(
                 context = context,

@@ -116,7 +116,9 @@ internal class MqttConnection(
             // if force disconnect is in progress don't connect
             if (forceDisconnect) {
                 logger.d(TAG, "Force disconnect is in progress")
-                connectionConfig.connectionEventHandler.onMqttConnectDiscarded("Force Disconnect in progress")
+                connectionConfig.connectionEventHandler.onMqttConnectDiscarded(
+                    "Force Disconnect in progress"
+                )
                 return
             }
             if (updatePolicyParams && !(isConnected() || isConnecting() || isDisconnecting())) {
@@ -134,17 +136,23 @@ internal class MqttConnection(
             }
             if (isConnected()) {
                 logger.d(TAG, "Client already connected!!!")
-                connectionConfig.connectionEventHandler.onMqttConnectDiscarded("Client already connected")
+                connectionConfig.connectionEventHandler.onMqttConnectDiscarded(
+                    "Client already connected"
+                )
                 return
             }
             if (isDisconnecting()) {
                 logger.d(TAG, "Client is disconnecting!!!")
-                connectionConfig.connectionEventHandler.onMqttConnectDiscarded("Client disconnecting")
+                connectionConfig.connectionEventHandler.onMqttConnectDiscarded(
+                    "Client disconnecting"
+                )
                 return
             }
             if (isConnecting()) {
                 logger.d(TAG, "Client is already connecting!!!")
-                connectionConfig.connectionEventHandler.onMqttConnectDiscarded("Client connecting")
+                connectionConfig.connectionEventHandler.onMqttConnectDiscarded(
+                    "Client connecting"
+                )
                 return
             }
 
@@ -179,7 +187,10 @@ internal class MqttConnection(
             logger.d(TAG, "MQTT connecting on : " + mqtt!!.serverURI)
             updatePolicyParams = true
             connectStartTime = clock.nanoTime()
-            connectionConfig.connectionEventHandler.onMqttConnectAttempt(connectOptions.keepAlive.isOptimal, serverUri)
+            connectionConfig.connectionEventHandler.onMqttConnectAttempt(
+                connectOptions.keepAlive.isOptimal,
+                serverUri
+            )
             mqtt!!.connect(options, null, getConnectListener(subscriptionTopicMap))
             runnableScheduler.scheduleNextActivityCheck()
         } catch (e: MqttSecurityException) {
@@ -240,7 +251,8 @@ internal class MqttConnection(
                 ) {
                     logger.e(
                         TAG,
-                        "Message delivery failed for : " + arg0.messageId + ", exception : " + arg1.message
+                        "Message delivery failed for : " + arg0.messageId +
+                            ", exception : " + arg1.message
                     )
                     messageSendListener.onFailure(arg0.userContext as MqttSendPacket, arg1)
                 }
@@ -299,7 +311,8 @@ internal class MqttConnection(
                 }
                 forceDisconnect = true
                 /*
-                 * blocking the mqtt thread, so that no other operation takes place till disconnects completes or timeout This will wait for max 1 secs
+                 * blocking the mqtt thread, so that no other operation takes place
+                 * till disconnects completes or timeout This will wait for max 1 secs
                  */
                 connectionConfig.connectionEventHandler.onMqttDisconnectStart()
                 mqtt!!.disconnectForcibly(
@@ -403,10 +416,14 @@ internal class MqttConnection(
                     fastReconnect = 0
                     connectSuccessTime = clock.nanoTime()
                     // resetting the reconnect timer to 0 as it would have been changed in failure
-                    runnableScheduler.scheduleResetParams(connectionConfig.policyResetTimeSeconds * 1000L)
+                    runnableScheduler.scheduleResetParams(
+                        connectionConfig.policyResetTimeSeconds * 1000L
+                    )
                     connectionConfig.connectionEventHandler.onMqttConnectSuccess(
                         serverUri = serverUri,
-                        timeTakenMillis = (connectSuccessTime - connectStartTime).fromNanosToMillis()
+                        timeTakenMillis = (
+                            connectSuccessTime - connectStartTime
+                            ).fromNanosToMillis()
                     )
                     runnableScheduler.scheduleSubscribe(
                         0,
@@ -427,7 +444,10 @@ internal class MqttConnection(
             ) {
                 try {
                     if (throwable is MqttException) {
-                        runnableScheduler.scheduleMqttHandleExceptionRunnable(throwable, true)
+                        runnableScheduler.scheduleMqttHandleExceptionRunnable(
+                            e = throwable,
+                            reconnect = true
+                        )
                     }
                     hostFallbackPolicy.onConnectFailure(throwable)
                     connectionConfig.connectionEventHandler.onMqttConnectFailure(
@@ -455,7 +475,12 @@ internal class MqttConnection(
             try {
                 logger.d(TAG, "Subscribing to topics: ${topicMap.keys}")
                 connectionConfig.connectionEventHandler.onMqttSubscribeAttempt(topicMap)
-                mqtt!!.subscribe(topicArray, qosArray, MqttContext(subscribeStartTime), getSubscribeListener(topicMap))
+                mqtt!!.subscribe(
+                    topicArray,
+                    qosArray,
+                    MqttContext(subscribeStartTime),
+                    getSubscribeListener(topicMap)
+                )
             } catch (mqttException: MqttException) {
                 connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
                     topics = topicMap,
@@ -473,7 +498,11 @@ internal class MqttConnection(
             try {
                 logger.d(TAG, "Unsubscribing to topics: $topics")
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeAttempt(topics)
-                mqtt!!.unsubscribe(topics.toTypedArray(), MqttContext(unsubscribeStartTime), getUnsubscribeListener(topics))
+                mqtt!!.unsubscribe(
+                    topics.toTypedArray(),
+                    MqttContext(unsubscribeStartTime),
+                    getUnsubscribeListener(topics)
+                )
             } catch (mqttException: MqttException) {
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeFailure(
                     topics = topics,

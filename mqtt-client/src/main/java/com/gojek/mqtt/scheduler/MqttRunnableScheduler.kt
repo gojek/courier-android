@@ -58,8 +58,10 @@ internal class MqttRunnableScheduler(
             sendThreadEventIfNotAlive()
             disconnectRunnable.setReconnect(reconnect)
             disconnectRunnable.setClearState(clearState)
-            mqttThreadHandler.removeCallbacks(disconnectRunnable) // remove any pending disconnects queued
-            mqttThreadHandler.removeCallbacks(connectionCheckRunnable) // remove any pending connects queued
+            // remove any pending disconnects queued
+            mqttThreadHandler.removeCallbacks(disconnectRunnable)
+            // remove any pending connects queued
+            mqttThreadHandler.removeCallbacks(connectionCheckRunnable)
             mqttThreadHandler.postAtFrontOfQueue(disconnectRunnable)
         } catch (e: Exception) {
             logger.e(TAG, "Exception in MQTT disconnect", e)
@@ -70,7 +72,10 @@ internal class MqttRunnableScheduler(
         try {
             sendThreadEventIfNotAlive()
             mqttThreadHandler.removeCallbacks(activityCheckRunnable)
-            mqttThreadHandler.postDelayed(activityCheckRunnable, activityCheckIntervalSeconds * 1000.toLong())
+            mqttThreadHandler.postDelayed(
+                activityCheckRunnable,
+                activityCheckIntervalSeconds * 1000.toLong()
+            )
         } catch (e: Exception) {
             logger.e(TAG, "Exception scheduleNextActivityCheck", e)
         }
@@ -96,7 +101,10 @@ internal class MqttRunnableScheduler(
         try {
             sendThreadEventIfNotAlive()
             mqttThreadHandler.removeCallbacks(connectionCheckRunnable)
-            mqttThreadHandler.postDelayed(connectionCheckRunnable, reconnectTimeSecs * 1000)
+            mqttThreadHandler.postDelayed(
+                connectionCheckRunnable,
+                reconnectTimeSecs * 1000
+            )
         } catch (e: Exception) {
             logger.e(TAG, "Exception scheduleNextConnectionCheck", e)
         }

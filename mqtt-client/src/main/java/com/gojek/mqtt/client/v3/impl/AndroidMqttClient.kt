@@ -71,11 +71,11 @@ import com.gojek.mqtt.utils.MqttUtils
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
 import com.gojek.networktracker.NetworkStateTracker
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeUnit
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException
-import java.nio.charset.StandardCharsets
-import java.util.concurrent.TimeUnit
 
 internal class AndroidMqttClient(
     private val context: Context,
@@ -168,7 +168,9 @@ internal class AndroidMqttClient(
                 logger = mqttConfiguration.logger,
                 connectionEventHandler = mqttClientEventAdapter.adapt(),
                 socketFactory = mqttConfiguration.socketFactory,
-                mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map { it.mapToPahoInterceptor() },
+                mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map {
+                    mapToPahoInterceptor(it)
+                },
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
                 policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
@@ -235,9 +237,15 @@ internal class AndroidMqttClient(
         }
 
         try {
-            logger.d(TAG, "Publishing mqtt packet on ${mqttPacket.topic} with qos ${mqttPacket.qos}")
+            logger.d(
+                TAG,
+                "Publishing mqtt packet on ${mqttPacket.topic} " +
+                    "with qos ${mqttPacket.qos}"
+            )
             with(mqttPacket) {
-                mqttConfiguration.eventHandler.onEvent(MqttMessageSendEvent(topic, qos, message.size))
+                mqttConfiguration.eventHandler.onEvent(
+                    MqttMessageSendEvent(topic, qos, message.size)
+                )
             }
             mqttConnection.publish(mqttPacket, mqttPacket.qos, mqttPacket.topic)
         } catch (e: MqttPersistenceException) {
@@ -528,7 +536,9 @@ internal class AndroidMqttClient(
         IMessageReceiveListener {
         override fun messageArrived(topic: String, byteArray: ByteArray): Boolean {
             try {
-                mqttConfiguration.eventHandler.onEvent(MqttMessageReceiveEvent(topic, byteArray.size))
+                mqttConfiguration.eventHandler.onEvent(
+                    MqttMessageReceiveEvent(topic, byteArray.size)
+                )
                 val bytes = mqttUtils.uncompressByteArray(byteArray)!!
                 val messageBody = String(bytes, StandardCharsets.UTF_8)
                 val logMsg = "messageArrived called for message code : "

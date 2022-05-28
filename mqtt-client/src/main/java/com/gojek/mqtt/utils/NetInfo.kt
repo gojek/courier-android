@@ -36,10 +36,10 @@ internal class NetInfo(info: NetworkInfo, networkType: Short, isWifi: Boolean) {
         if (!isWifi || !info.isWifi) {
             return true
         }
-        if (TextUtils.isEmpty(ssid) && TextUtils.isEmpty(info.ssid)) // both the ssids values are empty
-            {
-                return true
-            }
+        // both the ssids values are empty
+        if (TextUtils.isEmpty(ssid) && TextUtils.isEmpty(info.ssid)) {
+            return true
+        }
         return if (TextUtils.isEmpty(ssid) || TextUtils.isEmpty(info.ssid)) {
             false
         } else ssid == info.ssid

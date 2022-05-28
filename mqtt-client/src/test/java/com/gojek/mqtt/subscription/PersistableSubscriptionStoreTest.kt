@@ -17,8 +17,10 @@ import org.mockito.junit.MockitoJUnitRunner
 class PersistableSubscriptionStoreTest {
     @Mock
     private lateinit var context: Context
+
     @Mock
     private lateinit var sharedPreferences: SharedPreferences
+
     @Mock
     private lateinit var editor: SharedPreferences.Editor
 
@@ -81,14 +83,20 @@ class PersistableSubscriptionStoreTest {
         assertEquals(subscriptionStore.getSubscribeTopics().size, 2)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 2)
-        assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic2.first, topic4.first))
+        assertEquals(
+            subscriptionStore.getUnsubscribeTopics(false),
+            setOf(topic2.first, topic4.first)
+        )
 
         // Test subscribing topic5 when its not subscribed
         subscriptionStore.subscribeTopics(mapOf(topic5))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic5, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 2)
-        assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic2.first, topic4.first))
+        assertEquals(
+            subscriptionStore.getUnsubscribeTopics(false),
+            setOf(topic2.first, topic4.first)
+        )
 
         // Test notifying unsubscribe success of topic2
         subscriptionStore.getListener().onTopicsUnsubscribed(setOf(topic2.first))

@@ -11,7 +11,7 @@ class KotlinLibraryConfigurationPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.configureDetekt()
-        project.configureKtlint()
+        project.configureSpotless()
 
         project.extensions.getByType<KotlinJvmProjectExtension>().run {
             with(sourceSets) {
