@@ -12,7 +12,7 @@ internal class OptimalKeepAliveCalculator(
     networkTracker: NetworkStateTracker,
     private val networkUtils: NetworkUtils,
     private val stateHandler: AdaptiveKeepAliveStateHandler,
-    private val optimalKeepAliveObserver: OptimalKeepAliveObserver,
+    private val optimalKeepAliveObserver: OptimalKeepAliveObserver
 ) : KeepAliveCalculator {
 
     @VisibleForTesting

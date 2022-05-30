@@ -6,6 +6,9 @@ import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
@@ -15,9 +18,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @RunWith(MockitoJUnitRunner::class)
 class WorkManagerPingSenderTest {

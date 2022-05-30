@@ -19,7 +19,12 @@ class NoOpPingSenderEvents : IPingSenderEvents {
     override fun pingEventSuccess(serverUri: String, timeTaken: Long, keepAliveSecs: Long) {
     }
 
-    override fun pingEventFailure(serverUri: String, timeTaken: Long, exception: Throwable, keepAliveSecs: Long) {
+    override fun pingEventFailure(
+        serverUri: String,
+        timeTaken: Long,
+        exception: Throwable,
+        keepAliveSecs: Long
+    ) {
     }
 
     override fun onBackgroundAlarmPingLimitReached() {

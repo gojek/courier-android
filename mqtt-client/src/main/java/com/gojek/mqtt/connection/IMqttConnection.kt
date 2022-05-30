@@ -11,7 +11,7 @@ internal interface IMqttConnection {
         mqttConnectOptions: MqttConnectOptions,
         messageReceiveListener: IMessageReceiveListener,
         hostFallbackPolicy: IHostFallbackPolicy,
-        subscriptionTopicMap: Map<String, QoS>,
+        subscriptionTopicMap: Map<String, QoS>
     )
 
     fun subscribe(topicMap: Map<String, QoS>)

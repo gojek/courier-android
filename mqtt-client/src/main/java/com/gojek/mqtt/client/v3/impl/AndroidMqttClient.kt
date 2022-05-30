@@ -173,7 +173,7 @@ internal class AndroidMqttClient(
                 },
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
-                policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
+                policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds
             )
 
         mqttConnection = MqttConnection(
@@ -190,16 +190,15 @@ internal class AndroidMqttClient(
             clock = clock,
             subscriptionStore = subscriptionStore
         )
-        this.incomingMsgController =
-            IncomingMsgControllerImpl(
-                mqttUtils,
-                mqttPersistence,
-                logger,
-                mqttConfiguration.eventHandler,
-                experimentConfigs.incomingMessagesTTLSecs,
-                experimentConfigs.incomingMessagesCleanupIntervalSecs,
-                clock
-            )
+        incomingMsgController = IncomingMsgControllerImpl(
+            mqttUtils,
+            mqttPersistence,
+            logger,
+            mqttConfiguration.eventHandler,
+            experimentConfigs.incomingMessagesTTLSecs,
+            experimentConfigs.incomingMessagesCleanupIntervalSecs,
+            clock
+        )
         networkHandler.init()
     }
 
@@ -231,7 +230,6 @@ internal class AndroidMqttClient(
 
     // This runs on Mqtt thread
     override fun sendMessage(mqttPacket: MqttSendPacket) {
-
         if (!isConnected()) {
             connectMqtt()
         }
@@ -288,7 +286,6 @@ internal class AndroidMqttClient(
 
     // This can be invoked on any thread
     override fun send(mqttPacket: MqttPacket): Boolean {
-
         val mqttSendPacket = MqttSendPacket(
             mqttPacket.message,
             0,
@@ -525,7 +522,7 @@ internal class AndroidMqttClient(
                     connectTimeout = mqttConfiguration.connectTimeoutPolicy.getConnectTimeOut(),
                     host = hostFallbackPolicy!!.getServerUri().host,
                     port = hostFallbackPolicy!!.getServerUri().port,
-                    scheme = hostFallbackPolicy!!.getServerUri().scheme,
+                    scheme = hostFallbackPolicy!!.getServerUri().scheme
                 )
             )
         }
@@ -588,7 +585,7 @@ internal class AndroidMqttClient(
             runnableScheduler.connectMqtt()
         }
 
-        override fun notifyWrittenOnSocket(packet: MqttSendPacket) { }
+        override fun notifyWrittenOnSocket(packet: MqttSendPacket) {}
     }
 
     companion object {

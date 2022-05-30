@@ -15,14 +15,14 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
+import java.lang.RuntimeException
+import kotlin.test.assertEquals
 import okhttp3.ResponseBody
 import org.junit.After
 import org.junit.Test
 import retrofit2.Call
 import retrofit2.HttpException
 import retrofit2.Response
-import java.lang.RuntimeException
-import kotlin.test.assertEquals
 
 class HttpAuthenticatorTest {
     private val apiService = mock<ApiService>()

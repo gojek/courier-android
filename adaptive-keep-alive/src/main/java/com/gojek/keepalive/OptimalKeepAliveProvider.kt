@@ -10,7 +10,7 @@ class OptimalKeepAliveProvider(
     context: Context,
     adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig,
     optimalKeepAliveObserver: OptimalKeepAliveObserver,
-    keepAliveCalculatorFactory: KeepAliveCalculatorFactory = KeepAliveCalculatorFactory(),
+    keepAliveCalculatorFactory: KeepAliveCalculatorFactory = KeepAliveCalculatorFactory()
 ) {
 
     val keepAliveCalculator = keepAliveCalculatorFactory.create(

@@ -13,7 +13,8 @@ class ConnectTimeoutPolicyTest {
     @Test
     fun `test getConnectTimeOut`() {
         assertEquals(
-            connectTimeoutPolicy.getConnectTimeOut(), connectTimeoutConfig.sslUpperBoundConnTimeOut
+            connectTimeoutPolicy.getConnectTimeOut(),
+            connectTimeoutConfig.sslUpperBoundConnTimeOut
         )
         connectTimeoutPolicy.updateParams(isSslPort = false)
         assertEquals(

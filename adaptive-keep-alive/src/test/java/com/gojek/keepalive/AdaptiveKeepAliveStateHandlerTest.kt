@@ -8,14 +8,14 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
-import org.junit.After
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.junit.MockitoJUnitRunner
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import org.junit.After
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class AdaptiveKeepAliveStateHandlerTest {
@@ -67,7 +67,7 @@ class AdaptiveKeepAliveStateHandlerTest {
     }
 
     @Test
-    fun `test onNetworkChanged with network info different from current network info and no info available in persistence`() {
+    fun `test with network info different from current network info and no info available in persistence`() {
         setOldNetworkInfo()
         whenever(keepAlivePersistence.has(getCurrentNetworkKey())).thenReturn(false)
 
@@ -282,7 +282,7 @@ class AdaptiveKeepAliveStateHandlerTest {
                 lastSuccessfulKA = 2,
                 currentStep = 2,
                 currentKA = 4,
-                currentUpperBound = 5,
+                currentUpperBound = 5
             )
         }
 
@@ -314,7 +314,7 @@ class AdaptiveKeepAliveStateHandlerTest {
                 lastSuccessfulKA = 2,
                 currentStep = 2,
                 currentKA = 2,
-                currentUpperBound = 5,
+                currentUpperBound = 5
             )
         }
 
@@ -346,7 +346,7 @@ class AdaptiveKeepAliveStateHandlerTest {
                 lastSuccessfulKA = 2,
                 currentStep = 2,
                 currentKA = 2,
-                currentUpperBound = 3,
+                currentUpperBound = 3
             )
         }
 
@@ -543,7 +543,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         val keepAlive = KeepAlive(
             networkName = "test-network",
             networkType = adaptiveKeepAliveStateHandler.state.currentNetworkType,
-            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA,
+            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA
         )
         val oldState = adaptiveKeepAliveStateHandler.state
         assertFalse(adaptiveKeepAliveStateHandler.isValidKeepAlive(keepAlive))
@@ -557,7 +557,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         val keepAlive = KeepAlive(
             networkName = adaptiveKeepAliveStateHandler.state.currentNetworkName,
             networkType = adaptiveKeepAliveStateHandler.state.currentNetworkType + 1,
-            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA,
+            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA
         )
         val oldState = adaptiveKeepAliveStateHandler.state
         assertFalse(adaptiveKeepAliveStateHandler.isValidKeepAlive(keepAlive))
@@ -571,7 +571,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         val keepAlive = KeepAlive(
             networkName = adaptiveKeepAliveStateHandler.state.currentNetworkName,
             networkType = adaptiveKeepAliveStateHandler.state.currentNetworkType,
-            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA - 2,
+            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA - 2
         )
         val oldState = adaptiveKeepAliveStateHandler.state
         assertFalse(adaptiveKeepAliveStateHandler.isValidKeepAlive(keepAlive))
@@ -585,7 +585,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         val keepAlive = KeepAlive(
             networkName = adaptiveKeepAliveStateHandler.state.currentNetworkName,
             networkType = adaptiveKeepAliveStateHandler.state.currentNetworkType,
-            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA,
+            keepAliveMinutes = adaptiveKeepAliveStateHandler.state.currentKA
         )
         val oldState = adaptiveKeepAliveStateHandler.state
         assertTrue(adaptiveKeepAliveStateHandler.isValidKeepAlive(keepAlive))
@@ -621,7 +621,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         with(adaptiveKeepAliveStateHandler) {
             state = state.copy(
                 currentNetworkType = OLD_NETWORK_TYPE,
-                currentNetworkName = OLD_NETWORK,
+                currentNetworkName = OLD_NETWORK
             )
         }
     }
@@ -630,7 +630,7 @@ class AdaptiveKeepAliveStateHandlerTest {
         with(adaptiveKeepAliveStateHandler) {
             state = state.copy(
                 currentNetworkType = CURRENT_NETWORK_TYPE,
-                currentNetworkName = CURRENT_NETWORK,
+                currentNetworkName = CURRENT_NETWORK
             )
         }
     }

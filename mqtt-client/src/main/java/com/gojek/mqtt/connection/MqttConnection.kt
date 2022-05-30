@@ -97,11 +97,8 @@ internal class MqttConnection(
         this.subscriptionPolicy = connectionConfig.subscriptionRetryPolicy
         this.unsubscriptionPolicy = connectionConfig.unsubscriptionRetryPolicy
         this.logger = connectionConfig.logger
-        this.mqttExceptionHandler = MqttExceptionHandlerImpl(
-            runnableScheduler,
-            connectRetryTimePolicy,
-            logger
-        )
+        this.mqttExceptionHandler =
+            MqttExceptionHandlerImpl(runnableScheduler, connectRetryTimePolicy, logger)
     }
 
     override fun connect(
@@ -266,7 +263,6 @@ internal class MqttConnection(
     }
 
     override fun handleException(exception: Exception?, reconnect: Boolean) {
-
         // defensive check
         if (exception == null || exception !is MqttException) {
             return

@@ -28,13 +28,13 @@ import com.gojek.chuckmqtt.internal.utils.highlightWithDefinedColors
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
+import kotlin.reflect.KClass
 import kotlinx.android.synthetic.main.activity_transaction_detail.send_receive_view
 import kotlinx.android.synthetic.main.activity_transaction_detail.toolbar_title
 import kotlinx.android.synthetic.main.fragment_transaction_detail.copy
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_body
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_info
 import kotlinx.android.synthetic.main.fragment_transaction_detail.transaction_detail_loader
-import kotlin.reflect.KClass
 
 internal class TransactionDetailFragment :
     FoodMviBaseFragment<TransactionDetailIntent, TransactionDetailViewState, TransactionDetailFragmentViewModel>(),
@@ -199,14 +199,15 @@ internal class TransactionDetailFragment :
     override fun onQueryTextSubmit(query: String): Boolean = false
 
     override fun onQueryTextChange(newText: String): Boolean {
-        if (newText.isNotBlank())
+        if (newText.isNotBlank()) {
             packet_body.text = originalBody?.highlightWithDefinedColors(
                 newText,
                 backgroundSpanColor,
                 foregroundSpanColor
             )
-        else
+        } else {
             packet_body.text = originalBody
+        }
         return true
     }
 }

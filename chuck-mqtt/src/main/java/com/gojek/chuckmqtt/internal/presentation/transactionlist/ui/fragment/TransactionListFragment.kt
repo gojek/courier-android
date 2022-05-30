@@ -25,9 +25,9 @@ import com.gojek.chuckmqtt.internal.utils.extensions.ifTrue
 import com.gojek.chuckmqtt.internal.utils.extensions.show
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
+import kotlin.reflect.KClass
 import kotlinx.android.synthetic.main.fragment_transaction_list.transaction_list
 import kotlinx.android.synthetic.main.fragment_transaction_list.transaction_list_loader
-import kotlin.reflect.KClass
 
 internal class TransactionListFragment :
     FoodMviBaseFragment<TransactionListIntent, TransactionListViewState, TransactionListFragmentViewModel>() {

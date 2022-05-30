@@ -15,5 +15,5 @@ internal data class AdaptiveKeepAliveState(
     val lowerBound: Int,
     val upperBound: Int,
     val step: Int,
-    val optimalKeepAliveResetLimit: Int,
+    val optimalKeepAliveResetLimit: Int
 )

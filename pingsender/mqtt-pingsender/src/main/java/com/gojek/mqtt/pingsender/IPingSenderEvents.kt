@@ -9,6 +9,11 @@ interface IPingSenderEvents {
     fun mqttPingInitiated(serverUri: String, keepAliveSecs: Long)
     fun pingMqttTokenNull(serverUri: String, keepAliveSecs: Long)
     fun pingEventSuccess(serverUri: String, timeTaken: Long, keepAliveSecs: Long)
-    fun pingEventFailure(serverUri: String, timeTaken: Long, exception: Throwable, keepAliveSecs: Long)
+    fun pingEventFailure(
+        serverUri: String,
+        timeTaken: Long,
+        exception: Throwable,
+        keepAliveSecs: Long
+    )
     fun onBackgroundAlarmPingLimitReached()
 }

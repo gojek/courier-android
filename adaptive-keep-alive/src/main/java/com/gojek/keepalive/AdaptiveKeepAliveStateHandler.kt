@@ -11,7 +11,7 @@ internal class AdaptiveKeepAliveStateHandler(
     upperBound: Int,
     step: Int = 1,
     optimalKeepAliveResetLimit: Int,
-    private val persistence: KeepAlivePersistence,
+    private val persistence: KeepAlivePersistence
 ) {
     @VisibleForTesting
     @Volatile
@@ -30,7 +30,7 @@ internal class AdaptiveKeepAliveStateHandler(
         lowerBound = lowerBound,
         upperBound = upperBound,
         step = step,
-        optimalKeepAliveResetLimit = optimalKeepAliveResetLimit,
+        optimalKeepAliveResetLimit = optimalKeepAliveResetLimit
     )
 
     fun onNetworkChanged(networkType: Int, networkName: String) {
@@ -52,7 +52,7 @@ internal class AdaptiveKeepAliveStateHandler(
                     currentKAFailureCount = keepAlive.keepAliveFailureCount,
                     probeCount = keepAlive.probeCount,
                     convergenceTime = keepAlive.convergenceTime,
-                    currentUpperBound = currentUpperBound,
+                    currentUpperBound = currentUpperBound
                 )
                 if (keepAlive.upperBound != state.upperBound) {
                     state = state.copy(
@@ -60,7 +60,7 @@ internal class AdaptiveKeepAliveStateHandler(
                         isOptimalKeepAlive = false,
                         probeCount = 0,
                         convergenceTime = 0,
-                        currentStep = state.step,
+                        currentStep = state.step
                     )
                 }
                 if (keepAlive.lowerBound != state.lowerBound) {
@@ -68,7 +68,7 @@ internal class AdaptiveKeepAliveStateHandler(
                         isOptimalKeepAlive = false,
                         probeCount = 0,
                         convergenceTime = 0,
-                        currentStep = state.step,
+                        currentStep = state.step
                     )
                 }
             } else {
@@ -80,7 +80,7 @@ internal class AdaptiveKeepAliveStateHandler(
     fun updateKeepAliveSuccessState(keepAlive: KeepAlive) {
         state = state.copy(
             lastSuccessfulKA = keepAlive.keepAliveMinutes,
-            currentKAFailureCount = 0,
+            currentKAFailureCount = 0
         )
         if (state.lastSuccessfulKA == state.currentUpperBound) {
             state = state.copy(
@@ -94,7 +94,7 @@ internal class AdaptiveKeepAliveStateHandler(
             state = state.copy(
                 isOptimalKeepAlive = true,
                 lastSuccessfulKA = state.lowerBound,
-                currentKAFailureCount = 0,
+                currentKAFailureCount = 0
             )
         } else {
             val currentUpperBound = keepAlive.keepAliveMinutes - 1
@@ -102,13 +102,13 @@ internal class AdaptiveKeepAliveStateHandler(
                 state = state.copy(
                     currentUpperBound = currentUpperBound,
                     isOptimalKeepAlive = true,
-                    currentKAFailureCount = 0,
+                    currentKAFailureCount = 0
                 )
             } else if (state.currentStep > 1) {
                 state = state.copy(
                     currentUpperBound = currentUpperBound,
                     currentStep = state.currentStep / 2,
-                    currentKAFailureCount = 0,
+                    currentKAFailureCount = 0
                 )
             }
         }
@@ -116,7 +116,7 @@ internal class AdaptiveKeepAliveStateHandler(
 
     fun updateOptimalKeepAliveFailureState() {
         state = state.copy(
-            optimalKAFailureCount = state.optimalKAFailureCount + 1,
+            optimalKAFailureCount = state.optimalKAFailureCount + 1
         )
     }
 
@@ -145,7 +145,7 @@ internal class AdaptiveKeepAliveStateHandler(
         } else {
             state.copy(
                 currentKA = keepAlive,
-                currentKAFailureCount = 0,
+                currentKAFailureCount = 0
             )
         }
     }
@@ -181,7 +181,7 @@ internal class AdaptiveKeepAliveStateHandler(
     fun updateProbeCountAndConvergenceTime() {
         state = state.copy(
             probeCount = state.probeCount + 1,
-            convergenceTime = state.convergenceTime + state.currentKA,
+            convergenceTime = state.convergenceTime + state.currentKA
         )
     }
 

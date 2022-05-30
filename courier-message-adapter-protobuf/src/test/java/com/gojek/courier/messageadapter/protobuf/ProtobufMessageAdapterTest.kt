@@ -3,9 +3,9 @@ package com.gojek.courier.messageadapter.protobuf
 import com.gojek.courier.Message
 import com.gojek.courier.MessageAdapter
 import com.gojek.courier.messageadapter.protobuf.UserProtos.User
-import org.junit.Test
 import java.util.Base64
 import kotlin.test.assertEquals
+import org.junit.Test
 
 class ProtobufMessageAdapterTest {
     private val protobufMessageAdapterFactory = ProtobufMessageAdapterFactory()

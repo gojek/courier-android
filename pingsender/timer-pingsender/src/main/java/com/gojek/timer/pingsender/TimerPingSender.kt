@@ -7,11 +7,12 @@ import com.gojek.courier.utils.Clock
 import com.gojek.mqtt.pingsender.IPingSenderEvents
 import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
+import java.util.Timer
+import java.util.TimerTask
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.internal.ClientComms
-import java.util.*
 
 /**
  * Default ping sender implementation

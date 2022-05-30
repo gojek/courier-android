@@ -1,7 +1,7 @@
 package plugin
 
-import com.diffplug.gradle.spotless.SpotlessPlugin
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.diffplug.gradle.spotless.SpotlessPlugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.getByType
@@ -13,7 +13,14 @@ internal fun Project.configureSpotless() {
         kotlin {
             target("**/*.kt")
             targetExclude("**/build/**/*.kt")
-            ktlint("0.43.0").userData(mapOf("android" to "true"))
+            ktlint("0.43.0")
+                .setUseExperimental(true)
+                .userData(
+                    mapOf(
+                        "android" to "true",
+                        "max_line_length" to "off"
+                    )
+                )
         }
 
         format("kts") {

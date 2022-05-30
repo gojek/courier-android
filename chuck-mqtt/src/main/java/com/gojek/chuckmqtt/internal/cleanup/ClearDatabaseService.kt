@@ -23,9 +23,10 @@ internal class ClearDatabaseService : IntentService(CLEAN_DATABASE_SERVICE_NAME)
                     .subscribe(
                         {
                             notificationUseCase.dismissNotification()
-                        }, {
-                        // no ops
-                    }
+                        },
+                        {
+                            // no ops
+                        }
                     )
             }
         }

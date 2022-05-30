@@ -28,10 +28,11 @@ internal class RetentionManager @JvmOverloads constructor(
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, 0)
 
     init {
-        cleanupFrequency = if (retentionPeriod == Period.ONE_HOUR)
+        cleanupFrequency = if (retentionPeriod == Period.ONE_HOUR) {
             TimeUnit.MINUTES.toMillis(30)
-        else
+        } else {
             TimeUnit.HOURS.toMillis(2)
+        }
     }
 
     /**

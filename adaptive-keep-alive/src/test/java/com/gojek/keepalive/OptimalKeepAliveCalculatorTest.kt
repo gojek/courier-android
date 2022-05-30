@@ -12,12 +12,12 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
+import kotlin.test.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
 class OptimalKeepAliveCalculatorTest {
@@ -39,7 +39,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test networkStateListener onStateChanged should notify state handler when network is connected`() {
+    fun `test onStateChanged should notify state handler when network is connected`() {
         val networkState = mock<NetworkState>()
         val netInfo = mock<NetworkInfo>()
         whenever(networkState.isConnected).thenReturn(true)
@@ -60,7 +60,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test networkStateListener onStateChanged should not notify state handler when network is not connected`() {
+    fun `test onStateChanged should not notify state handler when network is not connected`() {
         val networkState = mock<NetworkState>()
         whenever(networkState.isConnected).thenReturn(false)
 
@@ -83,7 +83,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test getUnderTrialKeepAlive when optimal keep alive is not found and current keep alive failure limit is not exceeded`() {
+    fun `test when optimal KA is not found and current KA failure limit is not exceeded`() {
         val keepAlive = mock<KeepAlive>()
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
         whenever(stateHandler.isCurrentKeepAliveFailureLimitExceeded()).thenReturn(false)
@@ -101,7 +101,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test getUnderTrialKeepAlive when optimal keep alive is not found and current keep alive failure limit is exceeded`() {
+    fun `test when optimal KA is not found and current KA failure limit is exceeded`() {
         val keepAlive = mock<KeepAlive>()
         val optimalKeepAlive = mock<KeepAlive>()
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false, true)
@@ -134,7 +134,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onKeepAliveSuccess when keep alive succeeded is valid and optimal keep alive is found`() {
+    fun `test when keep alive succeeded is valid and optimal keep alive is found`() {
         val keepAlive = mock<KeepAlive>()
         val optimalKeepAlive = KeepAlive(1, "test-network", 5)
         val probeCount = 7
@@ -162,7 +162,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onKeepAliveSuccess when keep alive succeeded is valid and optimal keep alive is not found`() {
+    fun `test when keep alive succeeded is valid and optimal keep alive is not found`() {
         val keepAlive = mock<KeepAlive>()
         whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(true)
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
@@ -186,7 +186,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onKeepAliveFailure when keep alive failed is valid and optimal keep alive is found`() {
+    fun `test when keep alive failed is valid and optimal keep alive is found`() {
         val keepAlive = mock<KeepAlive>()
         val optimalKeepAlive = KeepAlive(1, "test-network", 5)
         val probeCount = 7
@@ -214,7 +214,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onKeepAliveFailure when keep alive failed is valid and optimal keep alive is not found`() {
+    fun `test when keep alive failed is valid and optimal keep alive is not found`() {
         val keepAlive = mock<KeepAlive>()
         whenever(stateHandler.isValidKeepAlive(keepAlive)).thenReturn(true)
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(false)
@@ -242,7 +242,10 @@ class OptimalKeepAliveCalculatorTest {
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
         whenever(stateHandler.getOptimalKeepAlive()).thenReturn(optimalKeepAlive)
 
-        assertEquals(optimalKeepAlive.keepAliveMinutes, optimalKeepAliveCalculator.getOptimalKeepAlive())
+        assertEquals(
+            optimalKeepAlive.keepAliveMinutes,
+            optimalKeepAliveCalculator.getOptimalKeepAlive()
+        )
 
         verify(stateHandler).isOptimalKeepAliveFound()
         verify(stateHandler).getOptimalKeepAlive()
@@ -258,7 +261,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onOptimalKeepAliveFailure when optimal keep alive is found and failure limit is exceeded`() {
+    fun `test when optimal keep alive is found and failure limit is exceeded`() {
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
         whenever(stateHandler.isOptimalKeepAliveFailureLimitExceeded()).thenReturn(true)
 
@@ -271,7 +274,7 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onOptimalKeepAliveFailure when optimal keep alive is found and failure limit is not exceeded`() {
+    fun `test when optimal keep alive is found and failure limit is not exceeded`() {
         whenever(stateHandler.isOptimalKeepAliveFound()).thenReturn(true)
         whenever(stateHandler.isOptimalKeepAliveFailureLimitExceeded()).thenReturn(false)
 

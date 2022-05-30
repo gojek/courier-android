@@ -8,6 +8,9 @@ import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import java.util.Timer
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertEquals
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
@@ -17,9 +20,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
 class TimerPingSenderTest {

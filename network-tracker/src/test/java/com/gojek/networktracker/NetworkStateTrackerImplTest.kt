@@ -15,9 +15,9 @@ import com.nhaarman.mockitokotlin2.spy
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import kotlin.test.assertEquals
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class NetworkStateTrackerImplTest {
     private val context = mock<Context>()

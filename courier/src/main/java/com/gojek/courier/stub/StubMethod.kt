@@ -51,7 +51,9 @@ internal sealed class StubMethod {
 
         fun create(method: Method): StubMethod? {
             val annotationsParser = MethodAnnotationsParser(
-                method, streamAdapterResolver, messageAdapterResolver
+                method,
+                streamAdapterResolver,
+                messageAdapterResolver
             )
             return annotationsParser.stubMethod
         }

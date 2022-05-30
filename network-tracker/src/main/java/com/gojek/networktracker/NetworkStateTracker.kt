@@ -42,10 +42,12 @@ internal class NetworkStateTrackerImpl(
     @RequiresApi(Build.VERSION_CODES.N)
     @VisibleForTesting
     internal lateinit var mNetworkCallback: NetworkStateCallback
+
     @VisibleForTesting
     internal lateinit var mBroadcastReceiver: NetworkStateBroadcastReceiver
 
     private val mLock = Any()
+
     @VisibleForTesting
     internal val mListeners = linkedSetOf<NetworkStateListener>()
 
@@ -236,7 +238,8 @@ internal class NetworkStateTrackerImpl(
         ) {
             // The Network parameter is unreliable when a VPN app is running - use active network.
             logger.d(
-                "NetworkStateTracker", String.format("Network capabilities changed: %s", capabilities)
+                "NetworkStateTracker",
+                String.format("Network capabilities changed: %s", capabilities)
             )
             setState(getActiveNetworkState())
         }

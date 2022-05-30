@@ -43,11 +43,11 @@ import com.gojek.courier.utils.extensions.addImmutableFlag
 import com.gojek.mqtt.pingsender.IPingSenderEvents
 import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
+import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.internal.ClientComms
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Default ping sender implementation on Android. It is based on AlarmManager.
@@ -91,7 +91,10 @@ internal class AlarmPingSender(
          */try {
             applicationContext.registerReceiver(alarmReceiver, IntentFilter(action))
             pendingIntent = PendingIntent.getBroadcast(
-                applicationContext, 0, Intent(action), FLAG_UPDATE_CURRENT.addImmutableFlag()
+                applicationContext,
+                0,
+                Intent(action),
+                FLAG_UPDATE_CURRENT.addImmutableFlag()
             )
             schedule(comms.keepAlive)
             hasStarted = true

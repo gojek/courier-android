@@ -14,6 +14,8 @@ class RxJava2StreamAdapterFactory : StreamAdapter.Factory {
     override fun create(type: Type): StreamAdapter<Any, Any> = when (type.getRawType()) {
         Flowable::class.java -> FlowableStreamAdapter()
         Observable::class.java -> ObservableStreamAdapter()
-        else -> throw IllegalArgumentException("$type is not supported by this StreamAdapterFactory")
+        else -> throw IllegalArgumentException(
+            "$type is not supported by this StreamAdapterFactory"
+        )
     }
 }

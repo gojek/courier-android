@@ -26,5 +26,5 @@ internal data class ConnectionConfig(
     val mqttInterceptorList: List<MqttInterceptor>,
     val persistenceOptions: PersistenceOptions,
     val inactivityTimeoutSeconds: Int,
-    val policyResetTimeSeconds: Int,
+    val policyResetTimeSeconds: Int
 )

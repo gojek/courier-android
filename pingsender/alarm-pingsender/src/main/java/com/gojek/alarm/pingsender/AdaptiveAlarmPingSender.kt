@@ -80,7 +80,10 @@ internal class AdaptiveAlarmPingSender(
          */try {
             applicationContext.registerReceiver(alarmReceiver, IntentFilter(action))
             pendingIntent = PendingIntent.getBroadcast(
-                applicationContext, 1, Intent(action), FLAG_UPDATE_CURRENT.addImmutableFlag()
+                applicationContext,
+                1,
+                Intent(action),
+                FLAG_UPDATE_CURRENT.addImmutableFlag()
             )
             schedule(0)
             hasStarted = true

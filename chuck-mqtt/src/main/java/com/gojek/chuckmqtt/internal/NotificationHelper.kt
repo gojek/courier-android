@@ -106,7 +106,8 @@ internal class NotificationHelper(private val context: Context) {
         val intent = PendingIntent.getService(
             context,
             INTENT_REQUEST_CODE,
-            deleteIntent, FLAG_ONE_SHOT.addImmutableFlag()
+            deleteIntent,
+            FLAG_ONE_SHOT.addImmutableFlag()
         )
         return NotificationCompat.Action(R.drawable.mqtt_chuck_ic_delete_white_24dp, clearTitle, intent)
     }

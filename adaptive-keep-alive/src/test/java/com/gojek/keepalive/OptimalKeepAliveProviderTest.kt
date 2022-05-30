@@ -6,11 +6,11 @@ import com.gojek.mqtt.pingsender.KeepAliveCalculator
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import kotlin.test.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
 class OptimalKeepAliveProviderTest {
@@ -41,17 +41,20 @@ class OptimalKeepAliveProviderTest {
     }
 
     @Test
-    fun `test getOptimalKASecondsForCurrentNetwork should init keepAliveCalculator and get current keepalive`() {
+    fun `test getOptimalKASecondsForCurrentNetwork should init KACalculator and get current KA`() {
         val optimalKeepAliveMinutes = 5
         whenever(keepAliveCalculator.getOptimalKeepAlive()).thenReturn(optimalKeepAliveMinutes)
 
-        assertEquals(optimalKeepAliveMinutes * 60, optimalKeepAliveProvider.getOptimalKASecondsForCurrentNetwork())
+        assertEquals(
+            expected = optimalKeepAliveMinutes * 60,
+            actual = optimalKeepAliveProvider.getOptimalKASecondsForCurrentNetwork()
+        )
 
         verify(keepAliveCalculator).getOptimalKeepAlive()
     }
 
     @Test
-    fun `test onOptimalKeepAliveFailure should init keepAliveCalculator and invoke onOptimalKeepAliveFailure`() {
+    fun `test onOptimalKAFailure should init KACalculator & invoke onOptimalKAFailure`() {
         optimalKeepAliveProvider.onOptimalKeepAliveFailure()
 
         verify(keepAliveCalculator).onOptimalKeepAliveFailure()
