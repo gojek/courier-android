@@ -33,6 +33,9 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
