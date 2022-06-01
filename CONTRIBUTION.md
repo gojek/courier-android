@@ -13,11 +13,11 @@ We appreciate pull requests; here are our guidelines:
 
 2.  DO follow our coding style (as described below).
 
-3.  DO run spotlessApply task (./gradlew spotlessApply) before submitting a pull request
+3.  DO run spotlessApply task (`./gradlew spotlessApply`) before submitting a pull request
 
 4.  DO include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
 
-5.  We use the [binary-compatibility-validator plugin][] for tracking the binary compatibility of the APIs we ship. If your change implies changes to any public API, run ./gradlew apiDump to generate the updated API dumps and commit those changes.
+5.  We use the [binary-compatibility-validator plugin][] for tracking the binary compatibility of the APIs we ship. If your change implies changes to any public API, run `./gradlew apiDump` to generate the updated API dumps and commit those changes.
 
 5.  We ask that you squash all the commits together before
     pushing and that your commit message references the bug.
@@ -28,7 +28,7 @@ We appreciate pull requests; here are our guidelines:
 
 The coding style employed here [Kotlin Coding Conventions][4].
 
-We use [Spotless][8] with ktlint for Kotlin code formatting. To make sure the IDE agrees with rules we use, please run ./gradlew ktlintApplyToIdea to generate IntelliJ IDEA / Android Studio Kotlin style files in the project .idea/ folder.
+We use [Spotless][8] with ktlint for Kotlin code formatting. To make sure the IDE agrees with rules we use, please run `./gradlew ktlintApplyToIdea` to generate IntelliJ IDEA / Android Studio Kotlin style files in the project .idea/ folder.
 
 ## Issue Reporting
 - Check that the issue has not already been reported.
