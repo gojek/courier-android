@@ -39,7 +39,8 @@ const sidebars = {
         "SendReceiveMessage",
         "MessageStreamAdapters",
         "ExperimentConfigs",
-        "Authenticator"
+        "Authenticator",
+        "NonStandardOptions"
       ],
     },
     {
