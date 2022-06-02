@@ -6,7 +6,7 @@ internal class UnsubscribeRunnable(
     private val clientSchedulerBridge: IClientSchedulerBridge,
     private val topics: Set<String>
 ) : Runnable {
-        override fun run() {
-            clientSchedulerBridge.unsubscribeMqtt(topics)
-        }
+    override fun run() {
+        clientSchedulerBridge.unsubscribeMqtt(topics)
     }
+}

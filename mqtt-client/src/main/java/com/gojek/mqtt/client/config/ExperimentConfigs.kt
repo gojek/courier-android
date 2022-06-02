@@ -12,5 +12,5 @@ data class ExperimentConfigs(
     val inactivityTimeoutSeconds: Int = DEFAULT_INACTIVITY_TIMEOUT_SECS,
     val policyResetTimeSeconds: Int = DEFAULT_POLICY_RESET_TIME_SECS,
     val incomingMessagesTTLSecs: Long = 360,
-    val incomingMessagesCleanupIntervalSecs: Long = 60,
+    val incomingMessagesCleanupIntervalSecs: Long = 60
 )

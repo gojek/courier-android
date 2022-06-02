@@ -15,15 +15,14 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
+import java.lang.RuntimeException
+import kotlin.test.assertEquals
 import okhttp3.ResponseBody
 import org.junit.After
 import org.junit.Test
 import retrofit2.Call
 import retrofit2.HttpException
 import retrofit2.Response
-import java.lang.RuntimeException
-import kotlin.test.assertEquals
-
 
 class HttpAuthenticatorTest {
     private val apiService = mock<ApiService>()
@@ -63,7 +62,7 @@ class HttpAuthenticatorTest {
         whenever(call.execute()).thenReturn(Response.success(response))
         whenever(apiService.authenticate(apiUrl, headerMap)).thenReturn(call)
         whenever(responseHandler.handleResponse(response, connectOptions)).thenReturn(newConnectOptions)
-        whenever(clock.nanoTime()).thenReturn(1000*1000000L, 1010*1000000L)
+        whenever(clock.nanoTime()).thenReturn(1000 * 1000000L, 1010 * 1000000L)
 
         val updatedConnectOptions = httpAuthenticator.authenticate(connectOptions, false)
 
@@ -85,7 +84,7 @@ class HttpAuthenticatorTest {
         whenever(call.execute()).thenReturn(Response.success(response))
         whenever(apiService.authenticate(apiUrl, headerMap)).thenReturn(call)
         whenever(responseHandler.handleResponse(response, connectOptions)).thenReturn(newConnectOptions)
-        whenever(clock.nanoTime()).thenReturn(1000*1000000L, 1010*1000000L)
+        whenever(clock.nanoTime()).thenReturn(1000 * 1000000L, 1010 * 1000000L)
 
         val updatedConnectOptions = httpAuthenticator.authenticate(connectOptions, true)
 
@@ -106,7 +105,7 @@ class HttpAuthenticatorTest {
         whenever(apiService.authenticate(apiUrl, headerMap)).thenReturn(call)
         whenever(response.isSuccessful).thenReturn(false)
         whenever(authRetryPolicy.getRetrySeconds(any<HttpException>())).thenReturn(5)
-        whenever(clock.nanoTime()).thenReturn(1000*1000000L)
+        whenever(clock.nanoTime()).thenReturn(1000 * 1000000L)
 
         try {
             httpAuthenticator.authenticate(connectOptions, true)
@@ -123,7 +122,7 @@ class HttpAuthenticatorTest {
     fun `test authenticate with force refresh as true and api call failure`() {
         whenever(apiService.authenticate(apiUrl, headerMap)).thenThrow(RuntimeException("Test"))
         whenever(authRetryPolicy.getRetrySeconds(any<RuntimeException>())).thenReturn(5)
-        whenever(clock.nanoTime()).thenReturn(1000*1000000L)
+        whenever(clock.nanoTime()).thenReturn(1000 * 1000000L)
 
         try {
             httpAuthenticator.authenticate(connectOptions, true)

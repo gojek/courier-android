@@ -9,8 +9,8 @@ import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
-import org.junit.Test
 import kotlin.test.assertEquals
+import org.junit.Test
 
 class MoshiMessageAdapterTest {
 

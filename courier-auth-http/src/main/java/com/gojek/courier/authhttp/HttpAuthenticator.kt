@@ -21,7 +21,7 @@ internal class HttpAuthenticator(
     private val eventHandler: EventHandler,
     private val clock: Clock = Clock(),
     private val headerMap: Map<String, String>
-): Authenticator {
+) : Authenticator {
 
     override fun authenticate(
         connectOptions: MqttConnectOptions,

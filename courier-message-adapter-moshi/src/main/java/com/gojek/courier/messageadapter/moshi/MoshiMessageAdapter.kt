@@ -6,8 +6,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonQualifier
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import okio.ByteString
 import java.lang.reflect.Type
+import okio.ByteString
 
 /**
  * A [message adapter][MessageAdapter] that uses Moshi.

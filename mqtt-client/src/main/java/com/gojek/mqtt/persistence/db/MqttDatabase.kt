@@ -14,7 +14,7 @@ import com.gojek.mqtt.persistence.model.MqttReceivePacket
     ],
     version = MQTT_DB_VERSION
 )
-internal abstract class MqttDatabase: RoomDatabase() {
+internal abstract class MqttDatabase : RoomDatabase() {
     abstract fun incomingMessagesDao(): IncomingMessagesDao
 
     abstract fun pahoMessagesDao(): PahoMessagesDao

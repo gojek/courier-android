@@ -5,7 +5,7 @@ import android.content.SharedPreferences as AndroidSharedPreferences
 @Suppress("UNCHECKED_CAST")
 internal class CourierSharedPreferencesImpl(
     private val sharedPreferences: AndroidSharedPreferences
-): CourierSharedPreferences {
+) : CourierSharedPreferences {
     override fun has(key: String): Boolean {
         return sharedPreferences.contains(key)
     }

@@ -7,8 +7,8 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Test
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
@@ -17,8 +17,10 @@ import org.mockito.junit.MockitoJUnitRunner
 class PersistableSubscriptionStoreTest {
     @Mock
     private lateinit var context: Context
+
     @Mock
     private lateinit var sharedPreferences: SharedPreferences
+
     @Mock
     private lateinit var editor: SharedPreferences.Editor
 
@@ -57,54 +59,60 @@ class PersistableSubscriptionStoreTest {
         val topic4 = "topic4" to QoS.ONE
         val topic5 = "topic5" to QoS.ONE
 
-        //Test when topic1, topic2, topic3 are subscribed for the first time
+        // Test when topic1, topic2, topic3 are subscribed for the first time
         subscriptionStore.subscribeTopics(mapOf(topic1, topic2, topic3))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic2, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 0)
 
-        //Test subscribing topic3 when its already subscribed
+        // Test subscribing topic3 when its already subscribed
         subscriptionStore.subscribeTopics(mapOf(topic3))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic2, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 0)
 
-        //Test unsubscribing topic2 when its subscribed
+        // Test unsubscribing topic2 when its subscribed
         subscriptionStore.unsubscribeTopics(listOf(topic2.first))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 2)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 1)
         assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic2.first))
 
-        //Test unsubscribing topic4 when its subscribed
+        // Test unsubscribing topic4 when its subscribed
         subscriptionStore.unsubscribeTopics(listOf(topic4.first))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 2)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 2)
-        assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic2.first, topic4.first))
+        assertEquals(
+            subscriptionStore.getUnsubscribeTopics(false),
+            setOf(topic2.first, topic4.first)
+        )
 
-        //Test subscribing topic5 when its not subscribed
+        // Test subscribing topic5 when its not subscribed
         subscriptionStore.subscribeTopics(mapOf(topic5))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic5, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 2)
-        assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic2.first, topic4.first))
+        assertEquals(
+            subscriptionStore.getUnsubscribeTopics(false),
+            setOf(topic2.first, topic4.first)
+        )
 
-        //Test notifying unsubscribe success of topic2
+        // Test notifying unsubscribe success of topic2
         subscriptionStore.getListener().onTopicsUnsubscribed(setOf(topic2.first))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic5, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 1)
         assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic4.first))
 
-        //Test notifying unsubscribe success of topic5
+        // Test notifying unsubscribe success of topic5
         subscriptionStore.getListener().onTopicsSubscribed(mapOf(topic5))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic5, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 1)
         assertEquals(subscriptionStore.getUnsubscribeTopics(false), setOf(topic4.first))
 
-        //Test getUnsubscribeTopics with cleansession true
+        // Test getUnsubscribeTopics with cleansession true
         subscriptionStore.getListener().onTopicsSubscribed(mapOf(topic5))
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic5, topic3))

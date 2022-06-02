@@ -57,5 +57,4 @@ internal class NotificationUseCaseImpl(
             }
         }
     }
-
 }

@@ -2,9 +2,9 @@ package com.gojek.courier.streamadapter.coroutines
 
 import com.gojek.courier.StreamAdapter
 import com.gojek.courier.utils.getRawType
+import java.lang.reflect.Type
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
-import java.lang.reflect.Type
 
 /**
  * A [stream adapter factory][StreamAdapter.Factory] that uses ReceiveChannel.

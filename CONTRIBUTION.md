@@ -11,10 +11,24 @@ We appreciate pull requests; here are our guidelines:
     new issue beforehand, and you can always email
     <foss+tech@go-jek.com> about future work.
 
-2.  Please follow [Kotlin Coding Conventions][4].
+2.  DO follow our coding style (as described below).
 
-3.  We ask that you squash all the commits together before
+3.  DO run spotlessApply task (`./gradlew spotlessApply`) before submitting a pull request
+
+4.  DO include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
+
+5.  We use the [binary-compatibility-validator plugin][] for tracking the binary compatibility of the APIs we ship. If your change implies changes to any public API, run `./gradlew apiDump` to generate the updated API dumps and commit those changes.
+
+5.  We ask that you squash all the commits together before
     pushing and that your commit message references the bug.
+
+6.  DON'T surprise us with big pull requests. Instead, file an issue and start a discussion so we can agree on a direction before you invest a large amount of time.
+
+## Coding Style
+
+The coding style employed here [Kotlin Coding Conventions][4].
+
+We use [Spotless][8] with ktlint for Kotlin code formatting. To make sure the IDE agrees with rules we use, please run `./gradlew ktlintApplyToIdea` to generate IntelliJ IDEA / Android Studio Kotlin style files in the project .idea/ folder.
 
 ## Issue Reporting
 - Check that the issue has not already been reported.
@@ -42,3 +56,5 @@ GO-JEK Tech
 [5]: http://gun.io/blog/how-to-github-fork-branch-and-pull-request
 [6]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [7]: https://help.github.com/articles/using-pull-requests
+[8]: https://github.com/diffplug/spotless
+[9]: https://github.com/Kotlin/binary-compatibility-validator

@@ -82,7 +82,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
             }
             is MqttPublish -> {
                 sb.append("<b> Qos : </b> ${mqttWireMessage.message.qos} <br />")
-                if(mqttWireMessage.message.qos > 0) {
+                if (mqttWireMessage.message.qos > 0) {
                     sb.append("<b> MsgId : </b> ${mqttWireMessage.messageId} <br />")
                 }
                 sb.append("<b> Retained : </b> ${mqttWireMessage.message.isRetained} <br />")
@@ -103,7 +103,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
             is MqttSubscribe -> {
                 sb.append("<b> MsgId : </b> ${mqttWireMessage.messageId} <br />")
                 sb.append("<b> Topics : </b>")
-                for(i in 0 until mqttWireMessage.count) {
+                for (i in 0 until mqttWireMessage.count) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -111,7 +111,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
                 }
                 sb.append("<br />")
                 sb.append("<b> Qos : </b>")
-                for(i in 0 until mqttWireMessage.count) {
+                for (i in 0 until mqttWireMessage.count) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -122,7 +122,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
             is MqttSuback -> {
                 sb.append("<b> MsgId : </b> ${mqttWireMessage.messageId} <br />")
                 sb.append("<b> Granted Qos : </b>")
-                for(i in mqttWireMessage.grantedQos.indices) {
+                for (i in mqttWireMessage.grantedQos.indices) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -133,7 +133,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
             is MqttUnsubscribe -> {
                 sb.append("<b> MsgId : </b> ${mqttWireMessage.messageId} <br />")
                 sb.append("<b> Topics : </b>")
-                for(i in 0 until mqttWireMessage.count) {
+                for (i in 0 until mqttWireMessage.count) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -158,7 +158,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
     }
 
     private fun getPacketBody(mqttWireMessage: MqttWireMessage): String {
-        return when(mqttWireMessage) {
+        return when (mqttWireMessage) {
             is MqttPublish -> {
                 formatBody(String(mqttWireMessage.message.payload, UTF_8))
             } else -> ""
@@ -169,7 +169,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
         val sb = StringBuilder()
         sb.append("<b> Qos : </b> ${mqttMessage.qos} <br />")
         sb.append("<b> Retained : </b> ${mqttMessage.isRetained} <br />")
-        sb.append("<b> payload : </b><br /> ${String(mqttMessage.payload,  UTF_8)} <br />")
+        sb.append("<b> payload : </b><br /> ${String(mqttMessage.payload, UTF_8)} <br />")
         return sb.toString()
     }
 
@@ -202,7 +202,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
             is MqttPublish -> {
                 sb.append("PUBLISH \n")
                 sb.append("Qos : ${mqttWireMessage.message.qos} \n")
-                if(mqttWireMessage.message.qos > 0) {
+                if (mqttWireMessage.message.qos > 0) {
                     sb.append("MsgId : ${mqttWireMessage.messageId} \n")
                 }
                 sb.append("Retained : ${mqttWireMessage.message.isRetained} \n")
@@ -231,7 +231,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
                 sb.append("SUBSCRIBE \n")
                 sb.append("MsgId : ${mqttWireMessage.messageId} ")
                 sb.append("Subscribe Topics : ")
-                for(i in 0 until mqttWireMessage.count) {
+                for (i in 0 until mqttWireMessage.count) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -239,7 +239,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
                 }
                 sb.append("\n")
                 sb.append("Qos : ")
-                for(i in 0 until mqttWireMessage.count) {
+                for (i in 0 until mqttWireMessage.count) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -251,7 +251,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
                 sb.append("SUBACK \n")
                 sb.append("MsgId : ${mqttWireMessage.messageId} \n")
                 sb.append("Granted Qos : ")
-                for(i in mqttWireMessage.grantedQos.indices) {
+                for (i in mqttWireMessage.grantedQos.indices) {
                     if (i > 0) {
                         sb.append(", ")
                     }
@@ -263,7 +263,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
                 sb.append("UNSUBSCRIBE \n")
                 sb.append("MsgId : ${mqttWireMessage.messageId} \n")
                 sb.append("Unsubscribe Topics : ")
-                for(i in mqttWireMessage.names.indices) {
+                for (i in mqttWireMessage.names.indices) {
                     if (i > 0) {
                         sb.append(", ")
                     }

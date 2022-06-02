@@ -72,7 +72,6 @@ internal class MethodAnnotationsParser(
             streamAdapter,
             argumentProcessor
         )
-
     }
 
     private fun parseSendMethodAnnotations(method: Method) {
@@ -208,7 +207,7 @@ internal class MethodAnnotationsParser(
                 "@Path parameter name must match ${PARAM_URL_REGEX.pattern()}. Found: $name"
             )
         }
-        if(pathVariablesMap.contains(name).not()) {
+        if (pathVariablesMap.contains(name).not()) {
             throw IllegalArgumentException(
                 "@Path parameter name must be present in topic: $name"
             )
@@ -232,7 +231,7 @@ internal class MethodAnnotationsParser(
 
         private fun Annotation.isStubMethodAnnotation(): Boolean {
             return this is Send || this is Receive || this is Subscribe ||
-                    this is SubscribeMultiple || this is Unsubscribe
+                this is SubscribeMultiple || this is Unsubscribe
         }
 
         private inline fun Method.requireParameterTypes(vararg types: Class<*>, lazyMessage: () -> Any) {
@@ -254,8 +253,8 @@ internal class MethodAnnotationsParser(
                 require(annotations.size == 1) {
                     "A parameter must have one and only one parameter annotation: $parameterIndex"
                 }
-                if(annotations.first() is Data) {
-                    if(index == -1) {
+                if (annotations.first() is Data) {
+                    if (index == -1) {
                         index = parameterIndex
                         break
                     } else {
@@ -263,7 +262,7 @@ internal class MethodAnnotationsParser(
                     }
                 }
             }
-            if(index == -1) {
+            if (index == -1) {
                 throw IllegalArgumentException("No parameter found with @Data annotation")
             }
             return index

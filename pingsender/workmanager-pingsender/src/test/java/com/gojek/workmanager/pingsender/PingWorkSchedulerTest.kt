@@ -10,11 +10,11 @@ import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import kotlin.test.assertEquals
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
 class PingWorkSchedulerTest {
@@ -52,7 +52,7 @@ class PingWorkSchedulerTest {
     }
 }
 
-internal class TestPingWorkScheduler(workManager: WorkManager): PingWorkScheduler(workManager) {
+internal class TestPingWorkScheduler(workManager: WorkManager) : PingWorkScheduler(workManager) {
     override val workName: String
         get() = "test-work"
     override val workerClass: Class<out Worker>

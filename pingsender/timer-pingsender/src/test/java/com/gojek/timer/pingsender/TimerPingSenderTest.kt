@@ -8,6 +8,9 @@ import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import java.util.Timer
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertEquals
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
@@ -17,11 +20,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
-import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @RunWith(MockitoJUnitRunner::class)
 class TimerPingSenderTest {
@@ -56,7 +54,7 @@ class TimerPingSenderTest {
         val argumentCaptor2 = argumentCaptor<Long>()
         verify(timer).schedule(argumentCaptor1.capture(), argumentCaptor2.capture())
         assertEquals(keepAliveMillis, argumentCaptor2.lastValue)
-        verify(pingSenderEvents).mqttPingScheduled(keepAliveMillis/1000, keepAliveMillis/1000)
+        verify(pingSenderEvents).mqttPingScheduled(keepAliveMillis / 1000, keepAliveMillis / 1000)
     }
 
     @Test
@@ -68,7 +66,6 @@ class TimerPingSenderTest {
 
         verify(timer).cancel()
     }
-
 
     @Test
     fun `test sendPing when ping cannot be sent(token = null)`() {
@@ -82,8 +79,8 @@ class TimerPingSenderTest {
 
         pingSender.PingTask().run()
 
-        verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis/1000)
-        verify(pingSenderEvents).pingMqttTokenNull(testUri, keepaliveMillis/1000)
+        verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis / 1000)
+        verify(pingSenderEvents).pingMqttTokenNull(testUri, keepaliveMillis / 1000)
     }
 
     @Test
@@ -102,12 +99,12 @@ class TimerPingSenderTest {
 
         pingSender.PingTask().run()
 
-        verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis/1000)
+        verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis / 1000)
 
         val argumentCaptor = argumentCaptor<IMqttActionListener>()
         verify(mqttToken).actionCallback = argumentCaptor.capture()
         argumentCaptor.lastValue.onSuccess(mqttToken)
-        verify(pingSenderEvents).pingEventSuccess(testUri, 10, keepaliveMillis/1000)
+        verify(pingSenderEvents).pingEventSuccess(testUri, 10, keepaliveMillis / 1000)
     }
 
     @Test
@@ -126,12 +123,12 @@ class TimerPingSenderTest {
 
         pingSender.PingTask().run()
 
-        verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis/1000)
+        verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis / 1000)
 
         val argumentCaptor = argumentCaptor<IMqttActionListener>()
         verify(mqttToken).actionCallback = argumentCaptor.capture()
         val exception = Exception("test")
         argumentCaptor.lastValue.onFailure(mqttToken, exception)
-        verify(pingSenderEvents).pingEventFailure(testUri, 10, exception, keepaliveMillis/1000)
+        verify(pingSenderEvents).pingEventFailure(testUri, 10, exception, keepaliveMillis / 1000)
     }
 }

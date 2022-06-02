@@ -1,6 +1,6 @@
 package com.gojek.mqtt.policies.connectretrytime
 
-import java.util.*
+import java.util.Random
 import java.util.concurrent.atomic.AtomicInteger
 
 class ConnectRetryTimePolicy(
@@ -24,7 +24,9 @@ class ConnectRetryTimePolicy(
         }
         if (reconnectTime.get() > maxReconnectTime) {
             reconnectTime.set(maxReconnectTime)
-        } else if (reconnectTime.get() == 0) { // if reconnectTime is 0, select the random value. This will happen in case of forceExp = true
+        } else if (reconnectTime.get() == 0) {
+            // if reconnectTime is 0, select the random value.
+            // This will happen in case of forceExp = true
             reconnectTime.set(reconnectTimeFixed + random.nextInt(reconnectTimeRandom) + 1)
         }
         return reconnectTime.get()
@@ -56,5 +58,4 @@ class ConnectRetryTimePolicy(
         reconnectTime.set(0)
         retryCount.set(0)
     }
-
 }

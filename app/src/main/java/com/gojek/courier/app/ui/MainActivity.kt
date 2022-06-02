@@ -18,8 +18,6 @@ import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.factory.MqttClientFactory
-import com.gojek.mqtt.client.listener.MessageListener
-import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig

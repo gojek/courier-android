@@ -4,12 +4,19 @@ import android.os.Handler
 import android.os.HandlerThread
 import com.gojek.courier.QoS
 import com.gojek.courier.logging.ILogger
-import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.client.IClientSchedulerBridge
+import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.HandlerThreadNotAliveEvent
 import com.gojek.mqtt.policies.connectretrytime.ConnectRetryTimeConfig
-import com.gojek.mqtt.scheduler.runnable.*
+import com.gojek.mqtt.scheduler.runnable.ActivityCheckRunnable
+import com.gojek.mqtt.scheduler.runnable.AuthFailureRunnable
+import com.gojek.mqtt.scheduler.runnable.ConnectionCheckRunnable
+import com.gojek.mqtt.scheduler.runnable.DisconnectRunnable
+import com.gojek.mqtt.scheduler.runnable.MqttExceptionRunnable
+import com.gojek.mqtt.scheduler.runnable.ResetParamsRunnable
+import com.gojek.mqtt.scheduler.runnable.SubscribeRunnable
+import com.gojek.mqtt.scheduler.runnable.UnsubscribeRunnable
 
 internal class MqttRunnableScheduler(
     private val handlerThread: HandlerThread,
@@ -51,8 +58,10 @@ internal class MqttRunnableScheduler(
             sendThreadEventIfNotAlive()
             disconnectRunnable.setReconnect(reconnect)
             disconnectRunnable.setClearState(clearState)
-            mqttThreadHandler.removeCallbacks(disconnectRunnable) // remove any pending disconnects queued
-            mqttThreadHandler.removeCallbacks(connectionCheckRunnable) // remove any pending connects queued
+            // remove any pending disconnects queued
+            mqttThreadHandler.removeCallbacks(disconnectRunnable)
+            // remove any pending connects queued
+            mqttThreadHandler.removeCallbacks(connectionCheckRunnable)
             mqttThreadHandler.postAtFrontOfQueue(disconnectRunnable)
         } catch (e: Exception) {
             logger.e(TAG, "Exception in MQTT disconnect", e)
@@ -63,7 +72,10 @@ internal class MqttRunnableScheduler(
         try {
             sendThreadEventIfNotAlive()
             mqttThreadHandler.removeCallbacks(activityCheckRunnable)
-            mqttThreadHandler.postDelayed(activityCheckRunnable, activityCheckIntervalSeconds * 1000.toLong())
+            mqttThreadHandler.postDelayed(
+                activityCheckRunnable,
+                activityCheckIntervalSeconds * 1000.toLong()
+            )
         } catch (e: Exception) {
             logger.e(TAG, "Exception scheduleNextActivityCheck", e)
         }
@@ -89,7 +101,10 @@ internal class MqttRunnableScheduler(
         try {
             sendThreadEventIfNotAlive()
             mqttThreadHandler.removeCallbacks(connectionCheckRunnable)
-            mqttThreadHandler.postDelayed(connectionCheckRunnable, reconnectTimeSecs * 1000)
+            mqttThreadHandler.postDelayed(
+                connectionCheckRunnable,
+                reconnectTimeSecs * 1000
+            )
         } catch (e: Exception) {
             logger.e(TAG, "Exception scheduleNextConnectionCheck", e)
         }
@@ -117,7 +132,6 @@ internal class MqttRunnableScheduler(
         } catch (ex: Exception) {
             logger.e(TAG, "Exception scheduleUnsubscribe", ex)
         }
-
     }
 
     override fun scheduleResetParams(delayMillis: Long) {

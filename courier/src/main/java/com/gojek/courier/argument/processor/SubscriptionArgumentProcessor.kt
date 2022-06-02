@@ -3,7 +3,7 @@ package com.gojek.courier.argument.processor
 internal class SubscriptionArgumentProcessor(
     private val pathMap: Map<String, Int>,
     private val topic: String
-): ArgumentProcessor() {
+) : ArgumentProcessor() {
     private var parsedTopic = topic
 
     override fun inject(args: Array<Any>) {

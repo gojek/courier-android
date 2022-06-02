@@ -42,37 +42,4 @@ MQTT has 3 built-in QoS levels for Reliable Message Delivery:
 
 More details about features in Courier library can be found [here][1]
 
-## Non-standard Connection options
-
-### UserProperties in MqttConnectionOptions
-
-This option allows you to send user-properties in CONNECT packet for MQTT v3.1.1.
-
-~~~ kotlin
-val connectOptions = MqttConnectOptions(
-    serverUris = listOf(ServerUri(SERVER_URI, SERVER_PORT)),
-    clientId = clientId,
-    ...
-    userPropertiesMap = mapOf(
-                "key1" to "value1",
-                "key2" to "value2"
-    )
-)
-
-mqttClient.connect(connectOptions)
-~~~
-
-:warning: **
-This is a non-standard option. As far as the MQTT specification is concerned, user-properties support is added in MQTT v5. So to support this in MQTT v3.1.1, broker needs to have support for this as well.
-
-## Contribution Guidelines
-
-Read our [contribution guide](CONTRIBUTION) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Courier Android library.
-
-## License
-
-All Courier modules except Paho are [MIT Licensed](LICENSE). Paho is [Eclipse Licensed](LICENSE.paho).
-
 [1]: https://medium.com/gojekengineering/courier-library-for-gojeks-information-superhighway-368dc5f052fa
-[2]: https://broker.mqttdashboard.com/
-[3]: https://github.com/gojek/courier-android/tree/main/app

@@ -9,7 +9,6 @@ import java.io.Serializable
 
 internal class ClearDatabaseService : IntentService(CLEAN_DATABASE_SERVICE_NAME) {
 
-
     private val mqttChuckUseCase by lazy { MqttChuck.mqttChuckUseCase() }
 
     private val notificationUseCase by lazy { MqttChuck.notificationUseCase() }
@@ -24,7 +23,8 @@ internal class ClearDatabaseService : IntentService(CLEAN_DATABASE_SERVICE_NAME)
                     .subscribe(
                         {
                             notificationUseCase.dismissNotification()
-                        }, {
+                        },
+                        {
                             // no ops
                         }
                     )

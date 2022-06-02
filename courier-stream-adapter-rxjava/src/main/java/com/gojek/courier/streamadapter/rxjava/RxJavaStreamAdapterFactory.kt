@@ -3,21 +3,25 @@ package com.gojek.courier.streamadapter.rxjava
 import com.gojek.courier.Stream
 import com.gojek.courier.StreamAdapter
 import com.gojek.courier.utils.getRawType
+import java.lang.reflect.Type
 import rx.Observable
 import rx.Subscriber
-import java.lang.reflect.Type
 
 class RxJavaStreamAdapterFactory : StreamAdapter.Factory {
 
     override fun create(type: Type): StreamAdapter<Any, Any> = when (type.getRawType()) {
         Observable::class.java -> ObservableStreamAdapter()
-        else -> throw IllegalArgumentException("$type is not supported by this StreamAdapterFactory")
+        else -> throw IllegalArgumentException(
+            "$type is not supported by this StreamAdapterFactory"
+        )
     }
 }
 
 internal class ObservableStreamAdapter<T> : StreamAdapter<T, Observable<T>> {
 
-    override fun adapt(stream: Stream<T>): Observable<T> = Observable.unsafeCreate(StreamOnSubscribe(stream))
+    override fun adapt(stream: Stream<T>): Observable<T> = Observable.unsafeCreate(
+        StreamOnSubscribe(stream)
+    )
 
     private class StreamOnSubscribe<T>(private val stream: Stream<T>) : Observable.OnSubscribe<T> {
 

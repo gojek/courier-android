@@ -2,9 +2,7 @@ package com.gojek.chuckmqtt.internal.presentation.transactiondetail.actionproces
 
 import com.gojek.chuckmqtt.internal.domain.MqttChuckUseCase
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailAction
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailAction.*
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult.*
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult.GetTransactionResult.GetTransactionLoadSuccess
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailResult.GetTransactionResult.GetTransactionLoading
 import io.reactivex.Observable
@@ -23,9 +21,9 @@ internal class DefaultTransactionDetailActionProcessorProvider(
             actions.publish { shared ->
                 Observable.merge(
                     listOf(
-                        shared.ofType(GetTransactionDetailAction::class.java)
+                        shared.ofType(TransactionDetailAction.GetTransactionDetailAction::class.java)
                             .compose(getTransactionDetailActionProcessor),
-                        shared.ofType(ShareTransactionDetailAction::class.java)
+                        shared.ofType(TransactionDetailAction.ShareTransactionDetailAction::class.java)
                             .compose(shareTransactionDetailActionProcessor)
                     )
                 ).cast(TransactionDetailResult::class.java)
@@ -33,24 +31,24 @@ internal class DefaultTransactionDetailActionProcessorProvider(
         }
 
     private val getTransactionDetailActionProcessor =
-        ObservableTransformer<GetTransactionDetailAction, GetTransactionResult> { actions ->
+        ObservableTransformer<TransactionDetailAction.GetTransactionDetailAction, TransactionDetailResult.GetTransactionResult> { actions ->
             actions.flatMap {
                 mqttChuckUseCase.getTransactionById(it.transactionId)
-                    .map<GetTransactionResult> { transactionUiModel ->
+                    .map<TransactionDetailResult.GetTransactionResult> { transactionUiModel ->
                         GetTransactionLoadSuccess(transactionUiModel)
                     }
-                    .cast(GetTransactionResult::class.java)
+                    .cast(TransactionDetailResult.GetTransactionResult::class.java)
                     .startWith(GetTransactionLoading)
                     .subscribeOn(Schedulers.computation())
             }
         }
 
     private val shareTransactionDetailActionProcessor =
-        ObservableTransformer<ShareTransactionDetailAction, ShareTransactionDetailResult> { actions ->
+        ObservableTransformer<TransactionDetailAction.ShareTransactionDetailAction, TransactionDetailResult.ShareTransactionDetailResult> { actions ->
             actions.flatMap {
                 mqttChuckUseCase.getTransactionById(it.transactionId)
                     .map { transactionUiModel ->
-                        ShareTransactionDetailResult(transactionUiModel)
+                        TransactionDetailResult.ShareTransactionDetailResult(transactionUiModel)
                     }
                     .subscribeOn(Schedulers.computation())
             }

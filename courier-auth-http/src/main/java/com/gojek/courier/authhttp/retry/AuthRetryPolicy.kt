@@ -11,6 +11,5 @@ internal class DefaultAuthRetryPolicy : AuthRetryPolicy {
     }
 
     override fun reset() {
-        
     }
 }

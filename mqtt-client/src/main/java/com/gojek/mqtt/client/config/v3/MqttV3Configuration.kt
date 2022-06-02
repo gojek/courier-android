@@ -2,13 +2,13 @@ package com.gojek.mqtt.client.config.v3
 
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.logging.NoOpLogger
-import com.gojek.mqtt.constants.DEFAULT_WAKELOCK_TIMEOUT
 import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttInterceptor
 import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.config.MqttConfiguration
 import com.gojek.mqtt.client.config.PersistenceOptions
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
+import com.gojek.mqtt.constants.DEFAULT_WAKELOCK_TIMEOUT
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.NoOpEventHandler
 import com.gojek.mqtt.exception.handler.v3.AuthFailureHandler

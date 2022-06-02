@@ -2,7 +2,6 @@ buildscript {
     repositories {
         mavenCentral()
         google()
-        // add jcenter repository here
     }
 }
 
@@ -37,6 +36,7 @@ plugins {
 dependencies {
     implementation("com.android.tools.build:gradle:7.0.3")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
-    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.2.0")
+    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.18.0")
+    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.5.0")
 }
 

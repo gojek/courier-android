@@ -11,7 +11,6 @@ android {
     }
 }
 
-
 ext {
     set("PUBLISH_GROUP_ID", "com.gojek.courier")
     set("PUBLISH_ARTIFACT_ID", "app-state-manager")

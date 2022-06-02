@@ -15,7 +15,7 @@ internal class ProxyFactory(
             arrayOf(anInterface),
             createInvocationHandler(anInterface, stubInterface)
         )
-        return anInterface.cast(proxy) !!
+        return anInterface.cast(proxy)!!
     }
 
     private fun createInvocationHandler(

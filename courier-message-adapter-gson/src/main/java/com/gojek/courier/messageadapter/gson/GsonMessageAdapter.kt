@@ -5,11 +5,11 @@ import com.gojek.courier.MessageAdapter
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
-import okio.Buffer
 import java.io.OutputStreamWriter
 import java.io.StringReader
 import java.lang.reflect.Type
 import java.nio.charset.StandardCharsets.UTF_8
+import okio.Buffer
 
 /**
  * A [message adapter][MessageAdapter] that uses Gson.

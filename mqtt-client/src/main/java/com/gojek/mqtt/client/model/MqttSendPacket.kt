@@ -9,7 +9,7 @@ internal data class MqttSendPacket(
     var timestamp: Long,
     var qos: Int,
     var topic: String
-): Parcelable {
+) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.createByteArray()!!,
         parcel.readLong(),

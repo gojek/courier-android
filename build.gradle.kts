@@ -19,7 +19,8 @@ buildscript {
         classpath("com.android.tools.build.jetifier:jetifier-processor:${versions.jetifierProcessor}")
         classpath("androidx.benchmark:benchmark-gradle-plugin:${versions.benchmarkGradlePlugin}")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}")
-        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:${versions.detekt}")
+        classpath("io.gitlab.arturbosch.detekt" +
+            ":detekt-gradle-plugin:${versions.detekt}")
     }
 }
 

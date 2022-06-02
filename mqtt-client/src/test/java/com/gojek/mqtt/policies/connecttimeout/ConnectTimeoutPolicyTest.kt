@@ -12,14 +12,29 @@ class ConnectTimeoutPolicyTest {
 
     @Test
     fun `test getConnectTimeOut`() {
-        assertEquals(connectTimeoutPolicy.getConnectTimeOut(), connectTimeoutConfig.sslUpperBoundConnTimeOut)
+        assertEquals(
+            connectTimeoutPolicy.getConnectTimeOut(),
+            connectTimeoutConfig.sslUpperBoundConnTimeOut
+        )
         connectTimeoutPolicy.updateParams(isSslPort = false)
-        assertEquals(connectTimeoutPolicy.getConnectTimeOut(), connectTimeoutConfig.upperBoundConnTimeOut)
+        assertEquals(
+            connectTimeoutPolicy.getConnectTimeOut(),
+            connectTimeoutConfig.upperBoundConnTimeOut
+        )
         connectTimeoutPolicy.updateParams(isSslPort = true)
-        assertEquals(connectTimeoutPolicy.getConnectTimeOut(), connectTimeoutConfig.sslUpperBoundConnTimeOut)
+        assertEquals(
+            connectTimeoutPolicy.getConnectTimeOut(),
+            connectTimeoutConfig.sslUpperBoundConnTimeOut
+        )
         connectTimeoutPolicy.updateParams(isSslPort = false)
-        assertEquals(connectTimeoutPolicy.getConnectTimeOut(), connectTimeoutConfig.upperBoundConnTimeOut)
+        assertEquals(
+            connectTimeoutPolicy.getConnectTimeOut(),
+            connectTimeoutConfig.upperBoundConnTimeOut
+        )
         connectTimeoutPolicy.resetParams()
-        assertEquals(connectTimeoutPolicy.getConnectTimeOut(), connectTimeoutConfig.sslUpperBoundConnTimeOut)
+        assertEquals(
+            connectTimeoutPolicy.getConnectTimeOut(),
+            connectTimeoutConfig.sslUpperBoundConnTimeOut
+        )
     }
 }

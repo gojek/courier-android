@@ -7,4 +7,4 @@ data class AuthApiException(
     val reasonCode: Int = -1,
     val nextRetrySeconds: Long,
     val failureCause: Throwable
-): Exception(failureCause)
+) : Exception(failureCause)

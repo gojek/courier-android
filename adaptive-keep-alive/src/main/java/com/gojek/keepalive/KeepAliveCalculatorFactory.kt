@@ -16,7 +16,7 @@ class KeepAliveCalculatorFactory {
     fun create(
         context: Context,
         adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig,
-        optimalKeepAliveObserver: OptimalKeepAliveObserver,
+        optimalKeepAliveObserver: OptimalKeepAliveObserver
     ): KeepAliveCalculator {
         val sharedPreferences = CourierSharedPreferencesFactory.create(context, KEEP_ALIVE_PERSISTENCE)
         val stateHandler = AdaptiveKeepAliveStateHandler(
@@ -24,13 +24,13 @@ class KeepAliveCalculatorFactory {
             upperBound = adaptiveKeepAliveConfig.upperBoundMinutes,
             step = adaptiveKeepAliveConfig.stepMinutes,
             optimalKeepAliveResetLimit = adaptiveKeepAliveConfig.optimalKeepAliveResetLimit,
-            persistence = KeepAlivePersistenceImpl(sharedPreferences, Gson()),
+            persistence = KeepAlivePersistenceImpl(sharedPreferences, Gson())
         )
         return OptimalKeepAliveCalculator(
             networkTracker = NetworkStateTrackerFactory.create(context),
             networkUtils = NetworkUtils(),
             stateHandler = stateHandler,
-            optimalKeepAliveObserver = optimalKeepAliveObserver,
+            optimalKeepAliveObserver = optimalKeepAliveObserver
         )
     }
 }

@@ -65,8 +65,8 @@ internal class NotificationHelper(private val context: Context) {
                     .addAction(createClearAction(ClearDatabaseService.ClearAction.Transaction))
                     .setDefaults(
                         Notification.DEFAULT_SOUND or
-                                Notification.DEFAULT_VIBRATE or
-                                Notification.DEFAULT_LIGHTS
+                            Notification.DEFAULT_VIBRATE or
+                            Notification.DEFAULT_LIGHTS
                     )
             val inboxStyle = NotificationCompat.InboxStyle()
             for ((count, notificationText) in transactionNotificationTexts.withIndex()) {
@@ -106,9 +106,9 @@ internal class NotificationHelper(private val context: Context) {
         val intent = PendingIntent.getService(
             context,
             INTENT_REQUEST_CODE,
-            deleteIntent, FLAG_ONE_SHOT.addImmutableFlag()
+            deleteIntent,
+            FLAG_ONE_SHOT.addImmutableFlag()
         )
         return NotificationCompat.Action(R.drawable.mqtt_chuck_ic_delete_white_24dp, clearTitle, intent)
     }
-
 }

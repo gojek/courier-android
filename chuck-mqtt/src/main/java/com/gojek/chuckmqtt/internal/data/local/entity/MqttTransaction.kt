@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "transactions")
 internal data class MqttTransaction(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") var id: Long = 0,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id")
+    var id: Long = 0,
     @ColumnInfo(name = "mqtt_wire_message_bytes") val mqttWireMessageBytes: ByteArray?,
     @ColumnInfo(name = "is_published") var isPublished: Boolean,
     @ColumnInfo(name = "transmission_time") var requestDate: Long,

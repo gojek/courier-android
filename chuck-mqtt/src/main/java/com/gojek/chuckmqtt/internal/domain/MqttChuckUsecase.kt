@@ -47,7 +47,6 @@ internal class MqttChuckUseCaseImpl(
         return Completable.fromCallable {
             notificationUseCase.clearBuffer()
         }
-
     }
 
     override fun observeAllMqttMessages(): Observable<List<MqttTransactionUiModel>> {
@@ -68,5 +67,4 @@ internal class MqttChuckUseCaseImpl(
             }
             .subscribe({}, {})
     }
-
 }

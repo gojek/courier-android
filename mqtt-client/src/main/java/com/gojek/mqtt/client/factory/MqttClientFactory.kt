@@ -1,8 +1,8 @@
 package com.gojek.mqtt.client.factory
 
 import android.content.Context
-import com.gojek.mqtt.client.MqttCourierClient
 import com.gojek.mqtt.client.MqttClient
+import com.gojek.mqtt.client.MqttCourierClient
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.internal.MqttClientInternal
 

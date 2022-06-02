@@ -31,16 +31,8 @@ internal object MqttChuck {
         this.context = context.applicationContext
         this.mqttChuckConfig = mqttChuckConfig
         this.collector = Collector()
-        this.notificationUseCase = NotificationUseCaseImpl(
-            NotificationHelper(
-                context
-            )
-        )
-        this.mqttChuckUseCase = MqttChuckUseCaseImpl(
-            getNotificationUseCase(context),
-            getMqttChuckRepository(),
-            MqttTransactionUiModelMapper()
-        )
+        this.notificationUseCase = NotificationUseCaseImpl(NotificationHelper(context))
+        this.mqttChuckUseCase = MqttChuckUseCaseImpl(getNotificationUseCase(context), getMqttChuckRepository(), MqttTransactionUiModelMapper())
         this.retentionManager = RetentionManager(context, mqttChuckConfig.retentionPeriod)
 
         mqttChuckUseCase.initialise()

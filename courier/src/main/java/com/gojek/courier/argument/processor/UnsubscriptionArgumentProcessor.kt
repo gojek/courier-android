@@ -3,7 +3,7 @@ package com.gojek.courier.argument.processor
 internal class UnsubscriptionArgumentProcessor(
     private val pathMap: Map<String, Int>,
     private val topics: Array<String>
-): ArgumentProcessor() {
+) : ArgumentProcessor() {
     private var parsedTopics: MutableList<String> = mutableListOf()
 
     override fun inject(args: Array<Any>) {

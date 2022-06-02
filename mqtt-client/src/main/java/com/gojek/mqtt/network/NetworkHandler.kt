@@ -21,7 +21,7 @@ internal class NetworkHandler(
                 logger.d("NetworkHandler", "Network state changed: $activeNetworkState")
                 logger.d("NetworkHandler", "Previous network state: $previousNetworkState")
                 if (activeNetworkState.isConnected) {
-                    if(androidMqttClient.isConnected().not()) {
+                    if (androidMqttClient.isConnected().not()) {
                         logger.d("NetworkHandler", "connecting mqtt on network connect")
                         androidMqttClient.connect()
                     } else if (previousNetworkState.isConnected.not()) {

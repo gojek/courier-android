@@ -26,7 +26,7 @@ internal class IncomingMsgControllerImpl(
     private val ttlSeconds: Long,
     private val cleanupIntervalSeconds: Long,
     private val clock: Clock
-): IncomingMsgController {
+) : IncomingMsgController {
     private val handleMsgThreadPool = ThreadPoolExecutor(
         1,
         1,
@@ -133,7 +133,13 @@ internal class IncomingMsgControllerImpl(
             return notified
         } catch (e: Throwable) {
             logger.d(TAG, "Exception while processing message $e")
-            eventHandler.onEvent(MqttMessageReceiveErrorEvent(message.topic, message.message.size, e.toCourierException()))
+            eventHandler.onEvent(
+                MqttMessageReceiveErrorEvent(
+                    message.topic,
+                    message.message.size,
+                    e.toCourierException()
+                )
+            )
         }
         return notified
     }

@@ -6,8 +6,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.gojek.appstatemanager.AppState.FOREGROUND
 import com.gojek.appstatemanager.AppState.BACKGROUND
+import com.gojek.appstatemanager.AppState.FOREGROUND
 import java.util.concurrent.CopyOnWriteArrayList
 
 internal class AppStateManagerImpl : AppStateManager, LifecycleObserver {

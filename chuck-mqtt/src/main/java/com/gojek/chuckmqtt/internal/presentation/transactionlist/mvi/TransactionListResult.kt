@@ -19,5 +19,5 @@ internal sealed class TransactionListResult :
         val transactionId: Long
     ) : TransactionListResult()
 
-    object ClearTransactionHistoryResult: TransactionListResult()
+    object ClearTransactionHistoryResult : TransactionListResult()
 }

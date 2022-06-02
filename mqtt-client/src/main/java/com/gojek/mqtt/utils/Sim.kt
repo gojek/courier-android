@@ -30,5 +30,4 @@ internal class Sim {
     fun isRoaming(): Int {
         return roaming
     }
-
 }

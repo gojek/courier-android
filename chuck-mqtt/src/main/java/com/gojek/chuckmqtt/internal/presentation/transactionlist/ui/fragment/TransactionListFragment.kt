@@ -42,7 +42,8 @@ internal class TransactionListFragment :
         setHasOptionsMenu(true)
     }
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_transaction_list, container, false)
@@ -104,7 +105,6 @@ internal class TransactionListFragment :
         @JvmStatic
         fun newInstance() = TransactionListFragment()
     }
-
 
     override fun intents(): Observable<TransactionListIntent> {
         return intents

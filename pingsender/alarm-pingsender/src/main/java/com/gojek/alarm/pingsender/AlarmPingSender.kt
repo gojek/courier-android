@@ -43,11 +43,11 @@ import com.gojek.courier.utils.extensions.addImmutableFlag
 import com.gojek.mqtt.pingsender.IPingSenderEvents
 import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
+import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.internal.ClientComms
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Default ping sender implementation on Android. It is based on AlarmManager.
@@ -91,7 +91,10 @@ internal class AlarmPingSender(
          */try {
             applicationContext.registerReceiver(alarmReceiver, IntentFilter(action))
             pendingIntent = PendingIntent.getBroadcast(
-                applicationContext, 0, Intent(action), FLAG_UPDATE_CURRENT.addImmutableFlag()
+                applicationContext,
+                0,
+                Intent(action),
+                FLAG_UPDATE_CURRENT.addImmutableFlag()
             )
             schedule(comms.keepAlive)
             hasStarted = true
@@ -110,7 +113,7 @@ internal class AlarmPingSender(
             val alarmManager =
                 applicationContext.getSystemService(Service.ALARM_SERVICE) as AlarmManager
 
-            //pending intent can be null if we get a security exception in onstart-->defensive check
+            // pending intent can be null if we get a security exception in onstart-->defensive check
             if (pendingIntent != null) {
                 alarmManager.cancel(pendingIntent)
             }
@@ -126,7 +129,7 @@ internal class AlarmPingSender(
             try {
                 applicationContext.unregisterReceiver(alarmReceiver)
             } catch (e: IllegalArgumentException) {
-                //Ignore unregister errors.
+                // Ignore unregister errors.
             }
         }
         resetBGAlarmPingsCounter()
@@ -139,7 +142,7 @@ internal class AlarmPingSender(
             return
         }
         try {
-            val nextAlarmInMilliseconds = if(alarmPingSenderConfig.useElapsedRealTimeAlarm) {
+            val nextAlarmInMilliseconds = if (alarmPingSenderConfig.useElapsedRealTimeAlarm) {
                 SystemClock.elapsedRealtime() + delayInMilliseconds
             } else {
                 System.currentTimeMillis() + delayInMilliseconds
@@ -275,10 +278,10 @@ internal class AlarmPingSender(
                 override fun onSuccess(asyncActionToken: IMqttToken) {
                     logger.d(
                         TAG,
-                        "Success. Release lock(" + Companion.wakeLockTag + "):"
-                                + System.currentTimeMillis()
+                        "Success. Release lock(" + Companion.wakeLockTag + "):" +
+                            System.currentTimeMillis()
                     )
-                    //Release wakelock when it is done.
+                    // Release wakelock when it is done.
                     if (wakelock != null && wakelock!!.isHeld) {
                         wakelock!!.release()
                     }
@@ -292,10 +295,10 @@ internal class AlarmPingSender(
                 ) {
                     logger.w(
                         TAG,
-                        "Failure. Release lock(" + Companion.wakeLockTag + "):"
-                                + System.currentTimeMillis()
+                        "Failure. Release lock(" + Companion.wakeLockTag + "):" +
+                            System.currentTimeMillis()
                     )
-                    //Release wakelock when it is done.
+                    // Release wakelock when it is done.
                     if (wakelock != null && wakelock!!.isHeld) {
                         wakelock!!.release()
                     }
@@ -321,7 +324,7 @@ internal class AlarmPingSender(
         private const val MQTT = "com.gojek.mqtt"
         private const val PING_SENDER = "$MQTT.pingSender"
 
-        //Constant for wakelock
+        // Constant for wakelock
         private const val PING_WAKELOCK = "$MQTT.client"
         private const val wakeLockTag = PING_WAKELOCK
     }

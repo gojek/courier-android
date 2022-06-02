@@ -12,7 +12,7 @@ import com.gojek.mqtt.pingsender.IPingSenderEvents
 
 internal class AdaptivePingEventHandler(
     private val eventHandler: EventHandler
-): IPingSenderEvents {
+) : IPingSenderEvents {
     override fun exceptionInStart(e: Exception) {
         eventHandler.onEvent(
             MqttPingExceptionEvent(
@@ -63,7 +63,12 @@ internal class AdaptivePingEventHandler(
         )
     }
 
-    override fun pingEventFailure(serverUri: String, timeTaken: Long, exception: Throwable, keepAliveSecs: Long) {
+    override fun pingEventFailure(
+        serverUri: String,
+        timeTaken: Long,
+        exception: Throwable,
+        keepAliveSecs: Long
+    ) {
         eventHandler.onEvent(
             MqttPingFailureEvent(
                 serverUri = serverUri,

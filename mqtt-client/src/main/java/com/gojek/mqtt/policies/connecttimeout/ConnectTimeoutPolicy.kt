@@ -18,7 +18,7 @@ class ConnectTimeoutPolicy(
     }
 
     override fun updateParams(isSslPort: Boolean) {
-        connectTimeOut = if(isSslPort) {
+        connectTimeOut = if (isSslPort) {
             connectTimeoutConfig.sslUpperBoundConnTimeOut
         } else {
             connectTimeoutConfig.upperBoundConnTimeOut

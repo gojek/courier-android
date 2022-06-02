@@ -12,7 +12,9 @@ internal const val SERVER_UNAVAILABLE_MAX_CONNECT_TIME = 9 /* 9 minutes */
 internal const val UNRESOLVED_EXCEPTION = "unresolved"
 
 /*
-     * When disconnecting (forcibly) it might happen that some messages are waiting for acks or delivery. So before disconnecting,wait for this time to let mqtt finish the work and
+     * When disconnecting (forcibly) it might happen that some messages
+     * are waiting for acks or delivery. So before disconnecting,
+     * wait for this time to let mqtt finish the work and
      * then disconnect w/o letting more msgs to come in.
      */
 internal const val QUIESCE_TIME_MILLIS = 500 // 500 milliseconds

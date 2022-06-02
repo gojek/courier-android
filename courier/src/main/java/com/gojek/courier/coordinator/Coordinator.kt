@@ -34,22 +34,25 @@ internal class Coordinator(
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
 
-        val flowable = Flowable.create(FlowableOnSubscribe<MqttMessage> { emitter ->
-            val listener = object : MessageListener {
-                override fun onMessageReceived(mqttMessage: MqttMessage) {
-                    if (emitter.isCancelled.not()) {
-                        emitter.onNext(mqttMessage)
+        val flowable = Flowable.create(
+            FlowableOnSubscribe<MqttMessage> { emitter ->
+                val listener = object : MessageListener {
+                    override fun onMessageReceived(mqttMessage: MqttMessage) {
+                        if (emitter.isCancelled.not()) {
+                            emitter.onNext(mqttMessage)
+                        }
                     }
                 }
-            }
-            client.addMessageListener(topic, listener)
-            emitter.setCancellable { client.removeMessageListener(topic, listener) }
-        }, BackpressureStrategy.BUFFER)
+                client.addMessageListener(topic, listener)
+                emitter.setCancellable { client.removeMessageListener(topic, listener) }
+            },
+            BackpressureStrategy.BUFFER
+        )
 
         val stream = flowable
             .map { it.message }
             .observeOn(Schedulers.computation())
-            .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty()  }
+            .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty() }
             .toStream()
         return stubMethod.streamAdapter.adapt(stream)
     }
@@ -68,22 +71,25 @@ internal class Coordinator(
         val topic = stubMethod.argumentProcessor.getTopic()
         client.subscribe(topic to stubMethod.qos)
 
-        val flowable = Flowable.create(FlowableOnSubscribe<MqttMessage> { emitter ->
-            val listener = object : MessageListener {
-                override fun onMessageReceived(mqttMessage: MqttMessage) {
-                    if (emitter.isCancelled.not()) {
-                        emitter.onNext(mqttMessage)
+        val flowable = Flowable.create(
+            FlowableOnSubscribe<MqttMessage> { emitter ->
+                val listener = object : MessageListener {
+                    override fun onMessageReceived(mqttMessage: MqttMessage) {
+                        if (emitter.isCancelled.not()) {
+                            emitter.onNext(mqttMessage)
+                        }
                     }
                 }
-            }
-            client.addMessageListener(topic, listener)
-            emitter.setCancellable { client.removeMessageListener(topic, listener) }
-        }, BackpressureStrategy.BUFFER)
+                client.addMessageListener(topic, listener)
+                emitter.setCancellable { client.removeMessageListener(topic, listener) }
+            },
+            BackpressureStrategy.BUFFER
+        )
 
         val stream = flowable
             .map { it.message }
             .observeOn(Schedulers.computation())
-            .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty()  }
+            .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty() }
             .toStream()
         return stubMethod.streamAdapter.adapt(stream)
     }
@@ -94,7 +100,7 @@ internal class Coordinator(
         return if (topics.size == 1) {
             client.unsubscribe(topics[0])
         } else {
-            client.unsubscribe(topics[0], *topics.sliceArray(IntRange(1, topics.size-1)))
+            client.unsubscribe(topics[0], *topics.sliceArray(IntRange(1, topics.size - 1)))
         }
     }
 
@@ -103,7 +109,7 @@ internal class Coordinator(
         return if (topicList.size == 1) {
             client.subscribe(topicList[0])
         } else {
-            client.subscribe(topicList[0], *topicList.toTypedArray().sliceArray(IntRange(1, topicList.size-1)))
+            client.subscribe(topicList[0], *topicList.toTypedArray().sliceArray(IntRange(1, topicList.size - 1)))
         }
     }
 

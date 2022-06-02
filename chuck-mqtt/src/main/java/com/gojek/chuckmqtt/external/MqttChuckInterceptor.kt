@@ -7,7 +7,7 @@ import com.gojek.mqtt.client.MqttInterceptor
 class MqttChuckInterceptor(
     context: Context,
     mqttChuckConfig: MqttChuckConfig
-): MqttInterceptor {
+) : MqttInterceptor {
 
     private val collector by lazy { MqttChuck.collector() }
 

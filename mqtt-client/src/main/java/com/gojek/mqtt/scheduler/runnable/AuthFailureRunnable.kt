@@ -5,7 +5,7 @@ import com.gojek.mqtt.client.IClientSchedulerBridge
 internal class AuthFailureRunnable(
     private val clientSchedulerBridge: IClientSchedulerBridge
 ) : Runnable {
-        override fun run() {
-            clientSchedulerBridge.handleAuthFailure()
-        }
+    override fun run() {
+        clientSchedulerBridge.handleAuthFailure()
     }
+}

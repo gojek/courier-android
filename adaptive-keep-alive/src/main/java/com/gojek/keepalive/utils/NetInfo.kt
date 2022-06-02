@@ -37,9 +37,9 @@ internal class NetInfo(info: NetworkInfo, networkType: Short, isWifi: Boolean) {
             return true
         }
         if (TextUtils.isEmpty(ssid) && TextUtils.isEmpty(info.ssid)) // both the ssids values are empty
-        {
-            return true
-        }
+            {
+                return true
+            }
         return if (ssid.isNullOrEmpty() || info.ssid.isNullOrEmpty()) {
             false
         } else ssid == info.ssid
@@ -50,13 +50,13 @@ internal class NetInfo(info: NetworkInfo, networkType: Short, isWifi: Boolean) {
         return if (info == null) {
             ""
         } else "[" + "type: " + info.typeName + "[" + info.subtypeName +
-                "], state: " + info.state + "/" + info.detailedState +
-                ", reason: " + (if (info.reason == null) "(unspecified)" else info.reason) +
-                ", extra: " + (ssid ?: "(none)") +
-                ", roaming: " + isRoaming +
-                ", failover: " + info.isFailover +
-                ", isAvailable: " + isAvailable +
-                "]"
+            "], state: " + info.state + "/" + info.detailedState +
+            ", reason: " + (if (info.reason == null) "(unspecified)" else info.reason) +
+            ", extra: " + (ssid ?: "(none)") +
+            ", roaming: " + isRoaming +
+            ", failover: " + info.isFailover +
+            ", isAvailable: " + isAvailable +
+            "]"
     }
 
     init {
