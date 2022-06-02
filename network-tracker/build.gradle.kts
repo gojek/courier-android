@@ -26,7 +26,10 @@ apiValidation {
 
 dependencies {
     api(project(":courier-core"))
-    implementation(deps.android.lifecycle.extensions)
+    implementation(deps.android.androidx.coreKtx)
+    implementation(deps.android.androidx.lifecycleExtensions)
+    implementation(deps.android.androidx.lifecycleCommons)
+    implementation(deps.android.androidx.lifecycleProcess)
 
     testImplementation(deps.android.test.kotlinTestJunit)
 }

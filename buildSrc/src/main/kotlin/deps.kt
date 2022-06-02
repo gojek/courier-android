@@ -11,7 +11,7 @@ object versions {
     const val navigation = "2.1.0-rc01"
     const val coroutines = "1.3.2"
     const val broadcast = "1.0.0"
-    const val lifecycle = "1.1.1"
+    const val lifecycle = "2.4.1"
     const val room = "2.2.5"
     const val retrofit = "2.6.2"
     const val groovy = "2.5.7"
@@ -68,10 +68,6 @@ object deps {
                 "androidx.localbroadcastmanager:localbroadcastmanager:${versions.broadcast}"
         }
 
-        object lifecycle {
-            const val extensions = "android.arch.lifecycle:extensions:${versions.lifecycle}"
-        }
-
         object room {
             const val roomRuntime = "androidx.room:room-runtime:${versions.room}"
             const val roomRxJava = "androidx.room:room-rxjava2:${versions.room}"
@@ -80,14 +76,16 @@ object deps {
 
         object androidx {
             const val appcompact = "androidx.appcompat:appcompat:${versions.appCompact}"
-            const val fragmentExtensions =
-                "androidx.fragment:fragment-ktx:${versions.activityVersion}"
+            const val fragmentExtensions = "androidx.fragment:fragment-ktx:${versions.activityVersion}"
             const val constraintLayout = "androidx.constraintlayout:constraintlayout:${versions.constraintLayoutVersion}"
             const val coreKtx = "androidx.core:core-ktx:${versions.coreKtxVersion}"
             const val supportV4 = "androidx.legacy:legacy-support-v4:${versions.supportV4Version}"
             const val recyclerView = "androidx.recyclerview:recyclerview:${versions.recyclerViewVersion}"
             const val material = "com.google.android.material:material:${versions.materialVersion}"
             const val annotation = "androidx.annotation:annotation:${versions.annotationVersion}"
+            const val lifecycleExtensions = "androidx.lifecycle:lifecycle-runtime-ktx:${versions.lifecycle}"
+            const val lifecycleCommons = "androidx.lifecycle:lifecycle-common-java8:${versions.lifecycle}"
+            const val lifecycleProcess = "androidx.lifecycle:lifecycle-process:${versions.lifecycle}"
         }
     }
 
