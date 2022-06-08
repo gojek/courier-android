@@ -6,9 +6,9 @@ import com.gojek.chuckmqtt.external.MqttChuckConfig
 import com.gojek.chuckmqtt.external.MqttChuckInterceptor
 import com.gojek.chuckmqtt.external.Period
 import com.gojek.courier.Courier
-import com.gojek.courier.app.R
 import com.gojek.courier.app.data.network.CourierService
 import com.gojek.courier.app.data.network.model.Message
+import com.gojek.courier.app.databinding.ActivityMainBinding
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.messageadapter.gson.GsonMessageAdapterFactory
 import com.gojek.courier.streamadapter.rxjava2.RxJava2StreamAdapterFactory
@@ -26,72 +26,71 @@ import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.ServerUri
 import com.gojek.workmanager.pingsender.WorkManagerPingSenderConfig
 import com.gojek.workmanager.pingsender.WorkPingSenderFactory
-import kotlinx.android.synthetic.main.activity_main.brokerIP
-import kotlinx.android.synthetic.main.activity_main.brokerPort
-import kotlinx.android.synthetic.main.activity_main.clientId
-import kotlinx.android.synthetic.main.activity_main.connect
-import kotlinx.android.synthetic.main.activity_main.disconnect
-import kotlinx.android.synthetic.main.activity_main.message
-import kotlinx.android.synthetic.main.activity_main.password
-import kotlinx.android.synthetic.main.activity_main.send
-import kotlinx.android.synthetic.main.activity_main.subscribe
-import kotlinx.android.synthetic.main.activity_main.topic
-import kotlinx.android.synthetic.main.activity_main.unsubscribe
-import kotlinx.android.synthetic.main.activity_main.username
 import timber.log.Timber
-import java.util.*
+import java.util.UUID
+import kotlin.LazyThreadSafetyMode.NONE
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mqttClient: MqttClient
     private lateinit var courierService: CourierService
 
+    private val bindingInst by lazy(NONE) {
+        ActivityMainBinding.inflate(layoutInflater)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(bindingInst.root)
         initialiseCourier()
-        connect.setOnClickListener {
-            var clientId = clientId.text.toString()
-            if(clientId.isEmpty()) {
+        bindingInst.connect.setOnClickListener {
+            var clientId = bindingInst.clientId.text.toString()
+            if (clientId.isEmpty()) {
                 clientId = UUID.randomUUID().toString()
             }
-            var username = username.text.toString()
-            if(username.isEmpty()) {
+            var username = bindingInst.username.text.toString()
+            if (username.isEmpty()) {
                 username = UUID.randomUUID().toString()
             }
-            val password = password.text.toString()
-            var brokerIP = brokerIP.text.toString()
-            if(brokerIP.isEmpty()) {
+            val password = bindingInst.password.text.toString()
+            var brokerIP = bindingInst.brokerIP.text.toString()
+            if (brokerIP.isEmpty()) {
                 brokerIP = "broker.mqttdashboard.com"
             }
             var port = 1883
-            if(brokerPort.text.toString().isNotEmpty()) {
-                port = Integer.parseInt(brokerPort.text.toString())
+            if (bindingInst.brokerPort.text.toString().isNotEmpty()) {
+                port = Integer.parseInt(bindingInst.brokerPort.text.toString())
             }
             connectMqtt(clientId, username, password, brokerIP, port)
         }
 
-        disconnect.setOnClickListener {
+        bindingInst.disconnect.setOnClickListener {
             mqttClient.disconnect()
         }
 
-        send.setOnClickListener {
+        bindingInst.send.setOnClickListener {
             courierService.publish(
-                topic = topic.text.toString(),
-                message = Message(123, message.text.toString())
+                topic = bindingInst.topic.text.toString(),
+                message = Message(123, bindingInst.message.text.toString())
             )
         }
 
-        subscribe.setOnClickListener {
-            courierService.subscribe(topic = topic.text.toString())
+        bindingInst.subscribe.setOnClickListener {
+            courierService.subscribe(topic = bindingInst.topic.text.toString())
         }
 
-        unsubscribe.setOnClickListener {
-            courierService.unsubscribe(topic = topic.text.toString())
+        bindingInst.unsubscribe.setOnClickListener {
+            courierService.unsubscribe(topic = bindingInst.topic.text.toString())
         }
     }
 
-    private fun connectMqtt(clientId: String, username: String, password: String, ip: String, port: Int) {
+    private fun connectMqtt(
+        clientId: String,
+        username: String,
+        password: String,
+        ip: String,
+        port: Int
+    ) {
         val connectOptions = MqttConnectOptions(
             serverUris = listOf(ServerUri(ip, port, if (port == 443) "ssl" else "tcp")),
             clientId = clientId,
@@ -116,10 +115,15 @@ class MainActivity : AppCompatActivity() {
                     connectOptions: MqttConnectOptions,
                     forceRefresh: Boolean
                 ): MqttConnectOptions {
-                    return connectOptions.copy(password = password.text.toString())
+                    return connectOptions.copy(password = bindingInst.password.text.toString())
                 }
             },
-            mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = Period.ONE_HOUR))),
+            mqttInterceptorList = listOf(
+                MqttChuckInterceptor(
+                    this,
+                    MqttChuckConfig(retentionPeriod = Period.ONE_HOUR)
+                )
+            ),
             persistenceOptions = PahoPersistenceOptions(100, false),
             experimentConfigs = ExperimentConfigs(
                 adaptiveKeepAliveConfig = AdaptiveKeepAliveConfig(
@@ -127,14 +131,20 @@ class MainActivity : AppCompatActivity() {
                     upperBoundMinutes = 9,
                     stepMinutes = 2,
                     optimalKeepAliveResetLimit = 10,
-                    pingSender = WorkPingSenderFactory.createAdaptiveMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
+                    pingSender = WorkPingSenderFactory.createAdaptiveMqttPingSender(
+                        applicationContext,
+                        WorkManagerPingSenderConfig()
+                    )
                 ),
                 inactivityTimeoutSeconds = 45,
                 activityCheckIntervalSeconds = 30,
                 incomingMessagesTTLSecs = 60,
                 incomingMessagesCleanupIntervalSecs = 10,
             ),
-            pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
+            pingSender = WorkPingSenderFactory.createMqttPingSender(
+                applicationContext,
+                WorkManagerPingSenderConfig()
+            )
         )
         mqttClient = MqttClientFactory.create(this, mqttConfig)
 

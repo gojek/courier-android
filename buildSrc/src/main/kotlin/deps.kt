@@ -32,6 +32,10 @@ object versions {
     const val coreKtxVersion = "1.3.0"
     const val apiValidator = "0.6.0"
     const val workManager = "2.7.0"
+    const val composeVersion = "1.1.1"
+    const val composeActivity = "1.4.0"
+    const val composeViewModel = "2.4.1"
+    const val composeCoilVersion = "2.1.0"
 }
 
 object ScriptPlugins {
@@ -131,5 +135,30 @@ object deps {
 
     object workManager {
         const val runtime = "androidx.work:work-runtime:${versions.workManager}"
+    }
+
+    object compose {
+        // Integration with activities
+        const val composeActivity = "androidx.activity:activity-compose:${versions.composeActivity}"
+
+        // Compose Material Design
+        const val composeMaterial =
+            "androidx.compose.material:material:${versions.composeVersion}"
+
+        // Animations
+        const val composeAnimation =
+            "androidx.compose.animation:animation:${versions.composeVersion}"
+
+        // Tooling support (Previews, etc.)
+        const val composeTooling = "androidx.compose.ui:ui-tooling:${versions.composeVersion}"
+
+        // Integration with ViewModels
+        const val composeViewModel =
+            "androidx.lifecycle:lifecycle-viewmodel-compose:${versions.composeViewModel}"
+
+        const val composeRxjava =
+            "androidx.compose.runtime:runtime-rxjava2:${versions.composeVersion}"
+
+        const val composeCoil = "io.coil-kt:coil-compose:${versions.composeCoilVersion}"
     }
 }

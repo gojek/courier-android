@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mqtt_chuck_color_primary">#01579b</color>
+    <color name="mqtt_chuck_color_primary_variant">#002f6c</color>
+    <color name="mqtt_chuck_color_background">#ffffff</color>
+    <color name="mqtt_chuck_color_surface">#ffffff</color>
+    <color name="mqtt_chuck_color_secondary">#00e676</color>
+    <color name="mqtt_chuck_color_error">#F44336</color>
+    <color name="mqtt_chuck_color_on_primary">#ffffff</color>
+    <color name="mqtt_chuck_color_on_secondary">#000000</color>
+    <color name="mqtt_chuck_color_on_background">#000000</color>
+    <color name="mqtt_chuck_color_on_surface">#000000</color>
+    <color name="mqtt_chuck_color_on_error">#ffffff</color>
+    <color name="mqtt_chuck_status_error">#F44336</color>
+
+    <color name="mqtt_chuck_status_default">#212121</color>
+    <color name="mqtt_chuck_status_requested">#9E9E9E</color>
+    <color name="mqtt_chuck_status_500">#B71C1C</color>
+    <color name="mqtt_chuck_status_400">#FF9800</color>
+    <color name="mqtt_chuck_status_300">#0D47A1</color>
+
+    <color name="mqtt_chuck_background_span_color">#ffffff00</color>
+    <color name="mqtt_chuck_foreground_span_color">#ffff0000</color>
+</resources>
