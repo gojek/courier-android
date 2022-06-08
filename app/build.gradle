@@ -1,13 +1,11 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.gojek.courier.app"
+        compileSdk 31
         minSdkVersion 21
         targetSdkVersion 31
         versionCode 1
@@ -15,6 +13,10 @@ android {
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 
     buildTypes {
@@ -49,7 +51,7 @@ dependencies {
     //Courier
     implementation project(':courier')
     //Chuck Mqtt
-    implementation project(':chuck-mqtt')
+    implementation project(':chuck-mqtt-modern')
     implementation project(':app-state-manager')
 
     //Timber logging
