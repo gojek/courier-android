@@ -48,13 +48,12 @@ internal fun TransactionDetailScreen(
                         intentLambda(ShareTransactionDetailIntent(transactionId))
                     },
                     onSearchClick = {
-
                     }
                 )
             },
             content = {
                 TransactionDetail(transaction = state.transaction)
-                
+
                 LaunchedEffect(Unit) {
                     intentLambda(
                         GetTransactionDetailIntent(
@@ -88,7 +87,7 @@ private fun TransactionDetail(transaction: MqttTransactionUiModel) {
 }
 
 @Composable
-fun DetailAppBar(
+internal fun DetailAppBar(
     toolBarTitle: String,
     isSent: Boolean,
     onShareClick: () -> Unit,

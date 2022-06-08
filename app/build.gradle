@@ -50,8 +50,8 @@ dependencies {
     implementation project(':mqtt-client')
     //Courier
     implementation project(':courier')
+    implementation project(':chuck-mqtt')
     //Chuck Mqtt
-    implementation project(':chuck-mqtt-modern')
     implementation project(':app-state-manager')
 
     //Timber logging

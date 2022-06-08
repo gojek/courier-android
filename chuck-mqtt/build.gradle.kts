@@ -37,7 +37,7 @@ plugins {
 }
 
 apiValidation {
-    ignoredPackages.addAll(listOf("com.gojek.chuckmqtt.internal.data.local.room"))
+    ignoredPackages.addAll(listOf("com.gojek.chuckmqtt.internal.data.local.room", "com.gojek.chuckmqtt.internal"))
     ignoredClasses.add("com.gojek.chuckmqtt.BuildConfig")
     nonPublicMarkers.add("androidx.annotation.RestrictTo")
 }

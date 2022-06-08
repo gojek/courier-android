@@ -45,9 +45,8 @@ import com.gojek.chuckmqtt.internal.presentation.transactionlist.viewmodel.Trans
 internal fun TransactionListScreen(
     toolbarSubtitle: CharSequence,
     viewModel: TransactionListViewModel,
-    intentLambda: (TransactionListIntent) -> Unit,
+    intentLambda: (TransactionListIntent) -> Unit
 ) {
-
     val state by viewModel.states().subscribeAsState(TransactionListViewState.default())
 
     ChuckMqttTheme {

@@ -26,11 +26,11 @@ import com.gojek.chuckmqtt.internal.utils.highlightWithDefinedColors
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
+import kotlin.reflect.KClass
 import kotlinx.android.synthetic.main.fragment_transaction_detail.copy
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_body
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_info
 import kotlinx.android.synthetic.main.fragment_transaction_detail.transaction_detail_loader
-import kotlin.reflect.KClass
 
 internal class TransactionDetailFragment :
     FoodMviBaseFragment<TransactionDetailIntent, TransactionDetailViewState, TransactionDetailViewModel>(),
@@ -124,7 +124,6 @@ internal class TransactionDetailFragment :
         }
 
         with(state.transaction) {
-
             packet_info.visibility =
                 if (packetInfo.isEmpty()) View.GONE else View.VISIBLE
             packet_info.text = HtmlCompat.fromHtml(
