@@ -1,4 +1,4 @@
-name: Release
+name: Publish Docs
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: Publish GH Pages
+    name: Publish GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,7 +19,7 @@ jobs:
           cd docs
           yarn install --frozen-lockfile
           yarn build
-      - name: Release to GitHub Pages
+      - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
