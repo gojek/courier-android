@@ -95,11 +95,28 @@ const config = {
           {
             title: 'Community',
             items: [
-              { label: 'Github', href: 'https://github.com/gojek/courier-android', },
+              { label: 'Gojek open source', href: 'https://github.com/gojek/', },
               { label: 'Discord', href: 'https://discord.gg/C823qK4AK7', },
+              { label: 'Twitter', href: 'https://twitter.com/gojektech', },
+            ],
+          },
+          {
+            title: 'More',
+            items: [
+              { label: 'Courier', href: 'https://gojek.github.io/courier/', },
+              { label: 'E2E example', href: 'https://gojek.github.io/courier/docs/Introduction', },
+              { label: 'Blogs', href: 'https://gojek.github.io/courier/blog', },
+              { label: 'Github', href: 'https://github.com/gojek/courier-android', },
             ],
           },
         ],
+        logo: {
+          alt: 'Gojek Open Source Logo',
+          src: 'img/gojek-logo-white.png',
+          width: 250,
+          height: 50,
+          href: 'https://github.com/gojek/',
+        },
         copyright: `Copyright © ${new Date().getFullYear()} Gojek`,
       },
       prism: {
