@@ -33,36 +33,22 @@
 .homeHero {
   overflow: hidden;
   position: relative;
-  background-image: linear-gradient(
+  background-image: url("../../static/img/pattern.svg"), linear-gradient(
     113.3deg,
     rgba(40, 164, 40, 1) 6.9%,
     rgba(25, 103, 25, 1) 75%
   );
 }
 
-.logo {
-  position: absolute;
-  opacity: 0.1;
-  right: 0;
-  top: 0;
-  max-width: 100%;
-  margin: auto;
-}
-
-.logo img {
-  width: 90%;
-  z-index: 1;
-}
-
 .banner {
   color: white;
-  padding: 8em 1em;
-  position: relative;
-  z-index: 10;
+  padding: 6em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .homeTitle {
-  margin-top: 50px;
   max-width: 520px;
   font-size: 4rem;
   line-height: 1.3em;
@@ -83,6 +69,12 @@
   align-items: center;
   padding: 2rem 0;
   width: 100%;
+}
+
+.innerRow {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .homeHero .button {
