@@ -11,17 +11,12 @@ const HomepageHeader = () => {
   const {siteConfig} = useDocusaurusContext();
   return (
       <div className="homeHero">
-        <div className="logo"><img src={useBaseUrl('img/pattern.svg')} /></div>
         <div className="container banner">
           <div className="row">
-            <div className={clsx('col col--5')}>
+            <div className="innerRow">
               <div className="homeTitle">{siteConfig.title}</div>
               <small className="homeSubTitle">{siteConfig.tagline}</small>
               <a className="button" href="docs/Introduction">Documentation</a>
-            </div>
-            <div className={clsx('col col--1')}></div>
-            <div className={clsx('col col--6')}>
-              <div className="text--right"><img src={useBaseUrl('img/courier.png')} /></div>
             </div>
           </div>
         </div>

@@ -65,14 +65,14 @@ const config = {
           {
             type: 'doc',
             position: 'left',
-            docId: 'AdaptiveKeepAlive',
-            label: 'Features',
+            docId: 'ConnectionSetup',
+            label: 'Guides',
           },
           {
             type: 'doc',
             position: 'left',
-            docId: 'ConnectionSetup',
-            label: 'Guides',
+            docId: 'AdaptiveKeepAlive',
+            label: 'Features',
           },
           {
             href: 'https://github.com/gojek/courier-android',
