@@ -131,5 +131,6 @@ object deps {
 
     object workManager {
         const val runtime = "androidx.work:work-runtime:${versions.workManager}"
+        const val runtime_2_6_0 = "androidx.work:work-runtime:2.6.0"
     }
 }

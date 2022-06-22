@@ -29,6 +29,7 @@ jobs:
           :courier-core-android:publishReleasePublicationToSonatypeRepository
           :mqtt-pingsender:publishReleasePublicationToSonatypeRepository
           :workmanager-pingsender:publishReleasePublicationToSonatypeRepository
+          :workmanager-2.6.0-pingsender:publishReleasePublicationToSonatypeRepository
           :alarm-pingsender:publishReleasePublicationToSonatypeRepository
           :timer-pingsender:publishReleasePublicationToSonatypeRepository
           :adaptive-keep-alive:publishReleasePublicationToSonatypeRepository

@@ -13,6 +13,7 @@ Courier Android library uses Ping Sender for sending pings through the MQTT conn
 - Uses WorkManager for sending ping requests over the MQTT connection.
 - Ideal for cases where the connection needs to be maintained when the app is in background.
 - No user permission is required for using this.
+- Uses WorkManager version 2.7.0 which requires compileSdkVersion to be 31 or higher.
 
 ### Usage
 
@@ -21,6 +22,31 @@ Add this dependency for using WorkManagerPingSender
 ~~~ kotlin
 dependencies {
     implementation "com.gojek.courier:workmanager-pingsender:x.y.z"
+}
+~~~
+
+Create ping sender using the factory class
+
+~~~ kotlin
+pingSender = WorkPingSenderFactory.createMqttPingSender(
+                context, workManagerPingSenderConfig
+            )
+~~~
+
+### WorkManager-2.6.0 PingSender
+
+- Uses WorkManager for sending ping requests over the MQTT connection.
+- Ideal for cases where the connection needs to be maintained when the app is in background.
+- No user permission is required for using this.
+- Uses WorkManager version 2.6.0 which is compatible with apps targeting lower than android 31.
+
+### Usage
+
+Add this dependency for using WorkManagerPingSender
+
+~~~ kotlin
+dependencies {
+    implementation "com.gojek.courier:workmanager-2.6.0-pingsender:x.y.z"
 }
 ~~~
 

@@ -52,6 +52,7 @@ Library provided implementations of Mqtt Ping Sender. Read more about them [here
 
 - timer-pingsender
 - workmanager-pingsender
+- workmanager-2.6.0-pingsender
 - alarm-pingsender
 
 ### Http Authenticator

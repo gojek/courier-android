@@ -66,6 +66,7 @@ val clean by tasks.creating(Delete::class) {
     delete("${rootDir}/courier-auth-http/build")
     delete("${rootDir}/pingsender/mqtt-pingsender/build")
     delete("${rootDir}/pingsender/workmanager-pingsender/build")
+    delete("${rootDir}/pingsender/workmanager-2.6.0-pingsender/build")
     delete("${rootDir}/pingsender/alarm-pingsender/build")
     delete("${rootDir}/pingsender/timer-pingsender/build")
 }
