@@ -44,11 +44,7 @@ dependencies {
     implementation(project(":paho"))
     implementation(project(":adaptive-keep-alive"))
     implementation(project(":network-tracker"))
-    implementation(project(":app-state-manager"))
     implementation(project(":timer-pingsender"))
-
-    implementation(deps.android.androidx.lifecycleExtensions)
-    implementation(deps.android.androidx.lifecycleCommons)
 
     implementation(deps.android.room.roomRuntime)
     kapt(deps.android.room.roomCompiler)

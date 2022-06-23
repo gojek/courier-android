@@ -42,9 +42,6 @@ dependencies {
 
     implementation(deps.android.gson)
 
-    implementation(deps.android.androidx.lifecycleExtensions)
-    implementation(deps.android.androidx.lifecycleCommons)
-
     implementation(deps.android.androidx.appcompact)
     implementation(deps.android.androidx.fragmentExtensions)
     implementation(deps.android.androidx.coreKtx)
