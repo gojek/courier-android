@@ -27,9 +27,6 @@ apiValidation {
 dependencies {
     api(project(":mqtt-pingsender"))
     implementation(project(":courier-core-android"))
-    implementation(deps.android.androidx.lifecycleExtensions)
-    implementation(deps.android.androidx.lifecycleCommons)
-    implementation(deps.android.androidx.lifecycleProcess)
 
     testImplementation(deps.android.test.kotlinTestJunit)
 }

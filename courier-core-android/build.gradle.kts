@@ -27,9 +27,7 @@ apiValidation {
 
 dependencies {
     api(project(":courier-core"))
-    implementation(deps.android.androidx.lifecycleExtensions)
-    implementation(deps.android.androidx.lifecycleCommons)
-    implementation(deps.android.androidx.lifecycleProcess)
+    implementation(deps.android.androidx.annotation)
 }
 
 apply(from = "${rootProject.projectDir}/gradle/publish-module.gradle")

@@ -1,15 +1,3 @@
-/*
- * Copyright (c) 2014 IBM Corp.
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
- * The Eclipse Public License is available at
- *    http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
- *   http://www.eclipse.org/org/documents/edl-v10.php.
- */
 package com.gojek.alarm.pingsender
 
 import android.annotation.SuppressLint
@@ -25,25 +13,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Handler
-import android.os.Looper
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import android.os.SystemClock
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
-import androidx.lifecycle.ProcessLifecycleOwner
 import com.gojek.courier.extensions.fromMillisToSeconds
 import com.gojek.courier.extensions.fromNanosToMillis
-import com.gojek.courier.utils.AppStateProvider
 import com.gojek.courier.utils.BuildInfoProvider
 import com.gojek.courier.utils.Clock
 import com.gojek.courier.utils.extensions.addImmutableFlag
 import com.gojek.mqtt.pingsender.IPingSenderEvents
 import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
-import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.paho.client.mqttv3.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
@@ -64,9 +44,8 @@ internal class AlarmPingSender(
     private val applicationContext: Context,
     private val alarmPingSenderConfig: AlarmPingSenderConfig,
     private val clock: Clock = Clock(),
-    private val buildInfoProvider: BuildInfoProvider = BuildInfoProvider(),
-    private val appStateProvider: AppStateProvider = AppStateProvider()
-) : MqttPingSender, LifecycleObserver {
+    private val buildInfoProvider: BuildInfoProvider = BuildInfoProvider()
+) : MqttPingSender {
     private lateinit var comms: ClientComms
     private lateinit var logger: ILogger
     private val alarmReceiver = AlarmReceiver()
@@ -76,7 +55,6 @@ internal class AlarmPingSender(
 
     @Volatile
     private var hasStarted = false
-    private val bgAlarmPingsCounter = AtomicInteger(0)
 
     override fun init(comms: ClientComms, logger: ILogger) {
         this.comms = comms
@@ -132,7 +110,6 @@ internal class AlarmPingSender(
                 // Ignore unregister errors.
             }
         }
-        resetBGAlarmPingsCounter()
     }
 
     override fun schedule(delayInMilliseconds: Long) {
@@ -228,25 +205,8 @@ internal class AlarmPingSender(
 
             // No ping has been sent.
             if (token == null) {
-                resetBGAlarmPingsCounter()
                 pingSenderEvents.pingMqttTokenNull(serverUri, comms.keepAlive.fromMillisToSeconds())
                 return
-            }
-            if (alarmPingSenderConfig.shouldLimitBackgroundPings && !appStateProvider.isAppInForeground) {
-                if (bgAlarmPingsCounter.get() >= alarmPingSenderConfig.maxNumberOfBackgroundAlarmPingsAllowed) {
-                    logger.d(
-                        TAG,
-                        "background alarm pings limit reached. Not scheduling now"
-                    )
-                    pingSenderEvents.onBackgroundAlarmPingLimitReached()
-                    return
-                } else {
-                    bgAlarmPingsCounter.getAndIncrement()
-                    logger.d(
-                        TAG,
-                        "background alarm pings counter increased to " + bgAlarmPingsCounter.get()
-                    )
-                }
             }
             try {
                 // Assign new callback to token to execute code after PingResq
@@ -309,15 +269,6 @@ internal class AlarmPingSender(
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onForeground() {
-        resetBGAlarmPingsCounter()
-    }
-
-    private fun resetBGAlarmPingsCounter() {
-        bgAlarmPingsCounter.set(0)
-    }
-
     companion object {
         // Identifier for Intents, log messages, etc..
         private const val TAG = "AlarmPingSender"
@@ -327,11 +278,5 @@ internal class AlarmPingSender(
         // Constant for wakelock
         private const val PING_WAKELOCK = "$MQTT.client"
         private const val wakeLockTag = PING_WAKELOCK
-    }
-
-    init {
-        Handler(Looper.getMainLooper()).post {
-            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        }
     }
 }
