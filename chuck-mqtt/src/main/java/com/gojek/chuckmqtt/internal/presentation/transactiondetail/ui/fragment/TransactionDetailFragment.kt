@@ -6,22 +6,20 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.base.fragment.FoodMviBaseFragment
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.GetTransactionDetailIntent
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailIntent.ShareTransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailViewEffect
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailViewState
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.viewmodel.TransactionDetailFragmentViewModel
+import com.gojek.chuckmqtt.internal.presentation.transactiondetail.ui.screen.TransactionDetailScreen
+import com.gojek.chuckmqtt.internal.presentation.transactiondetail.viewmodel.TransactionDetailViewModel
 import com.gojek.chuckmqtt.internal.utils.extensions.hide
 import com.gojek.chuckmqtt.internal.utils.extensions.show
 import com.gojek.chuckmqtt.internal.utils.highlightWithDefinedColors
@@ -29,15 +27,13 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
 import kotlin.reflect.KClass
-import kotlinx.android.synthetic.main.activity_transaction_detail.send_receive_view
-import kotlinx.android.synthetic.main.activity_transaction_detail.toolbar_title
 import kotlinx.android.synthetic.main.fragment_transaction_detail.copy
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_body
 import kotlinx.android.synthetic.main.fragment_transaction_detail.packet_info
 import kotlinx.android.synthetic.main.fragment_transaction_detail.transaction_detail_loader
 
 internal class TransactionDetailFragment :
-    FoodMviBaseFragment<TransactionDetailIntent, TransactionDetailViewState, TransactionDetailFragmentViewModel>(),
+    FoodMviBaseFragment<TransactionDetailIntent, TransactionDetailViewState, TransactionDetailViewModel>(),
     SearchView.OnQueryTextListener {
 
     private var backgroundSpanColor: Int = Color.YELLOW
@@ -48,8 +44,8 @@ internal class TransactionDetailFragment :
 
     private var transactionId = -1L
 
-    override val clazz: KClass<TransactionDetailFragmentViewModel>
-        get() = TransactionDetailFragmentViewModel::class
+    override val clazz: KClass<TransactionDetailViewModel>
+        get() = TransactionDetailViewModel::class
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +57,16 @@ internal class TransactionDetailFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_transaction_detail, container, false)
+        transactionId = arguments?.getLong(EXTRA_TRANSACTION_ID, 0) ?: 0
+        return ComposeView(requireContext()).apply {
+            setContent {
+                TransactionDetailScreen(
+                    transactionId = transactionId,
+                    intentLambda = intentLambda,
+                    transactionDetailViewModel = vm
+                )
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,35 +77,38 @@ internal class TransactionDetailFragment :
         _intents.onNext(GetTransactionDetailIntent(transactionId))
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.mqtt_chuck_transaction, menu)
-        val searchMenuItem = menu.findItem(R.id.mqtt_search)
-        if (searchMenuItemVisible) {
-            searchMenuItem.isVisible = true
-
-            val searchView = searchMenuItem.actionView as SearchView
-            searchView.setOnQueryTextListener(this)
-            searchView.setIconifiedByDefault(true)
-        }
-        return super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.mqtt_share -> {
-            _intents.onNext(ShareTransactionDetailIntent(transactionId))
-            true
-        }
-        else -> super.onOptionsItemSelected(item)
-    }
+//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+//        inflater.inflate(R.menu.mqtt_chuck_transaction, menu)
+//        val searchMenuItem = menu.findItem(R.id.mqtt_search)
+//        if (searchMenuItemVisible) {
+//            searchMenuItem.isVisible = true
+//
+//            val searchView = searchMenuItem.actionView as SearchView
+//            searchView.setOnQueryTextListener(this)
+//            searchView.setIconifiedByDefault(true)
+//        }
+//        return super.onCreateOptionsMenu(menu, inflater)
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+//        R.id.mqtt_share -> {
+//            _intents.onNext(ShareTransactionDetailIntent(transactionId))
+//            true
+//        }
+//        else -> super.onOptionsItemSelected(item)
+//    }
 
     private fun setupObserver() {
-        compositeBag += vm.states().subscribe(this::render)
         compositeBag += vm.effects().subscribe(this::handleViewEffects)
         vm.processIntents(intents())
     }
 
     override fun intents(): Observable<TransactionDetailIntent> {
         return intents
+    }
+
+    private val intentLambda: (TransactionDetailIntent) -> Unit = { intent ->
+        _intents.onNext(intent)
     }
 
     override fun render(state: TransactionDetailViewState) {
@@ -116,13 +124,6 @@ internal class TransactionDetailFragment :
         }
 
         with(state.transaction) {
-            requireActivity().toolbar_title.text = packetName
-            if (isSent) {
-                requireActivity().send_receive_view.setImageResource(R.drawable.mqtt_ic_message_sent)
-            } else {
-                requireActivity().send_receive_view.setImageResource(R.drawable.mqtt_ic_message_received)
-            }
-
             packet_info.visibility =
                 if (packetInfo.isEmpty()) View.GONE else View.VISIBLE
             packet_info.text = HtmlCompat.fromHtml(
@@ -156,7 +157,8 @@ internal class TransactionDetailFragment :
                     text
                 )
             )
-            Snackbar.make(copy, R.string.mqtt_chuck_body_content_copied, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(copy, R.string.mqtt_chuck_body_content_copied, Snackbar.LENGTH_SHORT)
+                .show()
         } else {
             Snackbar.make(copy, R.string.mqtt_chuck_body_content_copy_failed, Snackbar.LENGTH_SHORT)
                 .show()

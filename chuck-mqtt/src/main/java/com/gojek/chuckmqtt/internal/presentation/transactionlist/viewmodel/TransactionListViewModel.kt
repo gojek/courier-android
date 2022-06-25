@@ -26,7 +26,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
 import io.reactivex.subjects.PublishSubject
 
-internal class TransactionListFragmentViewModel(
+internal class TransactionListViewModel(
     private val actionProcessorProvider: TransactionListActionProcessorProvider
 ) : ViewModel(),
     MqttChuckMviViewModel<TransactionListIntent, TransactionListViewState, TransactionListViewEffect> {

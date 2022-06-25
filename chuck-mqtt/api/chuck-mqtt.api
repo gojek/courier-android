@@ -1,4 +1,5 @@
 public final class com/gojek/chuckmqtt/external/MqttChuckConfig {
+	public static final field $stable I
 	public fun <init> ()V
 	public fun <init> (Lcom/gojek/chuckmqtt/external/Period;Z)V
 	public synthetic fun <init> (Lcom/gojek/chuckmqtt/external/Period;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -14,6 +15,7 @@ public final class com/gojek/chuckmqtt/external/MqttChuckConfig {
 }
 
 public final class com/gojek/chuckmqtt/external/MqttChuckInterceptor : com/gojek/mqtt/client/MqttInterceptor {
+	public static final field $stable I
 	public fun <init> (Landroid/content/Context;Lcom/gojek/chuckmqtt/external/MqttChuckConfig;)V
 	public fun onMqttWireMessageReceived ([B)V
 	public fun onMqttWireMessageSent ([B)V

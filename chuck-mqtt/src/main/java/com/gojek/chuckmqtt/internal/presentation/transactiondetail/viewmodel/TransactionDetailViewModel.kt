@@ -22,7 +22,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
 import io.reactivex.subjects.PublishSubject
 
-internal class TransactionDetailFragmentViewModel(
+internal class TransactionDetailViewModel(
     private val actionProcessorProvider: TransactionDetailActionProcessorProvider
 ) : ViewModel(),
     MqttChuckMviViewModel<TransactionDetailIntent, TransactionDetailViewState, TransactionDetailViewEffect> {

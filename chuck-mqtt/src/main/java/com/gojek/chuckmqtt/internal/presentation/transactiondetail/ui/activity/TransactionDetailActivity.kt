@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentTransaction
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.base.activity.BaseChuckMqttActivity
 import com.gojek.chuckmqtt.internal.presentation.transactiondetail.ui.fragment.TransactionDetailFragment
-import kotlinx.android.synthetic.main.activity_transaction_list.toolbar
 
 internal class TransactionDetailActivity : BaseChuckMqttActivity() {
 
@@ -20,8 +19,6 @@ internal class TransactionDetailActivity : BaseChuckMqttActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction_detail)
-
-        setSupportActionBar(toolbar)
 
         val transactionId = intent.getLongExtra(EXTRA_TRANSACTION_ID, 0)
         addTransactionDetailFragment(TransactionDetailFragment.newInstance(transactionId))

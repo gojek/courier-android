@@ -9,11 +9,20 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+
+    buildFeatures {
+        // Enables Jetpack Compose for this module
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion =  "1.1.0-beta03" //versions.composeVersion
+    }
 }
 
 ext {
     set("PUBLISH_GROUP_ID", "com.gojek.courier")
-    set("PUBLISH_ARTIFACT_ID", "chuck-mqtt")
+    set("PUBLISH_ARTIFACT_ID", "chuck-mqtt-modern")
     set("PUBLISH_VERSION", ext.get("gitVersionName"))
     set("minimumCoverage", "0.0")
 }
@@ -28,7 +37,7 @@ plugins {
 }
 
 apiValidation {
-    ignoredPackages.addAll(listOf("com.gojek.chuckmqtt.internal.data.local.room"))
+    ignoredPackages.addAll(listOf("com.gojek.chuckmqtt.internal.data.local.room", "com.gojek.chuckmqtt.internal"))
     ignoredClasses.add("com.gojek.chuckmqtt.BuildConfig")
     nonPublicMarkers.add("androidx.annotation.RestrictTo")
 }
@@ -60,6 +69,14 @@ dependencies {
     implementation(deps.rx.rx3BindingCore)
 
     implementation(deps.square.okio)
+
+    implementation(deps.compose.composeActivity)
+    implementation(deps.compose.composeAnimation)
+    implementation(deps.compose.composeMaterial)
+    implementation(deps.compose.composeViewModel)
+    implementation(deps.compose.composeTooling)
+    implementation(deps.compose.composeRxjava)
+    implementation(deps.compose.composeCoil)
 }
 
 apply(from = "${rootProject.projectDir}/gradle/publish-module.gradle")
