@@ -4,25 +4,29 @@
 It is licensed using the [MIT License][2].
 We appreciate pull requests; here are our guidelines:
 
-1.  [File an issue][3]
+1. [File an issue][3]
     (if there isn't one already). If your patch
     is going to be large it might be a good idea to get the
     discussion started early.  We are happy to discuss it in a
     new issue beforehand, and you can always email
     <foss+tech@go-jek.com> about future work.
 
-2.  DO follow our coding style (as described below).
+2. Please also make sure your code compiles by running `./gradlew assembleDebug`
 
-3.  DO run spotlessApply task (`./gradlew spotlessApply`) before submitting a pull request
+3. If you want to test locally you can publish artifacts locally using `./scripts/publishMavenLocal.sh` 
 
-4.  DO include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
+4. DO follow our coding style (as described below).
 
-5.  We use the [binary-compatibility-validator plugin][] for tracking the binary compatibility of the APIs we ship. If your change implies changes to any public API, run `./gradlew apiDump` to generate the updated API dumps and commit those changes.
+5. DO run spotlessApply task (`./gradlew spotlessApply`) before submitting a pull request
 
-5.  We ask that you squash all the commits together before
+6. DO include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
+
+7. We use the [binary-compatibility-validator plugin][9] for tracking the binary compatibility of the APIs we ship. If your change implies changes to any public API, run `./gradlew apiDump` to generate the updated API dumps and commit those changes.
+
+8. We ask that you squash all the commits together before
     pushing and that your commit message references the bug.
 
-6.  DON'T surprise us with big pull requests. Instead, file an issue and start a discussion so we can agree on a direction before you invest a large amount of time.
+9. DON'T surprise us with big pull requests. Instead, file an issue and start a discussion so we can agree on a direction before you invest a large amount of time.
 
 ## Coding Style
 
