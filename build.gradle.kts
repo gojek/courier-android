@@ -30,6 +30,12 @@ allprojects {
         mavenCentral()
         mavenLocal()
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force ("org.xerial:sqlite-jdbc:3.34.0")
+        }
+    }
 }
 
 subprojects {
