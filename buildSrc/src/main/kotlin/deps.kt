@@ -36,6 +36,7 @@ object versions {
     const val composeActivity = "1.4.0"
     const val composeViewModel = "2.4.1"
     const val composeCoilVersion = "2.1.0"
+    const val composeNavigationVersion = "2.5.0"
 }
 
 object ScriptPlugins {
@@ -160,5 +161,8 @@ object deps {
             "androidx.compose.runtime:runtime-rxjava2:${versions.composeVersion}"
 
         const val composeCoil = "io.coil-kt:coil-compose:${versions.composeCoilVersion}"
+
+        const val composeNavigation = "androidx.navigation:navigation-compose:${versions.composeNavigationVersion}"
+
     }
 }

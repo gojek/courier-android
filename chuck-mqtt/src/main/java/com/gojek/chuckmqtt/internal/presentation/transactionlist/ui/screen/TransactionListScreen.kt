@@ -31,32 +31,41 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.model.MqttTransactionUiModel
 import com.gojek.chuckmqtt.internal.presentation.theme.ChuckMqttTheme
-import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.ClearTransactionHistoryIntent
-import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.OpenTransactionDetailIntent
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.StartObservingAllTransactionsIntent
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListViewState
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.viewmodel.TransactionListViewModel
 
 @Composable
 internal fun TransactionListScreen(
+    navController: NavController,
     toolbarSubtitle: CharSequence,
-    viewModel: TransactionListViewModel,
-    intentLambda: (TransactionListIntent) -> Unit
+    viewModel: TransactionListViewModel
 ) {
     val state by viewModel.states().subscribeAsState(TransactionListViewState.default())
 
     ChuckMqttTheme {
         Scaffold(
-            topBar = { ListAppBar(toolbarSubtitle = toolbarSubtitle, intentLambda) },
+            topBar = {
+                ListAppBar(
+                    toolbarSubtitle = toolbarSubtitle,
+                    onClearButtonClicked = {
+                        viewModel.dispatchIntent(ClearTransactionHistoryIntent)
+                    }
+                )
+            },
             content = {
-                TransactionList(state.transactionList, intentLambda)
+                TransactionList(
+                    navController = navController,
+                    transactionList = state.transactionList
+                )
 
                 LaunchedEffect(Unit) {
-                    intentLambda(StartObservingAllTransactionsIntent)
+                    viewModel.dispatchIntent(StartObservingAllTransactionsIntent)
                 }
             }
         )
@@ -66,7 +75,7 @@ internal fun TransactionListScreen(
 @Composable
 internal fun ListAppBar(
     toolbarSubtitle: CharSequence,
-    intentLambda: (TransactionListIntent) -> Unit
+    onClearButtonClicked: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -79,7 +88,7 @@ internal fun ListAppBar(
             }
         },
         actions = {
-            IconButton(onClick = { intentLambda(ClearTransactionHistoryIntent) }) {
+            IconButton(onClick = { onClearButtonClicked() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.mqtt_chuck_ic_delete_white_24dp),
                     contentDescription = "Delete Packets"
@@ -93,12 +102,15 @@ internal fun ListAppBar(
 
 @Composable
 internal fun TransactionList(
-    transactionList: List<MqttTransactionUiModel>,
-    intentLambda: (TransactionListIntent) -> Unit
+    navController: NavController,
+    transactionList: List<MqttTransactionUiModel>
 ) {
     LazyColumn {
         items(transactionList) { item ->
-            TransactionListItem(item = item, intentLambda = intentLambda)
+            TransactionListItem(
+                navController = navController,
+                item = item
+            )
             Divider(color = Color.LightGray)
         }
     }
@@ -107,8 +119,8 @@ internal fun TransactionList(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun TransactionListItem(
+    navController: NavController,
     item: MqttTransactionUiModel,
-    intentLambda: (TransactionListIntent) -> Unit
 ) {
     val iconDrawable = if (item.isSent) {
         R.drawable.mqtt_ic_message_sent
@@ -118,7 +130,7 @@ internal fun TransactionListItem(
 
     Surface(
         onClick = {
-            intentLambda(OpenTransactionDetailIntent(item.id))
+            navController.navigate("transactionDetailScreen/${item.id}")
         },
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -149,7 +161,6 @@ internal fun TransactionListItem(
 
                     Text(
                         text = packetInfo,
-                        color = Color(0xFF494A4A),
                         style = TextStyle(
                             fontWeight = FontWeight.Normal,
                             fontSize = 14.sp
@@ -158,7 +169,6 @@ internal fun TransactionListItem(
 
                     Text(
                         transmissionTime,
-                        color = Color(0xFF494A4A),
                         style = TextStyle(
                             fontWeight = FontWeight.Normal,
                             fontSize = 14.sp

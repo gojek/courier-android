@@ -97,6 +97,10 @@ internal class TransactionListViewModel(
         intents.subscribe(_signal)
     }
 
+    fun dispatchIntent(intent: TransactionListIntent) {
+        _signal.onNext(intent)
+    }
+
     override fun states(): Observable<TransactionListViewState> {
         return states
     }

@@ -93,6 +93,10 @@ internal class TransactionDetailViewModel(
         intents.subscribe(_signal)
     }
 
+    fun dispatchIntent(intent: TransactionDetailIntent) {
+        _signal.onNext(intent)
+    }
+
     override fun states(): Observable<TransactionDetailViewState> {
         return states
     }
