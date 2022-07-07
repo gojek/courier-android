@@ -20,7 +20,7 @@ internal fun String.highlightWithDefinedColors(
     return applyColoredSpannable(this, startIndexes, search.length, backgroundColor, foregroundColor)
 }
 
-private fun indexesOf(text: String, search: String): List<Int> {
+fun indexesOf(text: String, search: String): List<Int> {
     val startPositions = mutableListOf<Int>()
     var index = text.indexOf(search, 0, true)
     while (index >= 0) {

@@ -8,6 +8,7 @@ val version = ext.get("gitVersionName")
 android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs +=  "-Xjvm-default=all"
     }
 
     buildFeatures {
@@ -80,6 +81,7 @@ dependencies {
     implementation(deps.compose.composeTooling)
     implementation(deps.compose.composeRxjava)
     implementation(deps.compose.composeCoil)
+    implementation(deps.compose.composeNavigation)
 }
 
 apply(from = "${rootProject.projectDir}/gradle/publish-module.gradle")
