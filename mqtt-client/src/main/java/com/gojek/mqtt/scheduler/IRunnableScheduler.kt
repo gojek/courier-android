@@ -27,4 +27,7 @@ internal interface IRunnableScheduler {
     fun scheduleAuthFailureRunnable()
 
     fun sendMessage(packet: MqttSendPacket)
+
+    fun start()
+    fun shutDown()
 }

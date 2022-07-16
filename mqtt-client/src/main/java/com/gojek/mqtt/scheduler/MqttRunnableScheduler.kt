@@ -2,7 +2,6 @@ package com.gojek.mqtt.scheduler
 
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import com.gojek.courier.QoS
 import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.client.IClientSchedulerBridge
@@ -36,13 +35,11 @@ internal class MqttRunnableScheduler(
     private val resetParamsRunnable = ResetParamsRunnable(clientSchedulerBridge)
     private val authFailureRunnable = AuthFailureRunnable(clientSchedulerBridge)
 
-    private val handlerThread: HandlerThread
-    private val mqttThreadHandler: Handler
+    private lateinit var handlerThread: HandlerThread
+    private lateinit var mqttThreadHandler: Handler
 
     init {
-        handlerThread = HandlerThread("MQTT_Thread")
-        handlerThread.start()
-        mqttThreadHandler = Handler(handlerThread.looper)
+        startHandlerThread()
     }
 
     override fun connectMqtt() {
@@ -173,6 +170,25 @@ internal class MqttRunnableScheduler(
         }
     }
 
+    override fun start() {
+        try {
+            if (handlerThread.isAlive.not()) {
+                startHandlerThread()
+            }
+        } catch (ex: Exception) {
+            logger.e(TAG, "Exception while startHandlerThread", ex)
+        }
+    }
+
+    override fun shutDown() {
+        try {
+            sendThreadEventIfNotAlive()
+            handlerThread.quitSafely()
+        } catch (ex: Exception) {
+            logger.e(TAG, "Exception while shutDown", ex)
+        }
+    }
+
     private fun sendThreadEventIfNotAlive() {
         if (handlerThread.isAlive.not()) {
             eventHandler.onEvent(
@@ -182,6 +198,12 @@ internal class MqttRunnableScheduler(
                 )
             )
         }
+    }
+
+    private fun startHandlerThread() {
+        handlerThread = HandlerThread("MQTT_Thread")
+        handlerThread.start()
+        mqttThreadHandler = Handler(handlerThread.looper)
     }
 
     companion object {

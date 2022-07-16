@@ -65,12 +65,12 @@ import com.gojek.mqtt.utils.MqttUtils
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
 import com.gojek.networktracker.NetworkStateTracker
-import org.eclipse.paho.client.mqttv3.MqttException
-import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import org.eclipse.paho.client.mqttv3.MqttException
+import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException
 
 internal class AndroidMqttClient(
     private val context: Context,
@@ -189,6 +189,7 @@ internal class AndroidMqttClient(
     ) {
         this.connectOptions = connectOptions
         if (isInitialised.compareAndSet(false, true)) {
+            runnableScheduler.start()
             networkHandler.init()
         }
         runnableScheduler.connectMqtt()
@@ -370,6 +371,7 @@ internal class AndroidMqttClient(
             subscriptionStore.clear()
             mqttPersistence.clearAll()
             networkHandler.destroy()
+            runnableScheduler.shutDown()
         }
     }
 
