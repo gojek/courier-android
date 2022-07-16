@@ -70,6 +70,7 @@ import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class AndroidMqttClient(
     private val context: Context,
@@ -99,8 +100,7 @@ internal class AndroidMqttClient(
     @Volatile
     private var globalListener: MessageListener? = null
 
-    @Volatile
-    private var isInitialised = false
+    private val isInitialised = AtomicBoolean(false)
 
     // Accessed only from mqtt thread
     private var forceRefresh = false
@@ -181,7 +181,6 @@ internal class AndroidMqttClient(
             experimentConfigs.incomingMessagesCleanupIntervalSecs,
             clock
         )
-        networkHandler.init()
     }
 
     // This can be invoked on any thread
@@ -189,7 +188,9 @@ internal class AndroidMqttClient(
         connectOptions: MqttConnectOptions
     ) {
         this.connectOptions = connectOptions
-        isInitialised = true
+        if (isInitialised.compareAndSet(false, true)) {
+            networkHandler.init()
+        }
         runnableScheduler.connectMqtt()
     }
 
@@ -201,7 +202,7 @@ internal class AndroidMqttClient(
 
     // This can be invoked on any thread
     override fun disconnect(clearState: Boolean) {
-        isInitialised = false
+        isInitialised.set(false)
         runnableScheduler.disconnectMqtt(false, clearState)
     }
 
@@ -298,7 +299,7 @@ internal class AndroidMqttClient(
         val startTime = clock.nanoTime()
         try {
             logger.d(TAG, "Sending onConnectAttempt event")
-            if (!isInitialised) {
+            if (isInitialised.get().not()) {
                 logger.d(TAG, "Mqtt Client not initialised")
                 mqttConfiguration.eventHandler.onEvent(
                     MqttConnectDiscardedEvent(
@@ -368,6 +369,7 @@ internal class AndroidMqttClient(
             mqttConnection.shutDown()
             subscriptionStore.clear()
             mqttPersistence.clearAll()
+            networkHandler.destroy()
         }
     }
 
