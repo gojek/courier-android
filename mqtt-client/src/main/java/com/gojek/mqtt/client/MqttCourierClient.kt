@@ -19,8 +19,12 @@ internal class MqttCourierClient(
         return mqttClient.getCurrentState()
     }
 
-    override fun disconnect(clearState: Boolean) {
-        mqttClient.disconnect(clearState)
+    override fun disconnect() {
+        mqttClient.disconnect(clearState = false)
+    }
+
+    override fun destroy() {
+        mqttClient.disconnect(clearState = true)
     }
 
     override fun reconnect() {

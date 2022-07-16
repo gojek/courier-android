@@ -9,7 +9,8 @@ import com.gojek.mqtt.model.MqttConnectOptions
 interface MqttClient {
     fun connect(connectOptions: MqttConnectOptions)
     fun getCurrentState(): ConnectionState
-    fun disconnect(clearState: Boolean = false)
+    fun disconnect()
+    fun destroy()
     fun reconnect()
     fun subscribe(topic: Pair<String, QoS>, vararg topics: Pair<String, QoS>)
     fun unsubscribe(topic: String, vararg topics: String)
