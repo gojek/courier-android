@@ -41,9 +41,14 @@ class MqttCourierClientTest {
 
     @Test
     fun `test disconnect`() {
-        val clearState = false
-        mqttCourierClient.disconnect(clearState)
-        verify(mqttClientInternal).disconnect(clearState)
+        mqttCourierClient.disconnect()
+        verify(mqttClientInternal).disconnect(clearState = false)
+    }
+
+    @Test
+    fun `test destroy`() {
+        mqttCourierClient.destroy()
+        verify(mqttClientInternal).disconnect(clearState = true)
     }
 
     @Test
