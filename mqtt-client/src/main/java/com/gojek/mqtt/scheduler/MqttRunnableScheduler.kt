@@ -5,6 +5,7 @@ import android.os.HandlerThread
 import com.gojek.courier.QoS
 import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.client.IClientSchedulerBridge
+import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.constants.MQTT_WAIT_BEFORE_RECONNECT_TIME_MS
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.HandlerThreadNotAliveEvent
@@ -15,6 +16,7 @@ import com.gojek.mqtt.scheduler.runnable.ConnectionCheckRunnable
 import com.gojek.mqtt.scheduler.runnable.DisconnectRunnable
 import com.gojek.mqtt.scheduler.runnable.MqttExceptionRunnable
 import com.gojek.mqtt.scheduler.runnable.ResetParamsRunnable
+import com.gojek.mqtt.scheduler.runnable.SendMessageRunnable
 import com.gojek.mqtt.scheduler.runnable.SubscribeRunnable
 import com.gojek.mqtt.scheduler.runnable.UnsubscribeRunnable
 
@@ -151,6 +153,15 @@ internal class MqttRunnableScheduler(
             mqttThreadHandler.post(authFailureRunnable)
         } catch (ex: Exception) {
             logger.e(TAG, "Exception while scheduleAuthFailureRunnable", ex)
+        }
+    }
+
+    override fun sendMessage(packet: MqttSendPacket) {
+        try {
+            sendThreadEventIfNotAlive()
+            mqttThreadHandler.post(SendMessageRunnable(packet, clientSchedulerBridge))
+        } catch (ex: Exception) {
+            logger.e(TAG, "Exception while sendMessage", ex)
         }
     }
 
