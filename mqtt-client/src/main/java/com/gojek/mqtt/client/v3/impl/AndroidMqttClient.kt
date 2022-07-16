@@ -1,9 +1,6 @@
 package com.gojek.mqtt.client.v3.impl
 
 import android.content.Context
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Looper
 import androidx.annotation.RequiresApi
 import com.gojek.courier.QoS
 import com.gojek.courier.exception.AuthApiException
@@ -86,8 +83,6 @@ internal class AndroidMqttClient(
 
     private val runnableScheduler: IRunnableScheduler
     private val mqttConnection: IMqttConnection
-    private val mqttThreadLooper: Looper
-    private val mqttThreadHandler: Handler
     private val networkUtils: NetworkUtils
     private val mqttUtils: MqttUtils
     private val mqttPersistence: PahoPersistence
@@ -123,14 +118,8 @@ internal class AndroidMqttClient(
 
     init {
         logger = mqttConfiguration.logger
-        val mqttHandlerThread = HandlerThread("MQTT_Thread")
-        mqttHandlerThread.start()
-        mqttThreadLooper = mqttHandlerThread.looper
-        mqttThreadHandler = Handler(mqttThreadLooper)
         @RequiresApi
         runnableScheduler = MqttRunnableScheduler(
-            mqttHandlerThread,
-            mqttThreadHandler,
             this,
             logger,
             mqttConfiguration.eventHandler,

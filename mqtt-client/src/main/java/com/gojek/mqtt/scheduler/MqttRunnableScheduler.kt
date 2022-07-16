@@ -2,6 +2,7 @@ package com.gojek.mqtt.scheduler
 
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import com.gojek.courier.QoS
 import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.client.IClientSchedulerBridge
@@ -21,8 +22,6 @@ import com.gojek.mqtt.scheduler.runnable.SubscribeRunnable
 import com.gojek.mqtt.scheduler.runnable.UnsubscribeRunnable
 
 internal class MqttRunnableScheduler(
-    private val handlerThread: HandlerThread,
-    private val mqttThreadHandler: Handler,
     private val clientSchedulerBridge: IClientSchedulerBridge,
     private val logger: ILogger,
     private val eventHandler: EventHandler,
@@ -36,6 +35,15 @@ internal class MqttRunnableScheduler(
     private val activityCheckRunnable = ActivityCheckRunnable(clientSchedulerBridge, logger)
     private val resetParamsRunnable = ResetParamsRunnable(clientSchedulerBridge)
     private val authFailureRunnable = AuthFailureRunnable(clientSchedulerBridge)
+
+    private val handlerThread: HandlerThread
+    private val mqttThreadHandler: Handler
+
+    init {
+        handlerThread = HandlerThread("MQTT_Thread")
+        handlerThread.start()
+        mqttThreadHandler = Handler(handlerThread.looper)
+    }
 
     override fun connectMqtt() {
         connectMqtt(MQTT_WAIT_BEFORE_RECONNECT_TIME_MS)
