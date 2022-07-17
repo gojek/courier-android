@@ -26,17 +26,17 @@ public abstract interface class com/gojek/mqtt/client/MqttInterceptor {
 
 public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public fun <init> ()V
-	public fun <init> (ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)V
-	public synthetic fun <init> (ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Z
+	public fun <init> (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)V
+	public synthetic fun <init> (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lcom/gojek/mqtt/client/config/SubscriptionStore;
 	public final fun component2 ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
 	public final fun component3 ()I
 	public final fun component4 ()I
 	public final fun component5 ()I
 	public final fun component6 ()J
 	public final fun component7 ()J
-	public final fun copy (ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;ZLcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public final fun copy (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActivityCheckIntervalSeconds ()I
 	public final fun getAdaptiveKeepAliveConfig ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
@@ -44,8 +44,8 @@ public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public final fun getIncomingMessagesCleanupIntervalSecs ()J
 	public final fun getIncomingMessagesTTLSecs ()J
 	public final fun getPolicyResetTimeSeconds ()I
+	public final fun getSubscriptionStore ()Lcom/gojek/mqtt/client/config/SubscriptionStore;
 	public fun hashCode ()I
-	public final fun isPersistentSubscriptionStoreEnabled ()Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -83,6 +83,14 @@ public final class com/gojek/mqtt/client/config/PersistenceOptions$PahoPersisten
 	public fun hashCode ()I
 	public final fun isDeleteOldestMessages ()Z
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/gojek/mqtt/client/config/SubscriptionStore : java/lang/Enum {
+	public static final field IN_MEMORY Lcom/gojek/mqtt/client/config/SubscriptionStore;
+	public static final field PERSISTABLE Lcom/gojek/mqtt/client/config/SubscriptionStore;
+	public static final field PERSISTABLE_V2 Lcom/gojek/mqtt/client/config/SubscriptionStore;
+	public static fun valueOf (Ljava/lang/String;)Lcom/gojek/mqtt/client/config/SubscriptionStore;
+	public static fun values ()[Lcom/gojek/mqtt/client/config/SubscriptionStore;
 }
 
 public final class com/gojek/mqtt/client/config/v3/MqttV3Configuration : com/gojek/mqtt/client/config/MqttConfiguration {

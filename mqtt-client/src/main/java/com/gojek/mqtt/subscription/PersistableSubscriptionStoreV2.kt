@@ -1,14 +1,12 @@
 package com.gojek.mqtt.subscription
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
 import com.gojek.courier.QoS
 import com.gojek.courier.extensions.toImmutableMap
 import com.gojek.courier.extensions.toImmutableSet
 
-internal class PersistableSubscriptionStore(context: Context) : SubscriptionStore {
+internal class PersistableSubscriptionStoreV2(context: Context) : SubscriptionStore {
     private lateinit var state: State
     private val persistence = Persistence(context)
     private val listener = object : SubscriptionStoreListener {
@@ -42,13 +40,12 @@ internal class PersistableSubscriptionStore(context: Context) : SubscriptionStor
 
     @Synchronized
     override fun subscribeTopics(topicMap: Map<String, QoS>): Map<String, QoS> {
-        val addedTopics = topicMap - state.subscriptionTopics.keys
         state = state.copy(
             subscriptionTopics = state.subscriptionTopics + topicMap,
             pendingUnsubscribeTopics = state.pendingUnsubscribeTopics - topicMap.keys
         )
         persistence.put(PREF_KEY_PENDING_UNSUBSCRIBES, state.pendingUnsubscribeTopics)
-        return addedTopics
+        return topicMap
     }
 
     @Synchronized
@@ -89,19 +86,6 @@ internal class PersistableSubscriptionStore(context: Context) : SubscriptionStor
             pendingUnsubscribeTopics = state.pendingUnsubscribeTopics - topics
         )
         persistence.put(PREF_KEY_PENDING_UNSUBSCRIBES, state.pendingUnsubscribeTopics)
-    }
-}
-
-internal class Persistence(context: Context) {
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("SubscriptionStorePrefs", MODE_PRIVATE)
-
-    fun get(key: String, default: Set<String>): Set<String> {
-        return sharedPreferences.getStringSet(key, default)!!
-    }
-
-    fun put(key: String, value: Set<String>) {
-        sharedPreferences.edit().putStringSet(key, value).apply()
     }
 }
 

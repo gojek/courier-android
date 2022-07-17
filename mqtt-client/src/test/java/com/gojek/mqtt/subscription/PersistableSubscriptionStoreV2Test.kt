@@ -14,7 +14,7 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
-class PersistableSubscriptionStoreTest {
+class PersistableSubscriptionStoreV2Test {
     @Mock
     private lateinit var context: Context
 
@@ -24,7 +24,7 @@ class PersistableSubscriptionStoreTest {
     @Mock
     private lateinit var editor: SharedPreferences.Editor
 
-    private lateinit var subscriptionStore: PersistableSubscriptionStore
+    private lateinit var subscriptionStore: PersistableSubscriptionStoreV2
 
     @Before
     fun setup() {
@@ -34,7 +34,7 @@ class PersistableSubscriptionStoreTest {
         whenever(editor.putStringSet(any(), any())).thenReturn(editor)
         whenever(context.getSharedPreferences("SubscriptionStorePrefs", Context.MODE_PRIVATE))
             .thenReturn(sharedPreferences)
-        subscriptionStore = PersistableSubscriptionStore(context)
+        subscriptionStore = PersistableSubscriptionStoreV2(context)
     }
 
     @Test
@@ -70,7 +70,7 @@ class PersistableSubscriptionStoreTest {
         // Test subscribing topic3 when its already subscribed
         topicMap = mapOf(topic3)
         subscribeTopics = subscriptionStore.subscribeTopics(topicMap)
-        assert(subscribeTopics.isEmpty())
+        assertEquals(topicMap, subscribeTopics)
         assertEquals(subscriptionStore.getSubscribeTopics().size, 3)
         assertEquals(subscriptionStore.getSubscribeTopics(), mapOf(topic1, topic2, topic3))
         assertEquals(subscriptionStore.getUnsubscribeTopics(false).size, 0)
