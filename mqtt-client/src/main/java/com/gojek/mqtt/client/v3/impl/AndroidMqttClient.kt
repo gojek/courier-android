@@ -19,6 +19,9 @@ import com.gojek.mqtt.client.IClientSchedulerBridge
 import com.gojek.mqtt.client.IMessageReceiveListener
 import com.gojek.mqtt.client.IncomingMsgController
 import com.gojek.mqtt.client.IncomingMsgControllerImpl
+import com.gojek.mqtt.client.config.SubscriptionStore.IN_MEMORY
+import com.gojek.mqtt.client.config.SubscriptionStore.PERSISTABLE
+import com.gojek.mqtt.client.config.SubscriptionStore.PERSISTABLE_V2
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.connectioninfo.ConnectionInfo
 import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
@@ -66,6 +69,7 @@ import com.gojek.mqtt.scheduler.MqttRunnableScheduler
 import com.gojek.mqtt.send.listener.IMessageSendListener
 import com.gojek.mqtt.subscription.InMemorySubscriptionStore
 import com.gojek.mqtt.subscription.PersistableSubscriptionStore
+import com.gojek.mqtt.subscription.PersistableSubscriptionStoreV2
 import com.gojek.mqtt.subscription.SubscriptionStore
 import com.gojek.mqtt.utils.MqttUtils
 import com.gojek.mqtt.utils.NetworkUtils
@@ -115,10 +119,10 @@ internal class AndroidMqttClient(
     private var forceRefresh = false
 
     private val subscriptionStore: SubscriptionStore =
-        if (experimentConfigs.isPersistentSubscriptionStoreEnabled) {
-            PersistableSubscriptionStore(context)
-        } else {
-            InMemorySubscriptionStore()
+        when (experimentConfigs.subscriptionStore) {
+            IN_MEMORY -> InMemorySubscriptionStore()
+            PERSISTABLE -> PersistableSubscriptionStore(context)
+            PERSISTABLE_V2 -> PersistableSubscriptionStoreV2(context)
         }
 
     private var hostFallbackPolicy: IHostFallbackPolicy? = null
