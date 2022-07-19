@@ -202,9 +202,15 @@ internal class AndroidMqttClient(
     }
 
     // This can be invoked on any thread
-    override fun disconnect(clearState: Boolean) {
+    override fun disconnect() {
         isInitialised.set(false)
-        runnableScheduler.disconnectMqtt(false, clearState)
+        runnableScheduler.disconnectMqtt(reconnect = false, clearState = false)
+    }
+
+    // This can be invoked on any thread
+    override fun destroy() {
+        isInitialised.set(false)
+        runnableScheduler.disconnectMqtt(reconnect = false, clearState = true)
     }
 
     // This can be invoked on any thread
