@@ -83,7 +83,7 @@ internal class MqttClientInternal(
         adaptiveMqttClient?.disconnect()
     }
 
-    fun destroy(clearState: Boolean) {
+    fun destroy() {
         androidMqttClient.destroy()
         adaptiveMqttClient?.destroy()
     }

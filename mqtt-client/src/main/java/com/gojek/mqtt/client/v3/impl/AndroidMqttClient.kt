@@ -1,7 +1,6 @@
 package com.gojek.mqtt.client.v3.impl
 
 import android.content.Context
-import androidx.annotation.RequiresApi
 import com.gojek.courier.QoS
 import com.gojek.courier.exception.AuthApiException
 import com.gojek.courier.extensions.fromNanosToMillis
@@ -56,6 +55,7 @@ import com.gojek.mqtt.policies.hostfallback.HostFallbackPolicy
 import com.gojek.mqtt.policies.hostfallback.IHostFallbackPolicy
 import com.gojek.mqtt.scheduler.IRunnableScheduler
 import com.gojek.mqtt.scheduler.MqttRunnableScheduler
+import com.gojek.mqtt.scheduler.MqttRunnableSchedulerV2
 import com.gojek.mqtt.send.listener.IMessageSendListener
 import com.gojek.mqtt.subscription.InMemorySubscriptionStore
 import com.gojek.mqtt.subscription.PersistableSubscriptionStore
@@ -82,7 +82,26 @@ internal class AndroidMqttClient(
     keepAliveFailureHandler: KeepAliveFailureHandler
 ) : IAndroidMqttClient, IClientSchedulerBridge {
 
-    private val runnableScheduler: IRunnableScheduler
+    private val experimentConfigs = mqttConfiguration.experimentConfigs
+
+    private val runnableScheduler: IRunnableScheduler by lazy {
+        if (experimentConfigs.isRunnableSchedulerV2Enabled) {
+            MqttRunnableSchedulerV2(
+                this,
+                logger,
+                mqttConfiguration.eventHandler,
+                experimentConfigs.activityCheckIntervalSeconds
+            )
+        } else {
+            MqttRunnableScheduler(
+                this,
+                logger,
+                mqttConfiguration.eventHandler,
+                experimentConfigs.activityCheckIntervalSeconds
+            )
+        }
+    }
+
     private val mqttConnection: IMqttConnection
     private val networkUtils: NetworkUtils
     private val mqttUtils: MqttUtils
@@ -94,8 +113,6 @@ internal class AndroidMqttClient(
     private val incomingMsgController: IncomingMsgController
 
     private lateinit var connectOptions: MqttConnectOptions
-
-    private val experimentConfigs = mqttConfiguration.experimentConfigs
 
     @Volatile
     private var globalListener: MessageListener? = null
@@ -118,13 +135,6 @@ internal class AndroidMqttClient(
 
     init {
         logger = mqttConfiguration.logger
-        @RequiresApi
-        runnableScheduler = MqttRunnableScheduler(
-            this,
-            logger,
-            mqttConfiguration.eventHandler,
-            experimentConfigs.activityCheckIntervalSeconds
-        )
         mqttUtils = MqttUtils()
         networkUtils = NetworkUtils()
         mqttPersistence = PahoPersistence(context)

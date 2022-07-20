@@ -42,13 +42,13 @@ class MqttCourierClientTest {
     @Test
     fun `test disconnect`() {
         mqttCourierClient.disconnect()
-        verify(mqttClientInternal).disconnect(clearState = false)
+        verify(mqttClientInternal).disconnect()
     }
 
     @Test
     fun `test destroy`() {
         mqttCourierClient.destroy()
-        verify(mqttClientInternal).disconnect(clearState = true)
+        verify(mqttClientInternal).destroy()
     }
 
     @Test
