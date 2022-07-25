@@ -78,9 +78,14 @@ internal class MqttClientInternal(
         adaptiveMqttClient?.connect(connectOptions)
     }
 
-    fun disconnect(clearState: Boolean) {
-        androidMqttClient.disconnect(clearState)
-        adaptiveMqttClient?.disconnect(clearState)
+    fun disconnect() {
+        androidMqttClient.disconnect()
+        adaptiveMqttClient?.disconnect()
+    }
+
+    fun destroy() {
+        androidMqttClient.destroy()
+        adaptiveMqttClient?.destroy()
     }
 
     fun reconnect() {

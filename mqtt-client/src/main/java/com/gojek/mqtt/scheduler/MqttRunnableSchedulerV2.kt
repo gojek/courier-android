@@ -20,7 +20,7 @@ import com.gojek.mqtt.scheduler.runnable.SendMessageRunnable
 import com.gojek.mqtt.scheduler.runnable.SubscribeRunnable
 import com.gojek.mqtt.scheduler.runnable.UnsubscribeRunnable
 
-internal class MqttRunnableScheduler(
+internal class MqttRunnableSchedulerV2(
     private val clientSchedulerBridge: IClientSchedulerBridge,
     private val logger: ILogger,
     private val eventHandler: EventHandler,
@@ -171,11 +171,20 @@ internal class MqttRunnableScheduler(
     }
 
     override fun start() {
-        // no-op
+        try {
+            startHandlerThread()
+        } catch (ex: Exception) {
+            logger.e(TAG, "Exception while startHandlerThread", ex)
+        }
     }
 
     override fun shutDown() {
-        // no-op
+        try {
+            sendThreadEventIfNotAlive()
+            handlerThread.quitSafely()
+        } catch (ex: Exception) {
+            logger.e(TAG, "Exception while shutDown", ex)
+        }
     }
 
     private fun sendThreadEventIfNotAlive() {
