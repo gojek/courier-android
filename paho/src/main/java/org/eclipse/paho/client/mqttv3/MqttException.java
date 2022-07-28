@@ -147,7 +147,6 @@ public class MqttException extends Exception
 	/**
 	 * The Client has attempted to subscribe to an invalid topic.
 	 */
-
 	public static final short REASON_CODE_INVALID_SUBSCRIPTION = 32204;
 
 	private int reasonCode;

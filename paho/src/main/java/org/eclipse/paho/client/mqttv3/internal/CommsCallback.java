@@ -25,8 +25,12 @@ import org.eclipse.paho.client.mqttv3.MqttToken;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPubAck;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPubComp;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish;
+import org.eclipse.paho.client.mqttv3.internal.wire.MqttSuback;
 
+import java.util.Arrays;
 import java.util.Vector;
+
+import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_SUBSCRIPTION_NOT_ACK;
 
 /**
  * Bridge between Receiver and the external API. This class gets called by Receiver, and then converts the comms-centric MQTT message objects into ones understood by the external
@@ -332,7 +336,28 @@ public class CommsCallback implements Runnable, ICommsCallback
 			IMqttActionListener asyncCB = token.getActionCallback();
 			if (asyncCB != null)
 			{
-				if (token.getException() == null)
+
+				if (token.getResponse() instanceof MqttSuback)
+				{
+					boolean isAnySubscriptionFailed = false;
+					int [] grantedQos = token.getGrantedQos();
+					for (int qos : grantedQos) {
+						if (qos == 128) {
+							isAnySubscriptionFailed = true;
+							break;
+						}
+					}
+					if (isAnySubscriptionFailed)
+					{
+						asyncCB.onFailure(token, new MqttException(REASON_CODE_SUBSCRIPTION_NOT_ACK));
+					}
+					else
+					{
+						asyncCB.onSuccess(token);
+					}
+				}
+
+				else if (token.getException() == null)
 				{
 					// @TRACE 716=call onSuccess key={0}
 
