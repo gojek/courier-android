@@ -11,6 +11,8 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
+
 /**
  * Provides a mechanism for tracking the completion of an asynchronous task.
  * 
@@ -136,5 +138,15 @@ public interface IMqttToken
 	 * operations as there can only ever be one of these outstanding at a time. For other operations the MQTT message id flowed over the network.
 	 */
 	public int getMessageId();
+
+	/**
+	 * @return the granted QoS list from a suback
+	 */
+	int[] getGrantedQos();
+
+	/**
+	 * @return the response wire message
+	 */
+	MqttWireMessage getResponse();
 
 }
