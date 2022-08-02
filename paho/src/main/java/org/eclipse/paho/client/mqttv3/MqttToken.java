@@ -97,10 +97,6 @@ public class MqttToken implements IMqttToken, IToken
 		return internalTok.getMessageID();
 	}
 
-	public int[] getGrantedQos() {
-		return internalTok.getGrantedQos();
-	}
-
 	public MqttWireMessage getResponse() {
 		return internalTok.getResponse();
 	}

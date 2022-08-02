@@ -530,7 +530,7 @@ internal class MqttConnection(
                 val successTopicMap = mutableMapOf<String, QoS>()
                 val failTopicMap = mutableMapOf<String, QoS>()
                 iMqttToken.topics.forEachIndexed { index, topic ->
-                    if (128 == iMqttToken.grantedQos.getOrNull(index)) {
+                    if (128 == (iMqttToken.response as? MqttSuback)?.grantedQos?.getOrNull(index)) {
                         failTopicMap[topic] = topicMap[topic] ?: ONE
                     } else {
                         successTopicMap[topic] = topicMap[topic] ?: ONE

@@ -437,14 +437,4 @@ public class Token
 		return response;
 	}
 
-	public int[] getGrantedQos() {
-		int[] val = new int[0];
-		if (response instanceof MqttSuback) {
-			if (response != null) {
-				val = ((MqttSuback) response).getGrantedQos();
-			}
-		}
-		return val;
-	}
-
 }
