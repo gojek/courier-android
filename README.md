@@ -1,3 +1,18 @@
+![Build and Smoketest Status](https://github.com/gojek/courier-android/actions/workflows/android.yml/badge.svg)
+<a href="https://gojek.github.io/courier-android/">
+	<img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" target="_blank" />
+</a>
+<a href="https://github.com/gojek/courier-android/graphs/commit-activity">
+	<img alt="Maintenance" src="https://img.shields.io/badge/maintained-yes-green.svg" target="_blank" />
+</a>
+<a href="https://github.com/gojek/courier-android/releases/latest">
+	<img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/gojek/courier-android">
+</a>
+<a href="https://github.com/gojek/courier-android/commits/main">
+	<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/gojek/courier-android">
+</a>
+[![Discord : Gojek Courier](https://img.shields.io/badge/Discord-Gojek%20Courier-blue.svg)](https://discord.gg/C823qK4AK7)
+
 <p align="center">
 <img src="https://github.com/gojek/courier-android/blob/main/docs/static/img/courier-logo-full-black.svg#gh-light-mode-only" width="500"/>
 </p>
