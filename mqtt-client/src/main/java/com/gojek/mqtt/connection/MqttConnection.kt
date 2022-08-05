@@ -3,7 +3,6 @@ package com.gojek.mqtt.connection
 import android.content.Context
 import android.os.SystemClock
 import com.gojek.courier.QoS
-import com.gojek.courier.QoS.ONE
 import com.gojek.courier.extensions.fromNanosToMillis
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
@@ -531,9 +530,9 @@ internal class MqttConnection(
                 val failTopicMap = mutableMapOf<String, QoS>()
                 iMqttToken.topics.forEachIndexed { index, topic ->
                     if (128 == (iMqttToken.response as? MqttSuback)?.grantedQos?.getOrNull(index)) {
-                        failTopicMap[topic] = topicMap[topic] ?: ONE
+                        failTopicMap[topic] = topicMap[topic]!!
                     } else {
-                        successTopicMap[topic] = topicMap[topic] ?: ONE
+                        successTopicMap[topic] = topicMap[topic]!!
                     }
                 }
 
@@ -548,7 +547,7 @@ internal class MqttConnection(
                     connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
                         topics = failTopicMap,
                         timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis(),
-                        throwable = MqttException(MqttException.REASON_CODE_SUBSCRIPTION_NOT_ACK.toInt())
+                        throwable = MqttException(MqttException.REASON_CODE_INVALID_SUBSCRIPTION.toInt())
                     )
                 }
 
