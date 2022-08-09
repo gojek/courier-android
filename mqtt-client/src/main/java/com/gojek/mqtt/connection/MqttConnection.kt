@@ -39,6 +39,7 @@ import org.eclipse.paho.client.mqttv3.MqttAsyncClient
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttException
+import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_SUBSCRIPTION
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.MqttSecurityException
@@ -484,6 +485,15 @@ internal class MqttConnection(
                     timeTakenMillis = (clock.nanoTime() - subscribeStartTime).fromNanosToMillis()
                 )
                 runnableScheduler.scheduleMqttHandleExceptionRunnable(mqttException, true)
+            } catch (illegalArgumentException: IllegalArgumentException) {
+                connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
+                    topics = topicMap,
+                    throwable = MqttException(
+                        REASON_CODE_INVALID_SUBSCRIPTION.toInt(),
+                        illegalArgumentException
+                    ),
+                    timeTakenMillis = (clock.nanoTime() - subscribeStartTime).fromNanosToMillis()
+                )
             }
         }
     }
