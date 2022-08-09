@@ -14,6 +14,7 @@
 package org.eclipse.paho.client.mqttv3;
 
 import org.eclipse.paho.client.mqttv3.internal.Token;
+import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 
 /**
  * Provides a mechanism for tracking the completion of an asynchronous action.
@@ -94,5 +95,9 @@ public class MqttToken implements IMqttToken, IToken
 	public int getMessageId()
 	{
 		return internalTok.getMessageID();
+	}
+
+	public MqttWireMessage getResponse() {
+		return internalTok.getResponse();
 	}
 }
