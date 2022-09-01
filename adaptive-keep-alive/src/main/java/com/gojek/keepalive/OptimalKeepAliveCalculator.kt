@@ -50,7 +50,7 @@ internal class OptimalKeepAliveCalculator(
     private fun calculateKeepAlive(): KeepAlive {
         stateHandler.calculateNextKeepAlive()
         return if (stateHandler.isCurrentKeepAliveFailureLimitExceeded()) {
-            onKeepAliveFailure(stateHandler.getCurrentKeepAlive())
+            handleKeepAliveFailure(stateHandler.getCurrentKeepAlive())
             getUnderTrialKeepAlive()
         } else {
             stateHandler.updateProbeCountAndConvergenceTime()
@@ -77,16 +77,21 @@ internal class OptimalKeepAliveCalculator(
     @Synchronized
     override fun onKeepAliveFailure(keepAlive: KeepAlive) {
         if (stateHandler.isValidKeepAlive(keepAlive)) {
-            stateHandler.updateKeepAliveFailureState(keepAlive)
-            if (stateHandler.isOptimalKeepAliveFound()) {
-                optimalKeepAliveObserver.onOptimalKeepAliveFound(
-                    timeMinutes = stateHandler.getOptimalKeepAlive().keepAliveMinutes,
-                    probeCount = stateHandler.getProbeCount(),
-                    convergenceTime = stateHandler.getConvergenceTime()
-                )
-            }
-            stateHandler.updatePersistenceWithLatestState()
+            handleKeepAliveFailure(keepAlive)
         }
+    }
+
+    @VisibleForTesting
+    internal fun handleKeepAliveFailure(keepAlive: KeepAlive) {
+        stateHandler.updateKeepAliveFailureState(keepAlive)
+        if (stateHandler.isOptimalKeepAliveFound()) {
+            optimalKeepAliveObserver.onOptimalKeepAliveFound(
+                timeMinutes = stateHandler.getOptimalKeepAlive().keepAliveMinutes,
+                probeCount = stateHandler.getProbeCount(),
+                convergenceTime = stateHandler.getConvergenceTime()
+            )
+        }
+        stateHandler.updatePersistenceWithLatestState()
     }
 
     @Synchronized
