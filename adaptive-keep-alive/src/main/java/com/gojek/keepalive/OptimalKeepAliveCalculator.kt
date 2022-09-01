@@ -81,7 +81,8 @@ internal class OptimalKeepAliveCalculator(
         }
     }
 
-    private fun handleKeepAliveFailure(keepAlive: KeepAlive) {
+    @VisibleForTesting
+    internal fun handleKeepAliveFailure(keepAlive: KeepAlive) {
         stateHandler.updateKeepAliveFailureState(keepAlive)
         if (stateHandler.isOptimalKeepAliveFound()) {
             optimalKeepAliveObserver.onOptimalKeepAliveFound(

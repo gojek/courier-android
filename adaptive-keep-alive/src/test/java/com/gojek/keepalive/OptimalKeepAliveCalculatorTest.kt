@@ -110,7 +110,7 @@ class OptimalKeepAliveCalculatorTest {
         whenever(stateHandler.getCurrentKeepAlive()).thenReturn(keepAlive)
 
         val optimalKeepAliveCalculatorSpy = spy(optimalKeepAliveCalculator)
-        doNothing().whenever(optimalKeepAliveCalculatorSpy).onKeepAliveFailure(keepAlive)
+        doNothing().whenever(optimalKeepAliveCalculatorSpy).handleKeepAliveFailure(keepAlive)
 
         val underTrialKeepAlive = optimalKeepAliveCalculatorSpy.getUnderTrialKeepAlive()
 
@@ -120,7 +120,7 @@ class OptimalKeepAliveCalculatorTest {
         verify(stateHandler).isCurrentKeepAliveFailureLimitExceeded()
         verify(stateHandler).getCurrentKeepAlive()
         verify(stateHandler).getOptimalKeepAlive()
-        verify(optimalKeepAliveCalculatorSpy).onKeepAliveFailure(keepAlive)
+        verify(optimalKeepAliveCalculatorSpy).handleKeepAliveFailure(keepAlive)
     }
 
     @Test
