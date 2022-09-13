@@ -20,11 +20,9 @@ internal class OptimalKeepAliveCalculator(
         object : NetworkStateListener {
             override fun onStateChanged(activeNetworkState: NetworkState) {
                 synchronized(this) {
-                    if (activeNetworkState.isConnected) {
-                        val networkType = networkUtils.getNetworkType(activeNetworkState.netInfo)
-                        val networkName = networkUtils.getNetworkName(activeNetworkState.netInfo)
-                        onNetworkStateChanged(networkType, networkName)
-                    }
+                    val networkType = networkUtils.getNetworkType(activeNetworkState.netInfo)
+                    val networkName = networkUtils.getNetworkName(activeNetworkState.netInfo)
+                    onNetworkStateChanged(networkType, networkName)
                 }
             }
         }
@@ -108,6 +106,7 @@ internal class OptimalKeepAliveCalculator(
             stateHandler.updateOptimalKeepAliveFailureState()
             if (stateHandler.isOptimalKeepAliveFailureLimitExceeded()) {
                 stateHandler.removeStateFromPersistence()
+                stateHandler.resetState()
             }
         }
     }

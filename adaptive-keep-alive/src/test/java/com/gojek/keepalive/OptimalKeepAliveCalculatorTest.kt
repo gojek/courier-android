@@ -39,10 +39,9 @@ class OptimalKeepAliveCalculatorTest {
     }
 
     @Test
-    fun `test onStateChanged should notify state handler when network is connected`() {
+    fun `test onStateChanged should notify state handler`() {
         val networkState = mock<NetworkState>()
         val netInfo = mock<NetworkInfo>()
-        whenever(networkState.isConnected).thenReturn(true)
         whenever(networkState.netInfo).thenReturn(netInfo)
         val networkType = 1
         val networkName = "test-network"
@@ -52,21 +51,10 @@ class OptimalKeepAliveCalculatorTest {
         optimalKeepAliveCalculator.networkStateListener.onStateChanged(networkState)
 
         verify(stateHandler).onNetworkChanged(networkType, networkName)
-        verify(networkState).isConnected
         verify(networkState, times(2)).netInfo
         verify(networkUtils).getNetworkType(netInfo)
         verify(networkUtils).getNetworkName(netInfo)
         verifyNoMoreInteractions(networkState)
-    }
-
-    @Test
-    fun `test onStateChanged should not notify state handler when network is not connected`() {
-        val networkState = mock<NetworkState>()
-        whenever(networkState.isConnected).thenReturn(false)
-
-        optimalKeepAliveCalculator.networkStateListener.onStateChanged(networkState)
-
-        verify(networkState).isConnected
     }
 
     @Test
@@ -271,6 +259,7 @@ class OptimalKeepAliveCalculatorTest {
         verify(stateHandler).updateOptimalKeepAliveFailureState()
         verify(stateHandler).isOptimalKeepAliveFailureLimitExceeded()
         verify(stateHandler).removeStateFromPersistence()
+        verify(stateHandler).resetState()
     }
 
     @Test
