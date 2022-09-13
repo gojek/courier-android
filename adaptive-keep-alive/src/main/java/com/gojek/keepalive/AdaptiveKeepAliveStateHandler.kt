@@ -191,8 +191,7 @@ internal class AdaptiveKeepAliveStateHandler(
             keepAlive.keepAliveMinutes == state.currentKA
     }
 
-    @VisibleForTesting
-    internal fun resetState() {
+    fun resetState() {
         state = state.copy(
             lastSuccessfulKA = state.lowerBound - state.step,
             isOptimalKeepAlive = false,
@@ -201,7 +200,8 @@ internal class AdaptiveKeepAliveStateHandler(
             currentKA = -1,
             currentKAFailureCount = 0,
             probeCount = 0,
-            convergenceTime = 0
+            convergenceTime = 0,
+            optimalKAFailureCount = 0
         )
     }
 

@@ -108,6 +108,7 @@ internal class OptimalKeepAliveCalculator(
             stateHandler.updateOptimalKeepAliveFailureState()
             if (stateHandler.isOptimalKeepAliveFailureLimitExceeded()) {
                 stateHandler.removeStateFromPersistence()
+                stateHandler.resetState()
             }
         }
     }
