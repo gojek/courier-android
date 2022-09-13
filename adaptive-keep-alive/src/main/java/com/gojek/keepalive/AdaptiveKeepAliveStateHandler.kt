@@ -98,7 +98,7 @@ internal class AdaptiveKeepAliveStateHandler(
             )
         } else {
             val currentUpperBound = keepAlive.keepAliveMinutes - 1
-            if (state.lastSuccessfulKA == currentUpperBound) {
+            if (state.lastSuccessfulKA >= currentUpperBound) {
                 state = state.copy(
                     currentUpperBound = currentUpperBound,
                     isOptimalKeepAlive = true,
