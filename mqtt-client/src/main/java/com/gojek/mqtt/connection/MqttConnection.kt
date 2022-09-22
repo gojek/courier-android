@@ -15,6 +15,7 @@ import com.gojek.mqtt.event.PahoEventHandler
 import com.gojek.mqtt.exception.handler.v3.MqttExceptionHandler
 import com.gojek.mqtt.exception.handler.v3.impl.MqttExceptionHandlerImpl
 import com.gojek.mqtt.logging.PahoLogger
+import com.gojek.mqtt.model.MqttConnectOptions.Companion.DEFAULT_READ_TIMEOUT
 import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.network.NetworkHandler
 import com.gojek.mqtt.persistence.impl.PahoPersistence
@@ -162,27 +163,30 @@ internal class MqttConnection(
             if (options == null) {
                 options = MqttConnectOptions()
             }
+            options!!.apply {
+                userName = connectOptions.username
+                password = connectOptions.password.toCharArray()
+                isCleanSession = connectOptions.isCleanSession
+                keepAliveInterval = connectOptions.keepAlive.timeSeconds
+                keepAliveIntervalServer = connectOptions.keepAlive.timeSeconds
+                readTimeout = if (connectOptions.readTimeoutSecs == DEFAULT_READ_TIMEOUT) {
+                    connectOptions.keepAlive.timeSeconds + 60
+                } else {
+                    connectOptions.readTimeoutSecs
+                }
+                connectionTimeout = connectTimeoutPolicy.getConnectTimeOut()
+                handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
+                protocolName = mqttConnectOptions.version.protocolName
+                protocolLevel = mqttConnectOptions.version.protocolLevel
+                userPropertyList = getUserPropertyList(connectOptions.userPropertiesMap)
+                socketFactory = mqttConnectOptions.socketFactory
+                sslSocketFactory = mqttConnectOptions.sslSocketFactory
+                x509TrustManager = mqttConnectOptions.x509TrustManager
+                connectionSpec = mqttConnectOptions.connectionSpec
+                alpnProtocolList = mqttConnectOptions.protocols
+            }
             // Setting some connection options which we need to reset on every connect
-            if (isSSL()) {
-                options!!.socketFactory = connectionConfig.socketFactory
-            } else {
-                options!!.socketFactory = null
-            }
-            options!!.userName = connectOptions.username
-            options!!.password = connectOptions.password.toCharArray()
-            options!!.isCleanSession = connectOptions.isCleanSession
-            options!!.keepAliveInterval = connectOptions.keepAlive.timeSeconds
-            options!!.keepAliveIntervalServer = connectOptions.keepAlive.timeSeconds
-            options!!.readTimeout = if (connectOptions.readTimeoutSecs == -1) {
-                connectOptions.keepAlive.timeSeconds + 60
-            } else {
-                connectOptions.readTimeoutSecs
-            }
-            options!!.connectionTimeout = connectTimeoutPolicy.getConnectTimeOut()
-            options!!.handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
-            options!!.protocolName = mqttConnectOptions.version.protocolName
-            options!!.protocolLevel = mqttConnectOptions.version.protocolLevel
-            options!!.userPropertyList = getUserPropertyList(connectOptions.userPropertiesMap)
+
             logger.d(TAG, "MQTT connecting on : " + mqtt!!.serverURI)
             updatePolicyParams = true
             connectStartTime = clock.nanoTime()
@@ -651,6 +655,10 @@ internal class MqttConnection(
         return object : IExperimentsConfig {
             override fun inactivityTimeoutSecs(): Int {
                 return connectionConfig.inactivityTimeoutSeconds
+            }
+
+            override fun useNewSSLFlow(): Boolean {
+                return true
             }
         }
     }

@@ -506,15 +506,15 @@ internal class AndroidMqttClient(
         forceRefresh = false
         this.hostFallbackPolicy = HostFallbackPolicy(connectOptions.serverUris)
         val mqttConnectOptions = if (isAdaptiveKAConnection) {
-            connectOptions.copy(
-                keepAlive = keepAliveProvider.getKeepAlive(connectOptions),
-                clientId = connectOptions.clientId + ":adaptive",
-                isCleanSession = true
-            )
+            connectOptions.newBuilder()
+                .keepAlive(keepAliveProvider.getKeepAlive(connectOptions))
+                .clientId(connectOptions.clientId + ":adaptive")
+                .cleanSession(true)
+                .build()
         } else {
-            connectOptions.copy(
-                keepAlive = keepAliveProvider.getKeepAlive(connectOptions)
-            )
+            connectOptions.newBuilder()
+                .keepAlive(keepAliveProvider.getKeepAlive(connectOptions))
+                .build()
         }
 
         if (isAdaptiveKAConnection.not()) {

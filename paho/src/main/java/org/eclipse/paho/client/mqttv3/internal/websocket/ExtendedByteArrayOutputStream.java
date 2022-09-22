@@ -9,15 +9,24 @@ class ExtendedByteArrayOutputStream extends ByteArrayOutputStream {
 
 	final WebSocketNetworkModule webSocketNetworkModule;
 	final WebSocketSecureNetworkModule webSocketSecureNetworkModule;
+	final WebSocketSecureNetworkModuleV2 webSocketSecureNetworkModuleV2;
 
 	ExtendedByteArrayOutputStream(WebSocketNetworkModule module) {
 		this.webSocketNetworkModule = module;
 		this.webSocketSecureNetworkModule = null;
+		this.webSocketSecureNetworkModuleV2 = null;
 	}
 
 	ExtendedByteArrayOutputStream(WebSocketSecureNetworkModule module) {
 		this.webSocketNetworkModule = null;
 		this.webSocketSecureNetworkModule = module;
+		this.webSocketSecureNetworkModuleV2 = null;
+	}
+
+	ExtendedByteArrayOutputStream(WebSocketSecureNetworkModuleV2 module) {
+		this.webSocketNetworkModule = null;
+		this.webSocketSecureNetworkModule = null;
+		this.webSocketSecureNetworkModuleV2 = module;
 	}
 	
 	public void flush() throws IOException {
@@ -40,6 +49,9 @@ class ExtendedByteArrayOutputStream extends ByteArrayOutputStream {
 		}
 		if(webSocketSecureNetworkModule != null){
 			return webSocketSecureNetworkModule.getSocketOutputStream();
+		}
+		if(webSocketSecureNetworkModuleV2 != null) {
+			return webSocketSecureNetworkModuleV2.getSocketOutputStream();
 		}
 		return null;
 	}
