@@ -20,36 +20,36 @@ import javax.security.auth.x500.X500Principal
 
 /** A simple index that of trusted root certificates that have been loaded into memory. */
 class BasicTrustRootIndex(vararg caCerts: X509Certificate) : TrustRootIndex {
-  private val subjectToCaCerts: Map<X500Principal, Set<X509Certificate>>
+    private val subjectToCaCerts: Map<X500Principal, Set<X509Certificate>>
 
-  init {
-    val map = mutableMapOf<X500Principal, MutableSet<X509Certificate>>()
-    for (caCert in caCerts) {
-      map.getOrPut(caCert.subjectX500Principal) { mutableSetOf() }.add(caCert)
+    init {
+        val map = mutableMapOf<X500Principal, MutableSet<X509Certificate>>()
+        for (caCert in caCerts) {
+            map.getOrPut(caCert.subjectX500Principal) { mutableSetOf() }.add(caCert)
+        }
+        this.subjectToCaCerts = map
     }
-    this.subjectToCaCerts = map
-  }
 
-  override fun findByIssuerAndSignature(cert: X509Certificate): X509Certificate? {
-    val issuer = cert.issuerX500Principal
-    val subjectCaCerts = subjectToCaCerts[issuer] ?: return null
+    override fun findByIssuerAndSignature(cert: X509Certificate): X509Certificate? {
+        val issuer = cert.issuerX500Principal
+        val subjectCaCerts = subjectToCaCerts[issuer] ?: return null
 
-    return subjectCaCerts.firstOrNull {
-      try {
-        cert.verify(it.publicKey)
-        return@firstOrNull true
-      } catch (_: Exception) {
-        return@firstOrNull false
-      }
+        return subjectCaCerts.firstOrNull {
+            try {
+                cert.verify(it.publicKey)
+                return@firstOrNull true
+            } catch (_: Exception) {
+                return@firstOrNull false
+            }
+        }
     }
-  }
 
-  override fun equals(other: Any?): Boolean {
-    return other === this ||
-        (other is BasicTrustRootIndex && other.subjectToCaCerts == subjectToCaCerts)
-  }
+    override fun equals(other: Any?): Boolean {
+        return other === this ||
+            (other is BasicTrustRootIndex && other.subjectToCaCerts == subjectToCaCerts)
+    }
 
-  override fun hashCode(): Int {
-    return subjectToCaCerts.hashCode()
-  }
+    override fun hashCode(): Int {
+        return subjectToCaCerts.hashCode()
+    }
 }

@@ -16,13 +16,13 @@
 package org.eclipse.paho.client.mqttv3.internal.platform.android
 
 import android.util.Log
-import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
-import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidLog.androidLog
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.logging.Handler
 import java.util.logging.Level
 import java.util.logging.LogRecord
 import java.util.logging.Logger
+import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
+import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidLog.androidLog
 
 private val LogRecord.androidLevel: Int
     get() = when {
@@ -111,4 +111,3 @@ object AndroidLog {
 //            logger.addHandler(AndroidLogHandler)
     }
 }
-

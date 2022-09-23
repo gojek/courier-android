@@ -105,7 +105,7 @@ class BasicCertificateChainCleaner(
     private fun verifySignature(
         toVerify: X509Certificate,
         signingCert: X509Certificate,
-        minIntermediates: Int,
+        minIntermediates: Int
     ): Boolean {
         if (toVerify.issuerDN != signingCert.subjectDN) {
             return false

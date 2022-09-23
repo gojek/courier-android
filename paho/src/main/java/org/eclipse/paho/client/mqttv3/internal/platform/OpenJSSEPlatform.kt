@@ -15,7 +15,6 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.platform
 
-import org.eclipse.paho.client.mqttv3.Protocol
 import java.security.KeyStore
 import java.security.Provider
 import javax.net.ssl.SSLContext
@@ -23,6 +22,7 @@ import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import org.eclipse.paho.client.mqttv3.Protocol
 
 /**
  * Platform using OpenJSSE (https://github.com/openjsse/openjsse) if installed as the first
@@ -31,70 +31,73 @@ import javax.net.ssl.X509TrustManager
  * Requires org.openjsse:openjsse >= 1.1.0 on the classpath.
  */
 class OpenJSSEPlatform private constructor() : Platform() {
-  private val provider: Provider = org.openjsse.net.ssl.OpenJSSE()
+    private val provider: Provider = org.openjsse.net.ssl.OpenJSSE()
 
-  // Selects TLSv1.3 so we are specific about our intended version ranges (not just 1.3)
-  // and because it's a common pattern for VMs to have differences between supported and
-  // defaulted versions for TLS based on what is requested.
-  override fun newSSLContext(): SSLContext =
-      SSLContext.getInstance("TLSv1.3", provider)
+    // Selects TLSv1.3 so we are specific about our intended version ranges (not just 1.3)
+    // and because it's a common pattern for VMs to have differences between supported and
+    // defaulted versions for TLS based on what is requested.
+    override fun newSSLContext(): SSLContext =
+        SSLContext.getInstance("TLSv1.3", provider)
 
-  override fun platformTrustManager(): X509TrustManager {
-    val factory = TrustManagerFactory.getInstance(
-        TrustManagerFactory.getDefaultAlgorithm(), provider)
-    factory.init(null as KeyStore?)
-    val trustManagers = factory.trustManagers!!
-    check(trustManagers.size == 1 && trustManagers[0] is X509TrustManager) {
-      "Unexpected default trust managers: ${trustManagers.contentToString()}"
-    }
-    return trustManagers[0] as X509TrustManager
-  }
-
-  override fun trustManager(sslSocketFactory: SSLSocketFactory): X509TrustManager =
-      throw UnsupportedOperationException(
-          "clientBuilder.sslSocketFactory(SSLSocketFactory) not supported with OpenJSSE")
-
-  override fun configureTlsExtensions(
-    sslSocket: SSLSocket,
-    hostname: String?,
-    protocols: List<@JvmSuppressWildcards Protocol>
-  ) {
-    if (sslSocket is org.openjsse.javax.net.ssl.SSLSocket) {
-      val sslParameters = sslSocket.sslParameters
-
-      if (sslParameters is org.openjsse.javax.net.ssl.SSLParameters) {
-        // Enable ALPN.
-        val names = alpnProtocolNames(protocols)
-        sslParameters.applicationProtocols = names.toTypedArray()
-
-        sslSocket.sslParameters = sslParameters
-      }
-    } else {
-      super.configureTlsExtensions(sslSocket, hostname, protocols)
-    }
-  }
-
-  override fun getSelectedProtocol(sslSocket: SSLSocket): String? =
-      if (sslSocket is org.openjsse.javax.net.ssl.SSLSocket) {
-        when (val protocol = sslSocket.applicationProtocol) {
-          // Handles both un-configured and none selected.
-          null, "" -> null
-          else -> protocol
+    override fun platformTrustManager(): X509TrustManager {
+        val factory = TrustManagerFactory.getInstance(
+            TrustManagerFactory.getDefaultAlgorithm(),
+            provider
+        )
+        factory.init(null as KeyStore?)
+        val trustManagers = factory.trustManagers!!
+        check(trustManagers.size == 1 && trustManagers[0] is X509TrustManager) {
+            "Unexpected default trust managers: ${trustManagers.contentToString()}"
         }
-      } else {
-        super.getSelectedProtocol(sslSocket)
-      }
-
-  companion object {
-    val isSupported: Boolean = try {
-      // Trigger an early exception over a fatal error, prefer a RuntimeException over Error.
-      Class.forName("org.openjsse.net.ssl.OpenJSSE", false, javaClass.classLoader)
-
-      true
-    } catch (_: ClassNotFoundException) {
-      false
+        return trustManagers[0] as X509TrustManager
     }
 
-    fun buildIfSupported(): OpenJSSEPlatform? = if (isSupported) OpenJSSEPlatform() else null
-  }
+    override fun trustManager(sslSocketFactory: SSLSocketFactory): X509TrustManager =
+        throw UnsupportedOperationException(
+            "clientBuilder.sslSocketFactory(SSLSocketFactory) not supported with OpenJSSE"
+        )
+
+    override fun configureTlsExtensions(
+        sslSocket: SSLSocket,
+        hostname: String?,
+        protocols: List<@JvmSuppressWildcards Protocol>
+    ) {
+        if (sslSocket is org.openjsse.javax.net.ssl.SSLSocket) {
+            val sslParameters = sslSocket.sslParameters
+
+            if (sslParameters is org.openjsse.javax.net.ssl.SSLParameters) {
+                // Enable ALPN.
+                val names = alpnProtocolNames(protocols)
+                sslParameters.applicationProtocols = names.toTypedArray()
+
+                sslSocket.sslParameters = sslParameters
+            }
+        } else {
+            super.configureTlsExtensions(sslSocket, hostname, protocols)
+        }
+    }
+
+    override fun getSelectedProtocol(sslSocket: SSLSocket): String? =
+        if (sslSocket is org.openjsse.javax.net.ssl.SSLSocket) {
+            when (val protocol = sslSocket.applicationProtocol) {
+                // Handles both un-configured and none selected.
+                null, "" -> null
+                else -> protocol
+            }
+        } else {
+            super.getSelectedProtocol(sslSocket)
+        }
+
+    companion object {
+        val isSupported: Boolean = try {
+            // Trigger an early exception over a fatal error, prefer a RuntimeException over Error.
+            Class.forName("org.openjsse.net.ssl.OpenJSSE", false, javaClass.classLoader)
+
+            true
+        } catch (_: ClassNotFoundException) {
+            false
+        }
+
+        fun buildIfSupported(): OpenJSSEPlatform? = if (isSupported) OpenJSSEPlatform() else null
+    }
 }

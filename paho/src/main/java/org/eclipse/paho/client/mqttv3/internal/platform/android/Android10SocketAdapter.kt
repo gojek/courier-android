@@ -18,12 +18,12 @@ package org.eclipse.paho.client.mqttv3.internal.platform.android
 import android.annotation.SuppressLint
 import android.net.ssl.SSLSockets
 import android.os.Build
-import org.eclipse.paho.client.mqttv3.internal.platform.Platform
-import org.eclipse.paho.client.mqttv3.internal.platform.Platform.Companion.isAndroid
-import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
-import org.eclipse.paho.client.mqttv3.Protocol
 import java.io.IOException
 import javax.net.ssl.SSLSocket
+import org.eclipse.paho.client.mqttv3.Protocol
+import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
+import org.eclipse.paho.client.mqttv3.internal.platform.Platform
+import org.eclipse.paho.client.mqttv3.internal.platform.Platform.Companion.isAndroid
 
 /**
  * Simple non-reflection SocketAdapter for Android Q+.
@@ -60,8 +60,6 @@ class Android10SocketAdapter : SocketAdapter {
         protocols: List<Protocol>
     ) {
         try {
-            //SSLSockets.setUseSessionTickets(sslSocket, true)
-
             val sslParameters = sslSocket.sslParameters
 
             // Enable ALPN.

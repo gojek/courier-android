@@ -15,8 +15,8 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.platform.android
 
-import org.eclipse.paho.client.mqttv3.Protocol
 import javax.net.ssl.SSLSocket
+import org.eclipse.paho.client.mqttv3.Protocol
 
 /**
  * Deferred implementation of SocketAdapter that works by observing the socket

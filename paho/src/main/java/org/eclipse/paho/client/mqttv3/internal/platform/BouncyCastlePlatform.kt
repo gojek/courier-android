@@ -15,9 +15,6 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.platform
 
-import org.bouncycastle.jsse.BCSSLSocket
-import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
-import org.eclipse.paho.client.mqttv3.Protocol
 import java.security.KeyStore
 import java.security.Provider
 import javax.net.ssl.SSLContext
@@ -25,6 +22,9 @@ import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import org.bouncycastle.jsse.BCSSLSocket
+import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+import org.eclipse.paho.client.mqttv3.Protocol
 
 /**
  * Platform using BouncyCastle if installed as the first Security Provider.
@@ -39,7 +39,8 @@ class BouncyCastlePlatform private constructor() : Platform() {
 
     override fun platformTrustManager(): X509TrustManager {
         val factory = TrustManagerFactory.getInstance(
-            "PKIX", BouncyCastleJsseProvider.PROVIDER_NAME
+            "PKIX",
+            BouncyCastleJsseProvider.PROVIDER_NAME
         )
         factory.init(null as KeyStore?)
         val trustManagers = factory.trustManagers!!

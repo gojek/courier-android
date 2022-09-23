@@ -15,12 +15,12 @@
  */
 package org.eclipse.paho.client.mqttv3
 
-import org.eclipse.paho.client.mqttv3.ConnectionSpec.Builder
-import org.eclipse.paho.client.mqttv3.internal.tls.CipherSuite
-import org.eclipse.paho.client.mqttv3.internal.tls.TlsVersion
 import java.util.Arrays
 import java.util.Objects
 import javax.net.ssl.SSLSocket
+import org.eclipse.paho.client.mqttv3.ConnectionSpec.Builder
+import org.eclipse.paho.client.mqttv3.internal.tls.CipherSuite
+import org.eclipse.paho.client.mqttv3.internal.tls.TlsVersion
 
 /**
  * Specifies configuration for the socket connection that HTTP traffic travels through. For `https:`
@@ -52,7 +52,8 @@ class ConnectionSpec internal constructor(
      * Returns the cipher suites to use for a connection. Returns null if all of the SSL socket's
      * enabled cipher suites should be used.
      */
-    @get:JvmName("cipherSuites") val cipherSuites: List<CipherSuite>?
+    @get:JvmName("cipherSuites")
+    val cipherSuites: List<CipherSuite>?
         get() {
             return cipherSuitesAsString?.map { CipherSuite.forJavaName(it) }?.toList()
         }
@@ -69,7 +70,8 @@ class ConnectionSpec internal constructor(
      * Returns the TLS versions to use when negotiating a connection. Returns null if all of the SSL
      * socket's enabled TLS versions should be used.
      */
-    @get:JvmName("tlsVersions") val tlsVersions: List<TlsVersion>?
+    @get:JvmName("tlsVersions")
+    val tlsVersions: List<TlsVersion>?
         get() {
             return tlsVersionsAsString?.map { TlsVersion.forJavaName(it) }?.toList()
         }
@@ -121,7 +123,8 @@ class ConnectionSpec internal constructor(
         // cipher is added to signal that a protocol fallback has taken place.
         val supportedCipherSuites = sslSocket.supportedCipherSuites
         val indexOfFallbackScsv = supportedCipherSuites.indexOf(
-            "TLS_FALLBACK_SCSV", CipherSuite.ORDER_BY_NAME
+            "TLS_FALLBACK_SCSV",
+            CipherSuite.ORDER_BY_NAME
         )
         if (isFallback && indexOfFallbackScsv != -1) {
             cipherSuitesIntersection = cipherSuitesIntersection.concat(
@@ -157,9 +160,9 @@ class ConnectionSpec internal constructor(
             return false
         }
 
-        if (cipherSuitesAsString != null &&
-            !cipherSuitesAsString.hasIntersection(
-                socket.enabledCipherSuites, CipherSuite.ORDER_BY_NAME
+        if (cipherSuitesAsString != null && !cipherSuitesAsString.hasIntersection(
+                socket.enabledCipherSuites,
+                CipherSuite.ORDER_BY_NAME
             )
         ) {
             return false
@@ -196,10 +199,12 @@ class ConnectionSpec internal constructor(
     override fun toString(): String {
         if (!isTls) return "ConnectionSpec()"
 
-        return ("ConnectionSpec(" +
-            "cipherSuites=${Objects.toString(cipherSuites, "[all enabled]")}, " +
-            "tlsVersions=${Objects.toString(tlsVersions, "[all enabled]")}, " +
-            "supportsTlsExtensions=$supportsTlsExtensions)")
+        return (
+            "ConnectionSpec(" +
+                "cipherSuites=${Objects.toString(cipherSuites, "[all enabled]")}, " +
+                "tlsVersions=${Objects.toString(tlsVersions, "[all enabled]")}, " +
+                "supportsTlsExtensions=$supportsTlsExtensions)"
+            )
     }
 
     class Builder {

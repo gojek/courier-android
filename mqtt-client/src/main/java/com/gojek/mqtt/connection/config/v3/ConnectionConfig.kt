@@ -8,7 +8,6 @@ import com.gojek.mqtt.constants.QUIESCE_TIME_MILLIS
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.subscriptionretry.ISubscriptionRetryPolicy
-import javax.net.SocketFactory
 import org.eclipse.paho.client.mqttv3.MqttInterceptor
 
 internal data class ConnectionConfig(

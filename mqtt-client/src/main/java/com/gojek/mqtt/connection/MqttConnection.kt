@@ -15,7 +15,6 @@ import com.gojek.mqtt.event.PahoEventHandler
 import com.gojek.mqtt.exception.handler.v3.MqttExceptionHandler
 import com.gojek.mqtt.exception.handler.v3.impl.MqttExceptionHandlerImpl
 import com.gojek.mqtt.logging.PahoLogger
-import com.gojek.mqtt.model.MqttConnectOptions.Companion.DEFAULT_READ_TIMEOUT
 import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.network.NetworkHandler
 import com.gojek.mqtt.persistence.impl.PahoPersistence

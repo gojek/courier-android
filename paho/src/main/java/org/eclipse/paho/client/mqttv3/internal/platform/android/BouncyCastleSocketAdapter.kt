@@ -16,53 +16,53 @@
 package org.eclipse.paho.client.mqttv3.internal.platform.android
 
 import javax.net.ssl.SSLSocket
+import org.bouncycastle.jsse.BCSSLSocket
+import org.eclipse.paho.client.mqttv3.Protocol
 import org.eclipse.paho.client.mqttv3.internal.platform.BouncyCastlePlatform
 import org.eclipse.paho.client.mqttv3.internal.platform.Platform
 import org.eclipse.paho.client.mqttv3.internal.platform.android.DeferredSocketAdapter.Factory
-import org.bouncycastle.jsse.BCSSLSocket
-import org.eclipse.paho.client.mqttv3.Protocol
 
 /**
  * Simple non-reflection SocketAdapter for BouncyCastle.
  */
 class BouncyCastleSocketAdapter : SocketAdapter {
-  override fun matchesSocket(sslSocket: SSLSocket): Boolean = sslSocket is BCSSLSocket
+    override fun matchesSocket(sslSocket: SSLSocket): Boolean = sslSocket is BCSSLSocket
 
-  override fun isSupported(): Boolean = BouncyCastlePlatform.isSupported
+    override fun isSupported(): Boolean = BouncyCastlePlatform.isSupported
 
-  override fun getSelectedProtocol(sslSocket: SSLSocket): String? {
-    val s = sslSocket as BCSSLSocket
+    override fun getSelectedProtocol(sslSocket: SSLSocket): String? {
+        val s = sslSocket as BCSSLSocket
 
-    return when (val protocol = s.applicationProtocol) {
-      null, "" -> null
-      else -> protocol
+        return when (val protocol = s.applicationProtocol) {
+            null, "" -> null
+            else -> protocol
+        }
     }
-  }
 
-  override fun configureTlsExtensions(
-    sslSocket: SSLSocket,
-    hostname: String?,
-    protocols: List<Protocol>
-  ) {
-    // No TLS extensions if the socket class is custom.
-    if (matchesSocket(sslSocket)) {
-      val bcSocket = sslSocket as BCSSLSocket
+    override fun configureTlsExtensions(
+        sslSocket: SSLSocket,
+        hostname: String?,
+        protocols: List<Protocol>
+    ) {
+        // No TLS extensions if the socket class is custom.
+        if (matchesSocket(sslSocket)) {
+            val bcSocket = sslSocket as BCSSLSocket
 
-      val sslParameters = bcSocket.parameters
+            val sslParameters = bcSocket.parameters
 
-      // Enable ALPN.
-      sslParameters.applicationProtocols = Platform.alpnProtocolNames(protocols).toTypedArray()
+            // Enable ALPN.
+            sslParameters.applicationProtocols = Platform.alpnProtocolNames(protocols).toTypedArray()
 
-      bcSocket.parameters = sslParameters
+            bcSocket.parameters = sslParameters
+        }
     }
-  }
 
-  companion object {
-    val factory = object : Factory {
-      override fun matchesSocket(sslSocket: SSLSocket): Boolean {
-        return BouncyCastlePlatform.isSupported && sslSocket is BCSSLSocket
-      }
-      override fun create(sslSocket: SSLSocket): SocketAdapter = BouncyCastleSocketAdapter()
+    companion object {
+        val factory = object : Factory {
+            override fun matchesSocket(sslSocket: SSLSocket): Boolean {
+                return BouncyCastlePlatform.isSupported && sslSocket is BCSSLSocket
+            }
+            override fun create(sslSocket: SSLSocket): SocketAdapter = BouncyCastleSocketAdapter()
+        }
     }
-  }
 }

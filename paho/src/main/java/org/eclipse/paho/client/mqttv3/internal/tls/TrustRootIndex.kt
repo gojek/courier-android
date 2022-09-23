@@ -18,6 +18,6 @@ package org.eclipse.paho.client.mqttv3.internal.tls
 import java.security.cert.X509Certificate
 
 fun interface TrustRootIndex {
-  /** Returns the trusted CA certificate that signed [cert]. */
-  fun findByIssuerAndSignature(cert: X509Certificate): X509Certificate?
+    /** Returns the trusted CA certificate that signed [cert]. */
+    fun findByIssuerAndSignature(cert: X509Certificate): X509Certificate?
 }

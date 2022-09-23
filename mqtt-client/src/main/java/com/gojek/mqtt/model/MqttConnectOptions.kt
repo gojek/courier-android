@@ -2,13 +2,12 @@ package com.gojek.mqtt.model
 
 import com.gojek.mqtt.model.KeepAlive.Companion.NO_KEEP_ALIVE
 import com.gojek.mqtt.model.MqttVersion.VERSION_3_1_1
-import org.eclipse.paho.client.mqttv3.ConnectionSpec
-import org.eclipse.paho.client.mqttv3.Protocol
-import org.eclipse.paho.client.mqttv3.internal.platform.Platform
-import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner
 import javax.net.SocketFactory
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
+import org.eclipse.paho.client.mqttv3.ConnectionSpec
+import org.eclipse.paho.client.mqttv3.Protocol
+import org.eclipse.paho.client.mqttv3.internal.platform.Platform
 
 class MqttConnectOptions private constructor(
     builder: Builder
@@ -25,7 +24,7 @@ class MqttConnectOptions private constructor(
 
     val isCleanSession: Boolean = builder.isCleanSession
 
-    val readTimeoutSecs: Int;
+    val readTimeoutSecs: Int
 
     val version: MqttVersion = builder.version
 
@@ -194,7 +193,6 @@ class MqttConnectOptions private constructor(
             sslSocketFactory: SSLSocketFactory,
             trustManager: X509TrustManager
         ) = apply {
-
             this.sslSocketFactoryOrNull = sslSocketFactory
             this.x509TrustManagerOrNull = trustManager
         }

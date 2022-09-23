@@ -16,13 +16,13 @@
 package org.eclipse.paho.client.mqttv3.internal.platform.android
 
 import android.net.http.X509TrustManagerExtensions
-import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
-import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner
 import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.X509TrustManager
+import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
+import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner
 
 /**
  * Android implementation of CertificateChainCleaner using direct Android API calls.

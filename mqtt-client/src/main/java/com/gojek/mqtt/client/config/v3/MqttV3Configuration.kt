@@ -22,7 +22,6 @@ import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.subscriptionretry.ISubscriptionRetryPolicy
 import com.gojek.mqtt.policies.subscriptionretry.SubscriptionRetryConfig
 import com.gojek.mqtt.policies.subscriptionretry.SubscriptionRetryPolicy
-import javax.net.SocketFactory
 
 data class MqttV3Configuration(
     override val connectRetryTimePolicy: IConnectRetryTimePolicy =

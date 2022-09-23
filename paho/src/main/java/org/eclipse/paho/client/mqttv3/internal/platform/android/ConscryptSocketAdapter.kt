@@ -15,12 +15,12 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.platform.android
 
+import javax.net.ssl.SSLSocket
+import org.conscrypt.Conscrypt
+import org.eclipse.paho.client.mqttv3.Protocol
 import org.eclipse.paho.client.mqttv3.internal.platform.ConscryptPlatform
 import org.eclipse.paho.client.mqttv3.internal.platform.Platform
 import org.eclipse.paho.client.mqttv3.internal.platform.android.DeferredSocketAdapter.Factory
-import org.conscrypt.Conscrypt
-import org.eclipse.paho.client.mqttv3.Protocol
-import javax.net.ssl.SSLSocket
 
 /**
  * Simple non-reflection SocketAdapter for Conscrypt when included as an application dependency

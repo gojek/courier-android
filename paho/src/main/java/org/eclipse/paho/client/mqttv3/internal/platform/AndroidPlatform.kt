@@ -17,16 +17,6 @@ package org.eclipse.paho.client.mqttv3.internal.platform
 
 import android.os.Build
 import android.security.NetworkSecurityPolicy
-import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
-import org.eclipse.paho.client.mqttv3.Protocol
-import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidCertificateChainCleaner
-import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidSocketAdapter
-import org.eclipse.paho.client.mqttv3.internal.platform.android.BouncyCastleSocketAdapter
-import org.eclipse.paho.client.mqttv3.internal.platform.android.ConscryptSocketAdapter
-import org.eclipse.paho.client.mqttv3.internal.platform.android.DeferredSocketAdapter
-import org.eclipse.paho.client.mqttv3.internal.platform.android.StandardAndroidSocketAdapter
-import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner
-import org.eclipse.paho.client.mqttv3.internal.tls.TrustRootIndex
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
@@ -37,6 +27,16 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
+import org.eclipse.paho.client.mqttv3.Protocol
+import org.eclipse.paho.client.mqttv3.SuppressSignatureCheck
+import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidCertificateChainCleaner
+import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidSocketAdapter
+import org.eclipse.paho.client.mqttv3.internal.platform.android.BouncyCastleSocketAdapter
+import org.eclipse.paho.client.mqttv3.internal.platform.android.ConscryptSocketAdapter
+import org.eclipse.paho.client.mqttv3.internal.platform.android.DeferredSocketAdapter
+import org.eclipse.paho.client.mqttv3.internal.platform.android.StandardAndroidSocketAdapter
+import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner
+import org.eclipse.paho.client.mqttv3.internal.tls.TrustRootIndex
 
 /** Android 5+. */
 @SuppressSignatureCheck
@@ -101,7 +101,8 @@ class AndroidPlatform : Platform() {
         // From org.conscrypt.TrustManagerImpl, we want the method with this signature:
         // private TrustAnchor findTrustAnchorByIssuerAndSignature(X509Certificate lastCert);
         val method = trustManager.javaClass.getDeclaredMethod(
-            "findTrustAnchorByIssuerAndSignature", X509Certificate::class.java
+            "findTrustAnchorByIssuerAndSignature",
+            X509Certificate::class.java
         )
         method.isAccessible = true
         CustomTrustRootIndex(trustManager, method)
@@ -123,7 +124,8 @@ class AndroidPlatform : Platform() {
         override fun findByIssuerAndSignature(cert: X509Certificate): X509Certificate? {
             return try {
                 val trustAnchor = findByIssuerAndSignatureMethod.invoke(
-                    trustManager, cert
+                    trustManager,
+                    cert
                 ) as TrustAnchor
                 trustAnchor.trustedCert
             } catch (e: IllegalAccessException) {
