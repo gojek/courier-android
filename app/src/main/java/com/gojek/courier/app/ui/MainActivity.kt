@@ -92,23 +92,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun connectMqtt(clientId: String, username: String, password: String, ip: String, port: Int) {
-        val connectOptions = MqttConnectOptions(
-            serverUris = listOf(ServerUri(ip, port, if (port == 443) "ssl" else "tcp")),
-            clientId = clientId,
-            username = username,
-            keepAlive = KeepAlive(
-                timeSeconds = 30
-            ),
-            isCleanSession = false,
-            password = password
-        )
+        val connectOptions = MqttConnectOptions.Builder()
+            .serverUris(listOf(ServerUri(ip, port, if (port == 443) "ssl" else "tcp")))
+            .clientId(clientId)
+            .userName(username)
+            .password(password)
+            .cleanSession(false)
+            .keepAlive(KeepAlive(timeSeconds = 30))
+            .build()
 
         mqttClient.connect(connectOptions)
     }
 
     private fun initialiseCourier() {
         val mqttConfig = MqttV3Configuration(
-            socketFactory = null,
             logger = getLogger(),
             eventHandler = eventHandler,
             authenticator = object : Authenticator {
@@ -116,7 +113,9 @@ class MainActivity : AppCompatActivity() {
                     connectOptions: MqttConnectOptions,
                     forceRefresh: Boolean
                 ): MqttConnectOptions {
-                    return connectOptions.copy(password = password.text.toString())
+                    return connectOptions.newBuilder()
+                        .password(password.text.toString())
+                        .build()
                 }
             },
             mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = Period.ONE_HOUR))),
