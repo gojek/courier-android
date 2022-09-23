@@ -25,7 +25,7 @@ class MqttConnectOptions private constructor(
 
     val isCleanSession: Boolean = builder.isCleanSession
 
-    val readTimeoutSecs: Int = builder.readTimeoutSecs
+    val readTimeoutSecs: Int;
 
     val version: MqttVersion = builder.version
 
@@ -52,6 +52,12 @@ class MqttConnectOptions private constructor(
         } else {
             this.x509TrustManager = Platform.get().platformTrustManager()
             this.sslSocketFactory = Platform.get().newSslSocketFactory(x509TrustManager!!)
+        }
+
+        this.readTimeoutSecs = if (builder.readTimeoutSecs == DEFAULT_READ_TIMEOUT) {
+            builder.keepAlive.timeSeconds + 60
+        } else {
+            builder.readTimeoutSecs
         }
     }
 
@@ -87,7 +93,6 @@ class MqttConnectOptions private constructor(
             this.sslSocketFactoryOrNull = mqttConnectOptions.sslSocketFactory
             this.x509TrustManagerOrNull = mqttConnectOptions.x509TrustManager
             this.connectionSpec = mqttConnectOptions.connectionSpec
-            this.serverUris = mqttConnectOptions.serverUris
             this.protocols = mqttConnectOptions.protocols
         }
 
@@ -194,7 +199,7 @@ class MqttConnectOptions private constructor(
             this.x509TrustManagerOrNull = trustManager
         }
 
-        fun connectionSpecs(connectionSpec: ConnectionSpec) = apply {
+        fun connectionSpec(connectionSpec: ConnectionSpec) = apply {
             this.connectionSpec = connectionSpec
         }
 

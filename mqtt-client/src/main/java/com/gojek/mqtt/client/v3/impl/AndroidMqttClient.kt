@@ -171,7 +171,6 @@ internal class AndroidMqttClient(
                 maxInflightMessages = MAX_INFLIGHT_MESSAGES_ALLOWED,
                 logger = mqttConfiguration.logger,
                 connectionEventHandler = mqttClientEventAdapter.adapt(),
-                socketFactory = mqttConfiguration.socketFactory,
                 mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map {
                     mapToPahoInterceptor(it)
                 },

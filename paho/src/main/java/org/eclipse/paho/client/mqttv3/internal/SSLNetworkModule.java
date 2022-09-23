@@ -63,7 +63,6 @@ public class SSLNetworkModule extends TCPNetworkModule
 		this.enabledCiphers = enabledCiphers;
 		if ((socket != null) && (enabledCiphers != null))
 		{
-
 			((SSLSocket) socket).setEnabledCipherSuites(enabledCiphers);
 		}
 	}

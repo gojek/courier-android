@@ -17,7 +17,6 @@ abstract class MqttConfiguration(
     open val subscriptionRetryPolicy: ISubscriptionRetryPolicy,
     open val unsubscriptionRetryPolicy: ISubscriptionRetryPolicy,
     open val wakeLockTimeout: Int,
-    open val socketFactory: SocketFactory?,
     open val logger: ILogger,
     open val authenticator: Authenticator,
     open val authFailureHandler: AuthFailureHandler?,

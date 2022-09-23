@@ -34,7 +34,6 @@ data class MqttV3Configuration(
     override val unsubscriptionRetryPolicy: ISubscriptionRetryPolicy =
         SubscriptionRetryPolicy(SubscriptionRetryConfig()),
     override val wakeLockTimeout: Int = DEFAULT_WAKELOCK_TIMEOUT,
-    override val socketFactory: SocketFactory? = null,
     override val logger: ILogger = NoOpLogger(),
     override val authenticator: Authenticator,
     override val authFailureHandler: AuthFailureHandler? = null,
@@ -49,7 +48,6 @@ data class MqttV3Configuration(
     subscriptionRetryPolicy = subscriptionRetryPolicy,
     unsubscriptionRetryPolicy = unsubscriptionRetryPolicy,
     wakeLockTimeout = wakeLockTimeout,
-    socketFactory = socketFactory,
     logger = logger,
     authenticator = authenticator,
     authFailureHandler = authFailureHandler,

@@ -19,7 +19,6 @@ internal data class ConnectionConfig(
     val wakeLockTimeout: Int,
     val maxInflightMessages: Int,
     val logger: ILogger,
-    val socketFactory: SocketFactory?,
     val connectionEventHandler: ConnectionEventHandler,
     val quiesceTimeout: Int = QUIESCE_TIME_MILLIS,
     val disconnectTimeout: Int = DISCONNECT_TIMEOUT_MILLIS,

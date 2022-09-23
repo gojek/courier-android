@@ -169,11 +169,7 @@ internal class MqttConnection(
                 isCleanSession = connectOptions.isCleanSession
                 keepAliveInterval = connectOptions.keepAlive.timeSeconds
                 keepAliveIntervalServer = connectOptions.keepAlive.timeSeconds
-                readTimeout = if (connectOptions.readTimeoutSecs == DEFAULT_READ_TIMEOUT) {
-                    connectOptions.keepAlive.timeSeconds + 60
-                } else {
-                    connectOptions.readTimeoutSecs
-                }
+                readTimeout = connectOptions.readTimeoutSecs
                 connectionTimeout = connectTimeoutPolicy.getConnectTimeOut()
                 handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
                 protocolName = mqttConnectOptions.version.protocolName
