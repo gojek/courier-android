@@ -653,7 +653,7 @@ internal class MqttConnection(
             }
 
             override fun useNewSSLFlow(): Boolean {
-                return true
+                return connectionConfig.shouldUseNewSSLFlow
             }
         }
     }

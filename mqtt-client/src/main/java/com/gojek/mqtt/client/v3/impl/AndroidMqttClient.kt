@@ -176,7 +176,8 @@ internal class AndroidMqttClient(
                 },
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
-                policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds
+                policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
+                shouldUseNewSSLFlow = experimentConfigs.shouldUseNewSSLFlow
             )
 
         mqttConnection = MqttConnection(
