@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":mqtt-pingsender"))
     implementation(project(":network-tracker"))
 
+    testImplementation(deps.android.test.mockitoCore)
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 

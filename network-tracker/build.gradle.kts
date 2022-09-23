@@ -28,6 +28,7 @@ dependencies {
     api(project(":courier-core"))
     implementation(deps.android.androidx.coreKtx)
 
+    testImplementation(deps.android.test.mockitoCore)
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 

@@ -6,7 +6,6 @@ import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.scheduler.IRunnableScheduler
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import java.net.SocketException
 import java.net.SocketTimeoutException
@@ -40,6 +39,7 @@ import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_TOKEN_INUSE
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
@@ -177,7 +177,7 @@ class MqttExceptionHandlerImplTest {
     fun `test exception with reason code 32101 with reconnect=false`() {
         val exception = MqttException(REASON_CODE_CLIENT_ALREADY_DISCONNECTED.toInt())
         mqttExceptionHandlerImpl.handleException(exception, false)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
@@ -191,7 +191,7 @@ class MqttExceptionHandlerImplTest {
     fun `test exception with reason code 32102 with reconnect=false`() {
         val exception = MqttException(REASON_CODE_CLIENT_DISCONNECTING.toInt())
         mqttExceptionHandlerImpl.handleException(exception, false)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
@@ -205,7 +205,7 @@ class MqttExceptionHandlerImplTest {
     fun `test exception with reason code 32104 with reconnect=false`() {
         val exception = MqttException(REASON_CODE_CLIENT_NOT_CONNECTED.toInt())
         mqttExceptionHandlerImpl.handleException(exception, false)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
@@ -219,14 +219,14 @@ class MqttExceptionHandlerImplTest {
     fun `test exception with reason code 32000 with reconnect=false`() {
         val exception = MqttException(REASON_CODE_CLIENT_TIMEOUT.toInt())
         mqttExceptionHandlerImpl.handleException(exception, false)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32110`() {
         val exception = MqttException(REASON_CODE_CONNECT_IN_PROGRESS.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
@@ -249,83 +249,83 @@ class MqttExceptionHandlerImplTest {
     fun `test exception with reason code 32109 with reconnect=false`() {
         val exception = MqttException(REASON_CODE_CONNECTION_LOST.toInt())
         mqttExceptionHandlerImpl.handleException(exception, false)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32202`() {
         val exception = MqttException(REASON_CODE_MAX_INFLIGHT.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32111`() {
         val exception = MqttException(REASON_CODE_CLIENT_CLOSED.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32100`() {
         val exception = MqttException(REASON_CODE_CLIENT_CONNECTED.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32107`() {
         val exception = MqttException(REASON_CODE_CLIENT_DISCONNECT_PROHIBITED.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 2`() {
         val exception = MqttException(REASON_CODE_INVALID_CLIENT_ID.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32108`() {
         val exception = MqttException(REASON_CODE_INVALID_MESSAGE.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 1`() {
         val exception = MqttException(REASON_CODE_INVALID_PROTOCOL_VERSION.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32001`() {
         val exception = MqttException(REASON_CODE_NO_MESSAGE_IDS_AVAILABLE.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32105`() {
         val exception = MqttException(REASON_CODE_SOCKET_FACTORY_MISMATCH.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32106`() {
         val exception = MqttException(REASON_CODE_SSL_CONFIG_ERROR.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 
     @Test
     fun `test exception with reason code 32201`() {
         val exception = MqttException(REASON_CODE_TOKEN_INUSE.toInt())
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verifyZeroInteractions(runnableScheduler, connectRetryTimePolicy)
+        verifyNoInteractions(runnableScheduler, connectRetryTimePolicy)
     }
 }

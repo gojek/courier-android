@@ -30,6 +30,7 @@ dependencies {
 
     implementation(deps.square.retrofit)
 
+    testImplementation(deps.android.test.mockitoCore)
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 
