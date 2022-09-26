@@ -15,6 +15,13 @@
             android:launchMode="singleTask"
             android:taskAffinity="com.chuckmqtt.chuck.task"
             android:theme="@style/MqttChuck.Theme" />
+        <activity
+            android:name=".internal.presentation.transactiondetail.ui.activity.TransactionDetailActivity"
+            android:label="@string/mqtt_chuck_name"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.chuckmqtt.chuck.task"
+            android:theme="@style/MqttChuck.Theme" />
+
         <service
             android:name=".internal.cleanup.ClearDatabaseService"
             android:exported="false" />
