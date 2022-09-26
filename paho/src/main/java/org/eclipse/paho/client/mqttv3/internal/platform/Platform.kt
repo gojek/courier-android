@@ -32,7 +32,6 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 import okio.Buffer
 import org.eclipse.paho.client.mqttv3.Protocol
-import org.eclipse.paho.client.mqttv3.internal.platform.android.AndroidLog
 import org.eclipse.paho.client.mqttv3.internal.tls.BasicCertificateChainCleaner
 import org.eclipse.paho.client.mqttv3.internal.tls.BasicTrustRootIndex
 import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner
@@ -91,7 +90,8 @@ open class Platform {
             // platforms in order to support Robolectric, which mixes classes from both Android and the
             // Oracle JDK. Note that we don't support HTTP/2 or other nice features on Robolectric.
             val sslContextClass = Class.forName("sun.security.ssl.SSLContextImpl")
-            val context = readFieldOrNull(sslSocketFactory, sslContextClass, "context") ?: return null
+            val context =
+                readFieldOrNull(sslSocketFactory, sslContextClass, "context") ?: return null
             readFieldOrNull(context, X509TrustManager::class.java, "trustManager")
         } catch (e: ClassNotFoundException) {
             null
@@ -223,7 +223,6 @@ open class Platform {
         }
 
         private fun findAndroidPlatform(): Platform {
-            AndroidLog.enable()
             return Android10Platform.buildIfSupported() ?: AndroidPlatform.buildIfSupported()!!
         }
 

@@ -5,6 +5,6 @@ data class KeepAlive(
     internal val isOptimal: Boolean = false
 ) {
     companion object {
-        val NO_KEEP_ALIVE = KeepAlive(timeSeconds = -1, isOptimal = false)
+        val NO_KEEP_ALIVE = KeepAlive(timeSeconds = 60, isOptimal = false)
     }
 }

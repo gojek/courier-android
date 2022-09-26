@@ -53,7 +53,7 @@ class MqttConnectOptions private constructor(
             this.sslSocketFactory = Platform.get().newSslSocketFactory(x509TrustManager!!)
         }
 
-        this.readTimeoutSecs = if (builder.readTimeoutSecs == DEFAULT_READ_TIMEOUT) {
+        this.readTimeoutSecs = if (builder.readTimeoutSecs < builder.keepAlive.timeSeconds) {
             builder.keepAlive.timeSeconds + 60
         } else {
             builder.readTimeoutSecs
@@ -120,7 +120,7 @@ class MqttConnectOptions private constructor(
         }
 
         fun readTimeoutSecs(readTimeoutSecs: Int) = apply {
-            require(readTimeoutSecs > 0 || readTimeoutSecs == DEFAULT_READ_TIMEOUT) { "read timeout should be >= $DEFAULT_READ_TIMEOUT" }
+            require(readTimeoutSecs > 0) { "read timeout should be > 0" }
             this.readTimeoutSecs = readTimeoutSecs
         }
 
@@ -197,7 +197,7 @@ class MqttConnectOptions private constructor(
         }
 
         fun alpnProtocols(protocols: List<Protocol>) = apply {
-            require(protocols.isNotEmpty()) { "password cannot be empty" }
+            require(protocols.isNotEmpty()) { "alpn protocol list cannot be empty" }
             this.protocols = protocols
         }
 
