@@ -37,13 +37,11 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttUnsubscribe;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 
 
 /**
@@ -424,25 +422,14 @@ public class MqttAsyncClient implements IMqttAsyncClient
 				host = getHostName(shortAddress);
 				port = getPort(shortAddress, 8883);
 				SSLSocketFactoryFactory factoryFactory = null;
-				if (factory == null)
-				{
-					// try {
-					factoryFactory = new SSLSocketFactoryFactory();
-					Properties sslClientProps = options.getSSLProperties();
-					if (null != sslClientProps)
-						factoryFactory.initialize(sslClientProps, null);
-					factory = factoryFactory.createSocketFactory(null);
-					// }
-					// catch (MqttDirectException ex) {
-					// throw ExceptionHelper.createMqttException(ex.getCause());
-					// }
-				}
-				else if ((factory instanceof SSLSocketFactory) == false)
-				{
-					throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
-				}
 
-				// Create the network module...
+				factoryFactory = new SSLSocketFactoryFactory();
+				Properties sslClientProps = options.getSSLProperties();
+				if (null != sslClientProps) {
+					factoryFactory.initialize(sslClientProps, null);
+				}
+				factory = factoryFactory.createSocketFactory(null);
+
 				netModule = new SSLNetworkModule((SSLSocketFactory) factory, host, port, clientId, logger, pahoEvents);
 				((SSLNetworkModule) netModule).setConnectTimeout(options.getConnectionTimeout());
 				((SSLNetworkModule) netModule).setSSLhandshakeTimeout(options.getHandshakeTimeout());
@@ -480,19 +467,14 @@ public class MqttAsyncClient implements IMqttAsyncClient
 				host = getHostName(shortAddress);
 				port = getPort(shortAddress, 443);
 				SSLSocketFactoryFactory wSSFactoryFactory = null;
-				if (factory == null) {
-					wSSFactoryFactory = new SSLSocketFactoryFactory();
-					Properties sslClientProps = options.getSSLProperties();
-					if (null != sslClientProps)
-						wSSFactoryFactory.initialize(sslClientProps, null);
-					factory = wSSFactoryFactory.createSocketFactory(null);
 
+				wSSFactoryFactory = new SSLSocketFactoryFactory();
+				sslClientProps = options.getSSLProperties();
+				if (null != sslClientProps) {
+					wSSFactoryFactory.initialize(sslClientProps, null);
 				}
-				else if ((factory instanceof SSLSocketFactory) == false) {
-					throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
-				}
+				factory = wSSFactoryFactory.createSocketFactory(null);
 
-				// Create the network module...
 				netModule = new WebSocketSecureNetworkModule((SSLSocketFactory) factory, address, host, port, clientId, logger, pahoEvents);
 				((WebSocketSecureNetworkModule)netModule).setConnectTimeout(options.getConnectionTimeout());
 				((WebSocketSecureNetworkModule)netModule).setSSLhandshakeTimeout(options.getHandshakeTimeout());
