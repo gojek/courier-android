@@ -1,10 +1,7 @@
-import plugin.AndroidLibraryConfigurationPlugin
+import plugin.KotlinLibraryConfigurationPlugin
 
-apply<AndroidLibraryConfigurationPlugin>()
+apply<KotlinLibraryConfigurationPlugin>()
 apply("$rootDir/gradle/script-ext.gradle")
-
-val version = ext.get("gitVersionName")
-
 
 ext {
     set("PUBLISH_GROUP_ID", "com.gojek.courier")
@@ -14,20 +11,26 @@ ext {
 }
 
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    kotlin("android.extensions")
-    kotlin("kapt")
+    id("java-library")
+    kotlin("jvm")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
     implementation(deps.kotlin.stdlib.core)
     implementation("com.squareup.okio:okio:3.2.0")
-    testImplementation(deps.android.test.kotlinTestJunit)
+
+    compileOnly("org.robolectric:android-all:13-robolectric-9030017")
     compileOnly("org.bouncycastle:bcprov-jdk15to18:1.71")
     compileOnly("org.bouncycastle:bctls-jdk15to18:1.71")
     compileOnly("org.conscrypt:conscrypt-openjdk-uber:2.5.2")
     compileOnly("org.openjsse:openjsse:1.1.10")
+
+    testImplementation(deps.android.test.kotlinTestJunit)
 }
 
 apply(from = "${rootProject.projectDir}/gradle/publish-module.gradle")
