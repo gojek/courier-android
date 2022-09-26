@@ -5,23 +5,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.base.activity.BaseChuckMqttActivity
-import com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.fragment.TransactionListFragment
-import kotlinx.android.synthetic.main.activity_transaction_list.toolbar
+import com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.fragment.TransactionListComposeFragment
 
-internal class TransactionListActivity : BaseChuckMqttActivity() {
+internal class TransactionListComposeActivity : BaseChuckMqttActivity() {
 
     private val FRAGMENT_TAG = "transaction_list_frag"
 
-    private val applicationName: CharSequence
-        get() = applicationInfo.loadLabel(packageManager)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_transaction_list)
-        setSupportActionBar(toolbar)
-        toolbar.subtitle = applicationName
+        setContentView(R.layout.activity_transaction_list_2)
 
-        addTransactionListFragment(TransactionListFragment.newInstance())
+        addTransactionListFragment(TransactionListComposeFragment.newInstance())
     }
 
     private fun addTransactionListFragment(fragment: Fragment) {

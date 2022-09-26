@@ -16,6 +16,7 @@ import com.gojek.chuckmqtt.internal.domain.notification.NotificationUseCase
 import com.gojek.chuckmqtt.internal.domain.notification.NotificationUseCaseImpl
 import com.gojek.chuckmqtt.internal.presentation.mapper.MqttTransactionUiModelMapper
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.activity.TransactionListActivity
+import com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.activity.TransactionListComposeActivity
 
 @SuppressLint("StaticFieldLeak")
 internal object MqttChuck {
@@ -32,7 +33,11 @@ internal object MqttChuck {
         this.mqttChuckConfig = mqttChuckConfig
         this.collector = Collector()
         this.notificationUseCase = NotificationUseCaseImpl(NotificationHelper(context))
-        this.mqttChuckUseCase = MqttChuckUseCaseImpl(getNotificationUseCase(context), getMqttChuckRepository(), MqttTransactionUiModelMapper())
+        this.mqttChuckUseCase = MqttChuckUseCaseImpl(
+            getNotificationUseCase(context),
+            getMqttChuckRepository(),
+            MqttTransactionUiModelMapper()
+        )
         this.retentionManager = RetentionManager(context, mqttChuckConfig.retentionPeriod)
 
         mqttChuckUseCase.initialise()
@@ -50,8 +55,13 @@ internal object MqttChuck {
 
     @JvmStatic
     fun getLaunchIntent(context: Context): Intent {
-        return Intent(context, TransactionListActivity::class.java)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val isComposeEnabled = false
+
+        return if (isComposeEnabled) {
+            Intent(context, TransactionListComposeActivity::class.java)
+        } else {
+            Intent(context, TransactionListActivity::class.java)
+        }.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
 
     private fun getMqttChuckRepository(): MqttChuckRepository {

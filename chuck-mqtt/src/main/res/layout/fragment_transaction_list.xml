@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".internal.presentation.transactionlist.ui.fragment.TransactionListFragment">
+    tools:context=".internal.presentation.transactionlist.ui.fragment.TransactionListComposeFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/transaction_list"
@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:scrollbars="vertical"
         app:layoutManager="LinearLayoutManager"
-        tools:context=".internal.presentation.transactionlist.ui.fragment.TransactionListFragment"
+        tools:context=".internal.presentation.transactionlist.ui.fragment.TransactionListComposeFragment"
         tools:listitem="@layout/mqtt_chucker_list_item_transaction" />
 
     <ProgressBar

@@ -2,81 +2,59 @@ package com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.platform.ComposeView
-import androidx.core.app.ShareCompat
-import androidx.fragment.app.createViewModelLazy
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.base.fragment.FoodMviBaseFragment
-import com.gojek.chuckmqtt.internal.presentation.servicelocator.MqttChuckPresentationDependencyLocator
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.mvi.TransactionDetailViewEffect
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.ui.screen.TransactionDetailScreen
-import com.gojek.chuckmqtt.internal.presentation.transactiondetail.viewmodel.TransactionDetailViewModel
+import com.gojek.chuckmqtt.internal.presentation.transactiondetail.ui.activity.TransactionDetailActivity
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent
+import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.ClearTransactionHistoryIntent
+import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.StartObservingAllTransactionsIntent
+import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListViewEffect
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListViewState
-import com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.screen.TransactionListScreen
+import com.gojek.chuckmqtt.internal.presentation.transactionlist.ui.adapter.TransactionListAdapter
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.viewmodel.TransactionListViewModel
+import com.gojek.chuckmqtt.internal.utils.extensions.hide
+import com.gojek.chuckmqtt.internal.utils.extensions.ifTrue
+import com.gojek.chuckmqtt.internal.utils.extensions.show
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
+import kotlinx.android.synthetic.main.fragment_transaction_list.transaction_list
+import kotlinx.android.synthetic.main.fragment_transaction_list.transaction_list_loader
 import kotlin.reflect.KClass
 
 internal class TransactionListFragment :
     FoodMviBaseFragment<TransactionListIntent, TransactionListViewState, TransactionListViewModel>() {
 
-    private val transactionDetailViewModel by createViewModelLazy(
-        viewModelClass = TransactionDetailViewModel::class,
-        storeProducer = { viewModelStore },
-        factoryProducer = { MqttChuckPresentationDependencyLocator.viewModelFactory }
-    )
+    private lateinit var transactionListAdapter: TransactionListAdapter
 
     override val clazz: KClass<TransactionListViewModel>
         get() = TransactionListViewModel::class
 
-    private val applicationName: CharSequence
-        get() = requireActivity().applicationInfo.loadLabel(requireActivity().packageManager)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setContent {
-                val navController = rememberNavController()
-
-                NavHost(
-                    navController = navController,
-                    startDestination = "transactionListScreen"
-                ) {
-                    composable("transactionListScreen") {
-                        val transactionListViewModel = vm
-
-                        TransactionListScreen(
-                            navController = navController,
-                            toolbarSubtitle = applicationName,
-                            viewModel = transactionListViewModel
-                        )
-                    }
-                    composable("transactionDetailScreen/{transactionId}") { backStackEntry ->
-                        backStackEntry.arguments?.getString("transactionId")?.let { transactionId ->
-                            TransactionDetailScreen(
-                                transactionId.toLong(),
-                                transactionDetailViewModel
-                            )
-                        }
-                    }
-                }
-            }
-        }
+    ): View? {
+        return inflater.inflate(R.layout.fragment_transaction_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initView()
         setupObserver()
+        _intents.onNext(StartObservingAllTransactionsIntent)
     }
 
     override fun onDestroyView() {
@@ -84,9 +62,49 @@ internal class TransactionListFragment :
         super.onDestroyView()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.mqtt_transactions_list, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if (item.itemId == R.id.clear) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.mqtt_chuck_clear)
+                .setMessage(R.string.mqtt_chuck_clear_mqtt_confirmation)
+                .setPositiveButton(
+                    R.string.mqtt_chuck_clear
+                ) { _, _ ->
+                    _intents.onNext(ClearTransactionHistoryIntent)
+                }
+                .setNegativeButton(R.string.mqtt_chuck_cancel, null)
+                .show()
+            true
+        } else {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun initView() {
+        transaction_list.layoutManager = LinearLayoutManager(requireContext())
+        transaction_list.addItemDecoration(
+            DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+        )
+        transactionListAdapter = TransactionListAdapter(requireContext()) {
+            _intents.onNext(it)
+        }
+        transaction_list.adapter = transactionListAdapter
+    }
+
     private fun setupObserver() {
-        compositeBag += transactionDetailViewModel.effects()
-            .subscribe(this::handleTransactionDetailViewEffects)
+        compositeBag += vm.states().subscribe(this::render)
+        compositeBag += vm.effects().subscribe(this::handleViewEffects)
+        vm.processIntents(intents())
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance() = TransactionListFragment()
     }
 
     override fun intents(): Observable<TransactionListIntent> {
@@ -94,31 +112,25 @@ internal class TransactionListFragment :
     }
 
     override fun render(state: TransactionListViewState) {
+        with(state) {
+            ifTrue(showLoadingView) {
+                transaction_list_loader.show()
+            }
+
+            transaction_list_loader.hide()
+            transactionListAdapter.setData(transactionList)
+        }
     }
 
-    private fun handleTransactionDetailViewEffects(effect: TransactionDetailViewEffect) {
+    private fun handleViewEffects(effect: TransactionListViewEffect) {
         when (effect) {
-            is TransactionDetailViewEffect.ShareTransactionDetailViewEffect -> {
-                share(effect.mqttTransactionUiModel.shareText)
+            is TransactionListViewEffect.OpenTransactionDetailViewEffect -> {
+                openTransactionDetail(effect.transactionId)
             }
         }
     }
 
-    private fun share(transactionDetailsText: String) {
-        startActivity(
-            ShareCompat.IntentBuilder.from(requireActivity())
-                .setType(MIME_TYPE)
-                .setChooserTitle(getString(R.string.mqtt_chuck_share_transaction_title))
-                .setSubject(getString(R.string.mqtt_chuck_share_transaction_subject))
-                .setText(transactionDetailsText)
-                .createChooserIntent()
-        )
-    }
-
-    companion object {
-        private const val MIME_TYPE = "text/plain"
-
-        @JvmStatic
-        fun newInstance() = TransactionListFragment()
+    private fun openTransactionDetail(transactionId: Long) {
+        TransactionDetailActivity.startTransactionDetailActivity(requireContext(), transactionId)
     }
 }
