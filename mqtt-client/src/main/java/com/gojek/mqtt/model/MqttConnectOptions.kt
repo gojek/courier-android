@@ -96,18 +96,22 @@ class MqttConnectOptions private constructor(
         }
 
         fun serverUris(serverUris: List<ServerUri>) = apply {
+            require(serverUris.isNotEmpty()) { "serverUris cannot be empty" }
             this.serverUris = serverUris
         }
 
         fun keepAlive(keepAlive: KeepAlive) = apply {
+            require(keepAlive.timeSeconds > 0) { "keepAlive timeSeconds must be >0" }
             this.keepAlive = keepAlive
         }
 
         fun clientId(clientId: String) = apply {
+            require(clientId.isNotEmpty()) { "clientId cannot be empty" }
             this.clientId = clientId
         }
 
         fun userName(username: String) = apply {
+            require(username.isNotEmpty()) { "username cannot be empty" }
             this.username = username
         }
 
