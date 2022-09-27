@@ -15,3 +15,5 @@ These are the experimentation configs used in Courier library. These are volatil
 - **incomingMessagesTTLSecs** : When there is no listener attached for an incoming message, messages are persisted for this interval.
 
 - **incomingMessagesCleanupIntervalSecs** : Interval at which cleanup for incoming messages persistence is performed.
+
+- **shouldUseNewSSLFlow** : Set this true for enabling alpn protocol, custom ssl socket factory.
