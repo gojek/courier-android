@@ -67,7 +67,7 @@ public class MqttOutputStream extends OutputStream
 	/**
 	 * Writes an <code>MqttWireMessage</code> to the stream.
 	 */
-	public void write(MqttInterceptorCallback mqttInterceptorCallback, MqttWireMessage message) throws IOException, MqttException
+	public void write(MqttWireMessage message) throws IOException, MqttException
 	{
 		final String methodName = "write";
 		byte[] bytes = message.getHeader();
@@ -76,20 +76,6 @@ public class MqttOutputStream extends OutputStream
 		// out.write(message.getPayload());
 		out.write(bytes, 0, bytes.length);
 		out.write(pl, 0, pl.length);
-
-		intercept(mqttInterceptorCallback, message);
-
 		// @TRACE 500= sent {0}
-	}
-
-	private void intercept(MqttInterceptorCallback mqttInterceptorCallback, MqttWireMessage mqttWireMessage) throws MqttException {
-
-		byte[] bytes = mqttWireMessage.getHeader();
-		byte[] pl = mqttWireMessage.getPayload();
-		byte[] packet = new byte[(int) (bytes.length + pl.length)];
-		System.arraycopy(bytes, 0, packet, 0, bytes.length);
-		System.arraycopy(pl, 0, packet, bytes.length, pl.length);
-
-		mqttInterceptorCallback.mqttMessageIntercepted(packet, true);
 	}
 }

@@ -17,8 +17,10 @@ package org.eclipse.paho.client.mqttv3.internal.wire;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttInterceptor;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.internal.ExceptionHelper;
 import org.eclipse.paho.client.mqttv3.internal.MqttInterceptorCallback;
+import org.eclipse.paho.client.mqttv3.internal.MqttMessageInterceptorCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -64,7 +66,7 @@ public class MqttInputStream extends InputStream
 	 * Reads an <code>MqttWireMessage</code> from the stream.
 	 * @param mqttInterceptorCallback
 	 */
-	public MqttWireMessage readMqttWireMessage(MqttInterceptorCallback mqttInterceptorCallback) throws IOException, MqttException
+	public MqttWireMessage readMqttWireMessage(MqttInterceptorCallback mqttInterceptorCallback, MqttMessageInterceptorCallback messageInterceptorCallback) throws IOException, MqttException
 	{
 		final String methodName = "readMqttWireMessage";
 		ByteArrayOutputStream bais = new ByteArrayOutputStream();
@@ -84,7 +86,11 @@ public class MqttInputStream extends InputStream
 		byte[] header = bais.toByteArray();
 		System.arraycopy(header, 0, packet, 0, header.length);
 		MqttWireMessage message = MqttWireMessage.createWireMessage(packet, mqttVersion);
-		intercept(mqttInterceptorCallback, packet);
+		byte[] updatedPacket = packet;
+		if (message instanceof MqttPublish) {
+			updatedPacket = messageInterceptorCallback.mqttMessageIntercepted(packet, false);
+		}
+		intercept(mqttInterceptorCallback, updatedPacket);
 		// @TRACE 501= received {0}
 		return message;
 	}

@@ -28,6 +28,7 @@ import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttInterceptor;
+import org.eclipse.paho.client.mqttv3.MqttMessageInterceptor;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttPingSender;
 import org.eclipse.paho.client.mqttv3.MqttToken;
@@ -69,6 +70,8 @@ public class ClientComms {
     ClientState clientState;
 
     MqttInterceptorCallback mqttInterceptorCallback;
+
+    MqttMessageInterceptorCallback messageInterceptorCallback;
 
     MqttConnectOptions conOptions;
 
@@ -118,6 +121,7 @@ public class ClientComms {
             int maxInflightMsgs, ILogger logger,
             IExperimentsConfig experimentsConfig,
             List<MqttInterceptor> mqttInterceptorList,
+            List<MqttMessageInterceptor> messageInterceptorList,
             IPahoEvents pahoEvents
     ) throws MqttException {
         this.conState = DISCONNECTED;
@@ -142,6 +146,7 @@ public class ClientComms {
                 pahoEvents
         );
         this.mqttInterceptorCallback = new MqttInterceptorCallback(mqttInterceptorList, logger);
+        this.messageInterceptorCallback = new MqttMessageInterceptorCallback(messageInterceptorList);
         callback.setClientState(clientState);
     }
 
@@ -261,6 +266,7 @@ public class ClientComms {
                 clientState = null;
                 callback = null;
                 mqttInterceptorCallback = null;
+                messageInterceptorCallback = null;
                 persistence = null;
                 sender = null;
                 pingSender = null;
@@ -690,9 +696,9 @@ public class ClientComms {
                 networkModule.start();
                 logger.logEvent(eventType, true, client.getServerURI(), (System.currentTimeMillis() - time), null, 0, 0, 0, "", 0);
                 time = System.currentTimeMillis();
-                receiver = new CommsReceiver(clientComms, clientState, tokenStore, networkModule.getInputStream(), networkModule.getSocket(), logger, mqttInterceptorCallback);
+                receiver = new CommsReceiver(clientComms, clientState, tokenStore, networkModule.getInputStream(), networkModule.getSocket(), logger, mqttInterceptorCallback, messageInterceptorCallback);
                 receiver.start("MQTT Rec: " + getClient().getClientId());
-                sender = new CommsSender(clientComms, clientState, tokenStore, networkModule.getOutputStream(), networkModule.getSocket(), logger, mqttInterceptorCallback);
+                sender = new CommsSender(clientComms, clientState, tokenStore, networkModule.getOutputStream(), networkModule.getSocket(), logger, mqttInterceptorCallback, messageInterceptorCallback);
                 sender.start("MQTT Snd: " + getClient().getClientId());
                 callback.start("MQTT Call: " + getClient().getClientId());
                 mqttInterceptorCallback.start("MQTT Int Call: " + getClient().getClientId());

@@ -4,6 +4,7 @@ import com.gojek.courier.logging.ILogger
 import com.gojek.courier.logging.NoOpLogger
 import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttInterceptor
+import com.gojek.mqtt.client.MqttMessageInterceptor
 import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.config.MqttConfiguration
 import com.gojek.mqtt.client.config.PersistenceOptions
@@ -41,6 +42,7 @@ data class MqttV3Configuration(
     override val eventHandler: EventHandler = NoOpEventHandler(),
     override val pingSender: MqttPingSender,
     override val mqttInterceptorList: List<MqttInterceptor> = emptyList(),
+    override val messageInterceptorList: List<MqttMessageInterceptor> = emptyList(),
     override val persistenceOptions: PersistenceOptions = PahoPersistenceOptions(),
     override val experimentConfigs: ExperimentConfigs = ExperimentConfigs()
 ) : MqttConfiguration(
@@ -56,6 +58,7 @@ data class MqttV3Configuration(
     eventHandler = eventHandler,
     pingSender = pingSender,
     mqttInterceptorList = mqttInterceptorList,
+    messageInterceptorList = messageInterceptorList,
     persistenceOptions = persistenceOptions,
     experimentConfigs = experimentConfigs
 )

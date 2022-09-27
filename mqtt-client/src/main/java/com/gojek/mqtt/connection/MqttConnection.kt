@@ -393,7 +393,8 @@ internal class MqttConnection(
             PahoLogger(connectionConfig.logger),
             PahoEventHandler(connectionConfig.connectionEventHandler),
             getPahoExperimentsConfig(),
-            connectionConfig.mqttInterceptorList
+            connectionConfig.mqttInterceptorList,
+            connectionConfig.messageInterceptorList
         )
         val bufferOptions = DisconnectedBufferOptions()
         with(connectionConfig.persistenceOptions as PahoPersistenceOptions) {

@@ -187,7 +187,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 			IExperimentsConfig experimentsConfig
 	) throws MqttException
 	{
-		this(serverURI, clientId, mqttVersion, persistence, 100, pingSender, logger, new NoOpsPahoEvents(), null, null);
+		this(serverURI, clientId, mqttVersion, persistence, 100, pingSender, logger, new NoOpsPahoEvents(), null, null, null);
 	}
 	/**
 	 * Create an MqttAsyncClient that is used to communicate with an MQTT server.
@@ -269,7 +269,8 @@ public class MqttAsyncClient implements IMqttAsyncClient
 			ILogger logger,
 			IPahoEvents pahoEvents,
 			IExperimentsConfig experimentsConfig,
-			List<MqttInterceptor> mqttInterceptorList
+			List<MqttInterceptor> mqttInterceptorList,
+			List<MqttMessageInterceptor> messageInterceptorList
 	) throws MqttException
 	{
 		final String methodName = "MqttAsyncClient";
@@ -306,7 +307,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 		// @TRACE 101=<init> ClientID={0} ServerURI={1} PersistenceType={2}
 
 		this.persistence.open(clientId, serverURI);
-		this.comms = new ClientComms(this, this.persistence, getMqttPingSender(pingSender), maxInflightMsgs, logger, experimentsConfig, mqttInterceptorList, pahoEvents);
+		this.comms = new ClientComms(this, this.persistence, getMqttPingSender(pingSender), maxInflightMsgs, logger, experimentsConfig, mqttInterceptorList, messageInterceptorList, pahoEvents);
 		this.logger = logger;
 		this.persistence.close();
 		this.topics = new Hashtable();

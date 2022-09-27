@@ -14,6 +14,7 @@ import com.gojek.courier.messageadapter.gson.GsonMessageAdapterFactory
 import com.gojek.courier.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttClient
+import com.gojek.mqtt.client.MqttMessageInterceptor
 import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
@@ -120,6 +121,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = Period.ONE_HOUR))),
+            messageInterceptorList = listOf(mqttMessageInterceptor),
             persistenceOptions = PahoPersistenceOptions(100, false),
             experimentConfigs = ExperimentConfigs(
                 adaptiveKeepAliveConfig = AdaptiveKeepAliveConfig(
@@ -146,6 +148,16 @@ class MainActivity : AppCompatActivity() {
         )
         val courier = Courier(configuration)
         courierService = courier.create()
+    }
+
+    private val mqttMessageInterceptor = object : MqttMessageInterceptor {
+        override fun intercept(
+            mqttWireMessageBytes: ByteArray,
+            isSent: Boolean
+        ): ByteArray {
+            Timber.tag("Courier").d("message intercepted: %s, isSent: %s", String(mqttWireMessageBytes), isSent)
+            return mqttWireMessageBytes
+        }
     }
 
     private val eventHandler = object : EventHandler {

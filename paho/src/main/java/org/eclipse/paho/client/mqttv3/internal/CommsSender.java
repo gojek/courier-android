@@ -17,7 +17,6 @@ package org.eclipse.paho.client.mqttv3.internal;
 
 import org.eclipse.paho.client.mqttv3.ILogger;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttInterceptor;
 import org.eclipse.paho.client.mqttv3.MqttToken;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttAck;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttDisconnect;
@@ -29,7 +28,6 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
 
 public class CommsSender implements Runnable
 {
@@ -56,6 +54,8 @@ public class CommsSender implements Runnable
 
 	private MqttInterceptorCallback mqttInterceptorCallback;
 
+	private MqttMessageInterceptorCallback messageInterceptorCallback;
+
 	private final static String className = CommsSender.class.getName();
 
 	private final String TAG = "COMMSSENDER";
@@ -67,7 +67,8 @@ public class CommsSender implements Runnable
             OutputStream out,
             Socket socket,
             ILogger logger,
-            MqttInterceptorCallback mqttInterceptorCallback
+            MqttInterceptorCallback mqttInterceptorCallback,
+			MqttMessageInterceptorCallback messageInterceptorCallback
 	)
 	{
 		this.socket = socket;
@@ -77,7 +78,7 @@ public class CommsSender implements Runnable
 		this.tokenStore = tokenStore;
 		this.logger = logger;
 		this.mqttInterceptorCallback = mqttInterceptorCallback;
-
+		this.messageInterceptorCallback = messageInterceptorCallback;
 	}
 
 	/**
@@ -160,7 +161,9 @@ public class CommsSender implements Runnable
 					if (message instanceof MqttAck)
 					{
 						logger.d(TAG, "Sending Ack for packet" + message);
-						out.write(mqttInterceptorCallback, message);
+						byte[] packet = convertMessageToBytes(message);
+						intercept(mqttInterceptorCallback, packet);
+						out.write(packet);
 						out.flush();
 						logger.logEvent("mqtt_ack_send_event", true, this.clientComms.getClient().getServerURI()
 								, (System.currentTimeMillis() - sTime), null, 0, System.currentTimeMillis(), 0, threadId, message.getMessageId());
@@ -186,7 +189,15 @@ public class CommsSender implements Runnable
 									logger.d(TAG, preLogLine + message.toString());
 									logSocketProperties();
 								}
-								out.write(mqttInterceptorCallback, message);
+								byte[] packet = convertMessageToBytes(message);
+								intercept(mqttInterceptorCallback, packet);
+								byte[] updatedMessage = packet;
+								if (message instanceof MqttPublish) {
+									updatedMessage =
+											messageInterceptorCallback.mqttMessageIntercepted(
+													packet, true);
+								}
+								out.write(updatedMessage);
 								try
 								{
 									out.flush();
@@ -265,6 +276,19 @@ public class CommsSender implements Runnable
 
 		// @TRACE 805=<
 
+	}
+
+	private void intercept(MqttInterceptorCallback mqttInterceptorCallback, byte[] packet) throws MqttException {
+		mqttInterceptorCallback.mqttMessageIntercepted(packet, true);
+	}
+
+	private byte[] convertMessageToBytes(MqttWireMessage mqttWireMessage) throws MqttException {
+		byte[] bytes = mqttWireMessage.getHeader();
+		byte[] pl = mqttWireMessage.getPayload();
+		byte[] packet = new byte[(int) (bytes.length + pl.length)];
+		System.arraycopy(bytes, 0, packet, 0, bytes.length);
+		System.arraycopy(pl, 0, packet, bytes.length, pl.length);
+		return packet;
 	}
 
 	private void handleRunException(MqttWireMessage message, Exception ex)

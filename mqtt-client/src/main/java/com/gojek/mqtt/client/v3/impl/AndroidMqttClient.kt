@@ -29,6 +29,7 @@ import com.gojek.mqtt.client.event.adapter.MqttClientEventAdapter
 import com.gojek.mqtt.client.internal.KeepAliveProvider
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.mapToPahoInterceptor
+import com.gojek.mqtt.client.mapToPahoMessageInterceptor
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.model.ConnectionState.CONNECTED
 import com.gojek.mqtt.client.model.ConnectionState.CONNECTING
@@ -174,6 +175,9 @@ internal class AndroidMqttClient(
                 socketFactory = mqttConfiguration.socketFactory,
                 mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map {
                     mapToPahoInterceptor(it)
+                },
+                messageInterceptorList = mqttConfiguration.messageInterceptorList.map {
+                    mapToPahoMessageInterceptor(it)
                 },
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,

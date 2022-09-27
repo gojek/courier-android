@@ -10,6 +10,7 @@ import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.subscriptionretry.ISubscriptionRetryPolicy
 import javax.net.SocketFactory
 import org.eclipse.paho.client.mqttv3.MqttInterceptor
+import org.eclipse.paho.client.mqttv3.MqttMessageInterceptor
 
 internal data class ConnectionConfig(
     val connectRetryTimePolicy: IConnectRetryTimePolicy,
@@ -24,6 +25,7 @@ internal data class ConnectionConfig(
     val quiesceTimeout: Int = QUIESCE_TIME_MILLIS,
     val disconnectTimeout: Int = DISCONNECT_TIMEOUT_MILLIS,
     val mqttInterceptorList: List<MqttInterceptor>,
+    val messageInterceptorList: List<MqttMessageInterceptor>,
     val persistenceOptions: PersistenceOptions,
     val inactivityTimeoutSeconds: Int,
     val policyResetTimeSeconds: Int

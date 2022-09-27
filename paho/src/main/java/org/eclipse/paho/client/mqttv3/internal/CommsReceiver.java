@@ -57,6 +57,8 @@ public class CommsReceiver implements Runnable
 
 	private MqttInterceptorCallback mqttInterceptorCallback;
 
+	private MqttMessageInterceptorCallback messageInterceptorCallback;
+
 	private final static String className = CommsReceiver.class.getName();
 
 	private final String TAG = "CommsReciever";
@@ -68,7 +70,8 @@ public class CommsReceiver implements Runnable
 			InputStream in,
 			Socket socket,
 			ILogger logger,
-			MqttInterceptorCallback mqttInterceptorCallback
+			MqttInterceptorCallback mqttInterceptorCallback,
+			MqttMessageInterceptorCallback messageInterceptorCallback
 	)
 	{
 		this.socket = socket;
@@ -78,6 +81,7 @@ public class CommsReceiver implements Runnable
 		this.tokenStore = tokenStore;
 		this.logger = logger;
 		this.mqttInterceptorCallback = mqttInterceptorCallback;
+		this.messageInterceptorCallback = messageInterceptorCallback;
 	}
 
 	/**
@@ -151,7 +155,7 @@ public class CommsReceiver implements Runnable
 			{
 				// @TRACE 852=network read message
 				receiving = true;
-				MqttWireMessage message = in.readMqttWireMessage(mqttInterceptorCallback);
+				MqttWireMessage message = in.readMqttWireMessage(mqttInterceptorCallback, messageInterceptorCallback);
 				receiving = false;
 				if (message instanceof MqttPublish)
 				{

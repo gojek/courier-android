@@ -3,6 +3,7 @@ package com.gojek.mqtt.client.config
 import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttInterceptor
+import com.gojek.mqtt.client.MqttMessageInterceptor
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.exception.handler.v3.AuthFailureHandler
 import com.gojek.mqtt.pingsender.MqttPingSender
@@ -24,6 +25,7 @@ abstract class MqttConfiguration(
     open val eventHandler: EventHandler,
     open val pingSender: MqttPingSender,
     open val mqttInterceptorList: List<MqttInterceptor>,
+    open val messageInterceptorList: List<MqttMessageInterceptor>,
     open val persistenceOptions: PersistenceOptions,
     open val experimentConfigs: ExperimentConfigs
 )
