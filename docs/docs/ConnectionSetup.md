@@ -56,15 +56,14 @@ mqttClient.disconnect()
 
 - **User properties** : Custom user properties appended to the CONNECT packet.
 
-- **Socket Factory** : Sets the socket factory used to create connections. If unset, the **SocketFactory.getDefault** socket factory will be used. Set [shouldUseNewSSLFlow][4] to true to enable this.
+- **Socket Factory** : Sets the socket factory used to create connections. If unset, the **SocketFactory.getDefault** socket factory will be used. Set [shouldUseNewSSLFlow](ExperimentConfigs) to true to enable this.
 
-- **SSL Socket Factory**: Sets the socket factory and trust manager used to secure MQTT connections. If unset, the system defaults will be used. Set [shouldUseNewSSLFlow][4] to true to enable this.
+- **SSL Socket Factory**: Sets the socket factory and trust manager used to secure MQTT connections. If unset, the system defaults will be used. Set [shouldUseNewSSLFlow](ExperimentConfigs) to true to enable this.
 
-- **Connection Spec**: Specifies configuration for the socket connection that MQTT traffic travels through. This includes the TLS version and cipher suites to use when negotiating a secure connection. Set [shouldUseNewSSLFlow][4] to true to enable this.
+- **Connection Spec**: Specifies configuration for the socket connection that MQTT traffic travels through. This includes the TLS version and cipher suites to use when negotiating a secure connection. Set [shouldUseNewSSLFlow](ExperimentConfigs) to true to enable this.
 
-- **ALPN Protocols**: Configure the alpn protocols used by this client to communicate with MQTT broker. Set [shouldUseNewSSLFlow][4] to true to enable this.
+- **ALPN Protocols**: Configure the alpn protocols used by this client to communicate with MQTT broker. Set [shouldUseNewSSLFlow](ExperimentConfigs) to true to enable this.
 
 [1]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/client/MqttClient.kt
 [2]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/model/MqttConnectOptions.kt
 [3]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/model/ServerUri.kt
-[4]: /docs/docs/ExperimentConfigs.md
