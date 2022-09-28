@@ -15,6 +15,7 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner;
 import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty;
 
 import java.net.URI;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Holds the set of options that control how the client connects to a server.
@@ -77,6 +80,14 @@ public class MqttConnectOptions
 	private char[] password;
 
 	private SocketFactory socketFactory;
+
+	private SSLSocketFactory sslSocketFactory;
+
+	private X509TrustManager x509TrustManager;
+
+	private ConnectionSpec connectionSpec;
+
+	private List<Protocol> alpnProtocolList;
 
 	private Properties sslClientProps = null;
 
@@ -369,6 +380,39 @@ public class MqttConnectOptions
 	public void setSocketFactory(SocketFactory socketFactory)
 	{
 		this.socketFactory = socketFactory;
+	}
+
+	public SSLSocketFactory getSslSocketFactory() {
+		return sslSocketFactory;
+	}
+
+	public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+		this.sslSocketFactory = sslSocketFactory;
+	}
+
+	public X509TrustManager getX509TrustManager() {
+		return x509TrustManager;
+	}
+
+	public void setX509TrustManager(X509TrustManager x509TrustManager) {
+		this.x509TrustManager = x509TrustManager;
+	}
+
+	public ConnectionSpec getConnectionSpec() {
+		return connectionSpec;
+	}
+
+	public void setConnectionSpec(
+			ConnectionSpec connectionSpec) {
+		this.connectionSpec = connectionSpec;
+	}
+
+	public List<Protocol> getAlpnProtocolList() {
+		return alpnProtocolList;
+	}
+
+	public void setAlpnProtocolList(List<Protocol> alpnProtocolList) {
+		this.alpnProtocolList = alpnProtocolList;
 	}
 
 	/**

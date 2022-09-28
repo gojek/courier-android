@@ -59,6 +59,7 @@ object deps {
             const val runner = "androidx.test:runner:1.2.0"
             const val roboelectric = "org.robolectric:robolectric:4.2"
             const val mockito = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+            const val mockitoCore = "org.mockito:mockito-core:4.4.0"
             const val junitExt = "androidx.test.ext:junit:1.1.1"
             const val kotlinTestJunit = "org.jetbrains.kotlin:kotlin-test-junit:${versions.kotlin}"
         }

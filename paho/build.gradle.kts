@@ -16,12 +16,20 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
     implementation(deps.kotlin.stdlib.core)
+    implementation("com.squareup.okio:okio:3.2.0")
+
+    compileOnly("org.robolectric:android-all:13-robolectric-9030017")
+    compileOnly("org.bouncycastle:bcprov-jdk15to18:1.71")
+    compileOnly("org.bouncycastle:bctls-jdk15to18:1.71")
+    compileOnly("org.conscrypt:conscrypt-openjdk-uber:2.5.2")
+    compileOnly("org.openjsse:openjsse:1.1.10")
+
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 

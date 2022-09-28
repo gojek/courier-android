@@ -35,6 +35,7 @@ dependencies {
     implementation(project(":courier-core-android"))
     implementation(deps.android.androidx.annotation)
 
+    testImplementation(deps.android.test.mockitoCore)
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 

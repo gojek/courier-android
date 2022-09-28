@@ -22,8 +22,6 @@ As we have seen earlier, [MqttClient][1] requires an instance of [MqttV3Configur
 
 - **Experimentation Configs** : These are the experiment configs used inside Courier library which are explained in detail [here](ExperimentConfigs).
 
-- **Socket Factory** : An instance of SocketFactory can be passed to control the socket creation for the underlying MQTT connection.
-
 - **WakeLock Timeout** : When positive value of this timeout is passed, a wakelock is acquired while creating the MQTT connection. By default, it is 0. 
 
 [1]: https://github.com/gojek/courier-android/blob/main/mqtt-client/src/main/java/com/gojek/mqtt/client/MqttClient.kt

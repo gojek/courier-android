@@ -171,13 +171,13 @@ internal class AndroidMqttClient(
                 maxInflightMessages = MAX_INFLIGHT_MESSAGES_ALLOWED,
                 logger = mqttConfiguration.logger,
                 connectionEventHandler = mqttClientEventAdapter.adapt(),
-                socketFactory = mqttConfiguration.socketFactory,
                 mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map {
                     mapToPahoInterceptor(it)
                 },
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
-                policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds
+                policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
+                shouldUseNewSSLFlow = experimentConfigs.shouldUseNewSSLFlow
             )
 
         mqttConnection = MqttConnection(
@@ -506,15 +506,15 @@ internal class AndroidMqttClient(
         forceRefresh = false
         this.hostFallbackPolicy = HostFallbackPolicy(connectOptions.serverUris)
         val mqttConnectOptions = if (isAdaptiveKAConnection) {
-            connectOptions.copy(
-                keepAlive = keepAliveProvider.getKeepAlive(connectOptions),
-                clientId = connectOptions.clientId + ":adaptive",
-                isCleanSession = true
-            )
+            connectOptions.newBuilder()
+                .keepAlive(keepAliveProvider.getKeepAlive(connectOptions))
+                .clientId(connectOptions.clientId + ":adaptive")
+                .cleanSession(true)
+                .build()
         } else {
-            connectOptions.copy(
-                keepAlive = keepAliveProvider.getKeepAlive(connectOptions)
-            )
+            connectOptions.newBuilder()
+                .keepAlive(keepAliveProvider.getKeepAlive(connectOptions))
+                .build()
         }
 
         if (isAdaptiveKAConnection.not()) {

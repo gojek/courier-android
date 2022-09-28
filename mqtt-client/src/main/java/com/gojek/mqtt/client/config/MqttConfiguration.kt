@@ -9,7 +9,6 @@ import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.subscriptionretry.ISubscriptionRetryPolicy
-import javax.net.SocketFactory
 
 abstract class MqttConfiguration(
     open val connectRetryTimePolicy: IConnectRetryTimePolicy,
@@ -17,7 +16,6 @@ abstract class MqttConfiguration(
     open val subscriptionRetryPolicy: ISubscriptionRetryPolicy,
     open val unsubscriptionRetryPolicy: ISubscriptionRetryPolicy,
     open val wakeLockTimeout: Int,
-    open val socketFactory: SocketFactory?,
     open val logger: ILogger,
     open val authenticator: Authenticator,
     open val authFailureHandler: AuthFailureHandler?,

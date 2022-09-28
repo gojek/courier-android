@@ -5,15 +5,17 @@
 This option allows you to send user-properties in CONNECT packet for MQTT v3.1.1.
 
 ~~~ kotlin
-val connectOptions = MqttConnectOptions(
-    serverUris = listOf(ServerUri(SERVER_URI, SERVER_PORT)),
-    clientId = clientId,
-    ...
-    userPropertiesMap = mapOf(
-                "key1" to "value1",
-                "key2" to "value2"
-    )
-)
+val connectOptions = MqttConnectOptions.Builder()
+              .serverUris(listOf(ServerUri(SERVER_URI, SERVER_PORT)))
+              .clientId(clientId)
+              ...
+              .userProperties(
+                  userProperties = mapOf(
+                    "key1" to "value1",
+                    "key2" to "value2"
+                  )
+              )
+              .build()
 
 mqttClient.connect(connectOptions)
 ~~~

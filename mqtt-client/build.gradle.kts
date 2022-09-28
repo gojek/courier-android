@@ -53,6 +53,7 @@ dependencies {
 
     testImplementation(deps.android.test.junit)
     testImplementation(deps.android.test.mockito)
+    testImplementation(deps.android.test.mockitoCore)
     androidTestImplementation(deps.android.test.junitExt)
 }
 

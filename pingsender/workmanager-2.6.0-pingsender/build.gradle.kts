@@ -32,7 +32,7 @@ dependencies {
     api(project(":mqtt-pingsender"))
     implementation(project(":courier-core-android"))
     implementation(deps.workManager.runtime_2_6_0)
-
+    testImplementation(deps.android.test.mockitoCore)
     testImplementation(deps.android.test.kotlinTestJunit)
 }
 

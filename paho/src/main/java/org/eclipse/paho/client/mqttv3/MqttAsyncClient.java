@@ -23,10 +23,12 @@ import org.eclipse.paho.client.mqttv3.internal.ExceptionHelper;
 import org.eclipse.paho.client.mqttv3.internal.LocalNetworkModule;
 import org.eclipse.paho.client.mqttv3.internal.NetworkModule;
 import org.eclipse.paho.client.mqttv3.internal.SSLNetworkModule;
+import org.eclipse.paho.client.mqttv3.internal.SSLNetworkModuleV2;
 import org.eclipse.paho.client.mqttv3.internal.TCPNetworkModule;
 import org.eclipse.paho.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 import org.eclipse.paho.client.mqttv3.internal.websocket.WebSocketNetworkModule;
 import org.eclipse.paho.client.mqttv3.internal.websocket.WebSocketSecureNetworkModule;
+import org.eclipse.paho.client.mqttv3.internal.websocket.WebSocketSecureNetworkModuleV2;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttDisconnect;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPingReq;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish;
@@ -35,17 +37,16 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttUnsubscribe;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocketFactory;
-
 
 /**
  * Lightweight client for talking to an MQTT server using non-blocking methods that allow an operation to run in the background.
- * 
+ *
  * <p>
  * This class implements the non-blocking {@link IMqttAsyncClient} client interface allowing applications to initiate MQTT actions and then carry on working while the MQTT action
  * completes on a background thread. This implementation is compatible with all Java SE runtimes from 1.4.2 and up.
@@ -72,7 +73,7 @@ import javax.net.ssl.SSLSocketFactory;
  * <p>
  * The message store interface is pluggable. Different stores can be used by implementing the {@link MqttClientPersistence} interface and passing it to the clients constructor.
  * </p>
- * 
+ *
  * @see IMqttAsyncClient
  */
 public class MqttAsyncClient implements IMqttAsyncClient
@@ -101,6 +102,8 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	private IPahoEvents pahoEvents;
 
+	private IExperimentsConfig experimentsConfig;
+
 	final static String className = MqttAsyncClient.class.getName();
 
 	final private String TAG = "MqttAsyncClient";
@@ -110,13 +113,13 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * <p>
 	 * The address of a server can be specified on the constructor. Alternatively a list containing one or more servers can be specified using the
 	 * {@link MqttConnectOptions#setServerURIs(String[]) setServerURIs} method on MqttConnectOptions.
-	 * 
+	 *
 	 * <p>
 	 * The <code>serverURI</code> parameter is typically used with the the <code>clientId</code> parameter to form a key. The key is used to store and reference messages while they
 	 * are being delivered. Hence the serverURI specified on the constructor must still be specified even if a list of servers is specified on an MqttConnectOptions object. The
 	 * serverURI on the constructor must remain the same across restarts of the client for delivery of messages to be maintained from a given client to a given server or set of
 	 * servers.
-	 * 
+	 *
 	 * <p>
 	 * The address of the server to connect to is specified as a URI. Two types of connection are supported <code>tcp://</code> for a TCP connection and <code>ssl://</code> for a
 	 * TCP connection secured by SSL/TLS. For example:
@@ -126,7 +129,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * </ul>
 	 * If the port is not specified, it will default to 1883 for <code>tcp://</code>" URIs, and 8883 for <code>ssl://</code> URIs.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * A client identifier <code>clientId</code> must be specified and be less that 65535 characters. It must be unique across all clients connecting to the same server. The
 	 * clientId is used by the server to store data related to the client, hence it is important that the clientId remain the same when connecting to a server if durable
@@ -145,15 +148,15 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * <li><strong>SSL Properties</strong> - applications can supply SSL settings as a simple Java Properties using {@link MqttConnectOptions#setSSLProperties(Properties)}.</li>
 	 * <li><strong>Use JVM settings</strong> - There are a number of standard Java system properties that can be used to configure key and trust stores.</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * In Java ME, the platform settings are used for SSL connections.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * An instance of the default persistence mechanism {@link MqttDefaultFilePersistence} is used by the client. To specify a different persistence mechanism or to turn off
 	 * persistence, use the {@link #MqttAsyncClient(String, String, MqttClientPersistence)} constructor.
-	 * 
+	 *
 	 * @param serverURI
 	 *            the address of the server to connect to, specified as a URI. Can be overridden using {@link MqttConnectOptions#setServerURIs(String[])}
 	 * @param clientId
@@ -194,13 +197,13 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * <p>
 	 * The address of a server can be specified on the constructor. Alternatively a list containing one or more servers can be specified using the
 	 * {@link MqttConnectOptions#setServerURIs(String[]) setServerURIs} method on MqttConnectOptions.
-	 * 
+	 *
 	 * <p>
 	 * The <code>serverURI</code> parameter is typically used with the the <code>clientId</code> parameter to form a key. The key is used to store and reference messages while they
 	 * are being delivered. Hence the serverURI specified on the constructor must still be specified even if a list of servers is specified on an MqttConnectOptions object. The
 	 * serverURI on the constructor must remain the same across restarts of the client for delivery of messages to be maintained from a given client to a given server or set of
 	 * servers.
-	 * 
+	 *
 	 * <p>
 	 * The address of the server to connect to is specified as a URI. Two types of connection are supported <code>tcp://</code> for a TCP connection and <code>ssl://</code> for a
 	 * TCP connection secured by SSL/TLS. For example:
@@ -210,7 +213,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * </ul>
 	 * If the port is not specified, it will default to 1883 for <code>tcp://</code>" URIs, and 8883 for <code>ssl://</code> URIs.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * A client identifier <code>clientId</code> must be specified and be less that 65535 characters. It must be unique across all clients connecting to the same server. The
 	 * clientId is used by the server to store data related to the client, hence it is important that the clientId remain the same when connecting to a server if durable
@@ -229,7 +232,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * <li><strong>SSL Properties</strong> - applications can supply SSL settings as a simple Java Properties using {@link MqttConnectOptions#setSSLProperties(Properties)}.</li>
 	 * <li><strong>Use JVM settings</strong> - There are a number of standard Java system properties that can be used to configure key and trust stores.</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * In Java ME, the platform settings are used for SSL connections.
 	 * </p>
@@ -244,7 +247,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * An implementation of file-based persistence is provided in class {@link MqttDefaultFilePersistence} which will work in all Java SE based systems. If no persistence is
 	 * needed, the persistence parameter can be explicitly set to <code>null</code>.
 	 * </p>
-	 * 
+	 *
 	 * @param serverURI
 	 *            the address of the server to connect to, specified as a URI. Can be overridden using {@link MqttConnectOptions#setServerURIs(String[])}
 	 * @param clientId
@@ -298,6 +301,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 		this.mqttVersion = mqttVersion;
 
 		this.persistence = persistence;
+		this.experimentsConfig = experimentsConfig;
 		if (this.persistence == null)
 		{
 			this.persistence = new MemoryPersistence();
@@ -331,7 +335,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/**
 	 * Factory method to create an array of network modules, one for each of the supplied URIs
-	 * 
+	 *
 	 * @param address
 	 *            the URI for the server.
 	 * @return a network module appropriate to the specified address.
@@ -410,29 +414,22 @@ public class MqttAsyncClient implements IMqttAsyncClient
 				((TCPNetworkModule) netModule).setReadTimeout(options.getReadTimeout());
 				break;
 			case MqttConnectOptions.URI_TYPE_SSL:
+				if(experimentsConfig.useNewSSLFlow()) {
+					netModule = getSSLNetworkModuleV2(address, options);
+					break;
+				}
 				shortAddress = address.substring(6);
 				host = getHostName(shortAddress);
 				port = getPort(shortAddress, 8883);
 				SSLSocketFactoryFactory factoryFactory = null;
-				if (factory == null)
-				{
-					// try {
-					factoryFactory = new SSLSocketFactoryFactory();
-					Properties sslClientProps = options.getSSLProperties();
-					if (null != sslClientProps)
-						factoryFactory.initialize(sslClientProps, null);
-					factory = factoryFactory.createSocketFactory(null);
-					// }
-					// catch (MqttDirectException ex) {
-					// throw ExceptionHelper.createMqttException(ex.getCause());
-					// }
-				}
-				else if ((factory instanceof SSLSocketFactory) == false)
-				{
-					throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
-				}
 
-				// Create the network module...
+				factoryFactory = new SSLSocketFactoryFactory();
+				Properties sslClientProps = options.getSSLProperties();
+				if (null != sslClientProps) {
+					factoryFactory.initialize(sslClientProps, null);
+				}
+				factory = factoryFactory.createSocketFactory(null);
+
 				netModule = new SSLNetworkModule((SSLSocketFactory) factory, host, port, clientId, logger, pahoEvents);
 				((SSLNetworkModule) netModule).setConnectTimeout(options.getConnectionTimeout());
 				((SSLNetworkModule) netModule).setSSLhandshakeTimeout(options.getHandshakeTimeout());
@@ -462,23 +459,22 @@ public class MqttAsyncClient implements IMqttAsyncClient
 				((WebSocketNetworkModule)netModule).setReadTimeout(options.getReadTimeout());
 				break;
 			case MqttConnectOptions.URI_TYPE_WSS:
+				if(experimentsConfig.useNewSSLFlow()) {
+					netModule = getWSSNetworkModuleV2(address, options);
+					break;
+				}
 				shortAddress = address.substring(6);
 				host = getHostName(shortAddress);
 				port = getPort(shortAddress, 443);
 				SSLSocketFactoryFactory wSSFactoryFactory = null;
-				if (factory == null) {
-					wSSFactoryFactory = new SSLSocketFactoryFactory();
-					Properties sslClientProps = options.getSSLProperties();
-					if (null != sslClientProps)
-						wSSFactoryFactory.initialize(sslClientProps, null);
-					factory = wSSFactoryFactory.createSocketFactory(null);
 
+				wSSFactoryFactory = new SSLSocketFactoryFactory();
+				sslClientProps = options.getSSLProperties();
+				if (null != sslClientProps) {
+					wSSFactoryFactory.initialize(sslClientProps, null);
 				}
-				else if ((factory instanceof SSLSocketFactory) == false) {
-					throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
-				}
+				factory = wSSFactoryFactory.createSocketFactory(null);
 
-				// Create the network module...
 				netModule = new WebSocketSecureNetworkModule((SSLSocketFactory) factory, address, host, port, clientId, logger, pahoEvents);
 				((WebSocketSecureNetworkModule)netModule).setConnectTimeout(options.getConnectionTimeout());
 				((WebSocketSecureNetworkModule)netModule).setSSLhandshakeTimeout(options.getHandshakeTimeout());
@@ -498,6 +494,56 @@ public class MqttAsyncClient implements IMqttAsyncClient
 				// This shouldn't happen, as long as validateURI() has been called.
 				netModule = null;
 		}
+		return netModule;
+	}
+
+	private NetworkModule getSSLNetworkModuleV2(String address, MqttConnectOptions options)
+			throws MqttException {
+		String shortAddress = address.substring(6);
+		String host = getHostName(shortAddress);
+		int port = getPort(shortAddress, 443);
+
+		// Create the network module...
+		NetworkModule netModule = new SSLNetworkModuleV2(
+				options.getSocketFactory(),
+				options.getSslSocketFactory(),
+				options.getX509TrustManager(),
+				options.getConnectionSpec(),
+				options.getAlpnProtocolList(),
+				host,
+				port,
+				clientId,
+				logger,
+				pahoEvents
+		);
+		((SSLNetworkModuleV2) netModule).setConnectTimeout(options.getConnectionTimeout());
+		((SSLNetworkModuleV2) netModule).setSSLhandshakeTimeout(options.getHandshakeTimeout());
+		((SSLNetworkModuleV2) netModule).setReadTimeout(options.getReadTimeout());
+		return netModule;
+	}
+
+	private NetworkModule getWSSNetworkModuleV2(String address, MqttConnectOptions options)
+			throws MqttException {
+		String shortAddress = address.substring(6);
+		String host = getHostName(shortAddress);
+		int port = getPort(shortAddress, 443);
+
+		NetworkModule netModule = new WebSocketSecureNetworkModuleV2(
+				options.getSocketFactory(),
+				options.getSslSocketFactory(),
+				options.getX509TrustManager(),
+				options.getConnectionSpec(),
+				options.getAlpnProtocolList(),
+				address,
+				host,
+				port,
+				clientId,
+				logger,
+				pahoEvents
+		);
+		((WebSocketSecureNetworkModuleV2) netModule).setConnectTimeout(options.getConnectionTimeout());
+		((WebSocketSecureNetworkModuleV2) netModule).setSSLhandshakeTimeout(options.getHandshakeTimeout());
+		((WebSocketSecureNetworkModuleV2) netModule).setReadTimeout(options.getReadTimeout());
 		return netModule;
 	}
 
@@ -529,7 +575,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#connect(java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken connect(Object userContext, IMqttActionListener callback) throws MqttException, MqttSecurityException
@@ -539,7 +585,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#connect()
 	 */
 	public IMqttToken connect() throws MqttException, MqttSecurityException
@@ -549,7 +595,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#connect(org.eclipse.paho.client.mqttv3.MqttConnectOptions)
 	 */
 	public IMqttToken connect(MqttConnectOptions options) throws MqttException, MqttSecurityException
@@ -559,7 +605,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#connect(org.eclipse.paho.client.mqttv3.MqttConnectOptions, java.lang.Object,
 	 * org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
@@ -601,7 +647,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnect(java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken disconnect(Object userContext, IMqttActionListener callback) throws MqttException
@@ -611,7 +657,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnect()
 	 */
 	public IMqttToken disconnect() throws MqttException
@@ -621,7 +667,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnect(long)
 	 */
 	public IMqttToken disconnect(long quiesceTimeout) throws MqttException
@@ -631,7 +677,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnect(long, java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken disconnect(long quiesceTimeout, Object userContext, IMqttActionListener callback) throws MqttException
@@ -660,7 +706,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnectForcibly()
 	 */
 	public void disconnectForcibly() throws MqttException
@@ -670,7 +716,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnectForcibly(long)
 	 */
 	public void disconnectForcibly(long disconnectTimeout) throws MqttException
@@ -680,7 +726,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#disconnectForcibly(long, long)
 	 */
 	public void disconnectForcibly(long quiesceTimeout, long disconnectTimeout) throws MqttException
@@ -690,24 +736,24 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see IMqttAsyncClient#isConnected()
 	 */
 	public boolean isConnected()
 	{
 		return comms.isConnected();
 	}
-	
+
 	public boolean isConnecting()
 	{
 		return comms.isConnecting();
 	}
-	
+
 	public boolean isDisconnecting()
 	{
 		return comms.isDisconnecting();
 	}
-	
+
 	public boolean isDisconnected()
 	{
 		return comms.isDisconnected();
@@ -715,7 +761,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see IMqttAsyncClient#getClientId()
 	 */
 	public String getClientId()
@@ -735,7 +781,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see IMqttAsyncClient#getServerURI()
 	 */
 	public String getServerURI()
@@ -769,7 +815,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * <p>
 	 * When you build an application, the design of the topic tree should take into account the following principles of topic name syntax and semantics:
 	 * </p>
-	 * 
+	 *
 	 * <ul>
 	 * <li>A topic must be at least one character long.</li>
 	 * <li>Topic names are case sensitive. For example, <em>ACCOUNTS</em> and <em>Accounts</em> are two different topics.</li>
@@ -778,17 +824,17 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * <li>A leading "/" creates a distinct topic. For example, <em>/finance</em> is different from <em>finance</em>. <em>/finance</em> matches "+/+" and "/+", but not "+".</li>
 	 * <li>Do not include the null character (Unicode<samp class="codeph"> \x0000</samp>) in any topic.</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * The following principles apply to the construction and content of a topic tree:
 	 * </p>
-	 * 
+	 *
 	 * <ul>
 	 * <li>The length is limited to 64k but within that there are no limits to the number of levels in a topic tree.</li>
 	 * <li>There can be any number of root nodes; that is, there can be any number of topic trees.</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param topic
 	 *            the topic to use, for example "finance/stock/ibm".
 	 * @return an MqttTopic object, which can be used to publish messages to the topic.
@@ -811,7 +857,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	/*
 	 * (non-Javadoc) Check and send a ping if needed. <p>By default, client sends PingReq to server to keep the connection to server. For some platforms which cannot use this
 	 * mechanism, such as Android, developer needs to handle the ping request manually with this method. </p>
-	 * 
+	 *
 	 * @throws MqttException for other errors encountered while publishing the message.
 	 */
 	public IMqttToken checkPing(Object userContext, IMqttActionListener callback) throws MqttException
@@ -831,10 +877,10 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	{
 		comms.checkActivity();
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#subscribe(java.lang.String, int, java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken subscribe(String topicFilter, int qos, Object userContext, IMqttActionListener callback) throws MqttException
@@ -844,7 +890,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#subscribe(java.lang.String, int)
 	 */
 	public IMqttToken subscribe(String topicFilter, int qos) throws MqttException
@@ -854,7 +900,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#subscribe(java.lang.String[], int[])
 	 */
 	public IMqttToken subscribe(String[] topicFilters, int[] qos) throws MqttException
@@ -864,7 +910,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#subscribe(java.lang.String[], int[], java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback) throws MqttException
@@ -906,7 +952,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#unsubscribe(java.lang.String, java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken unsubscribe(String topicFilter, Object userContext, IMqttActionListener callback) throws MqttException
@@ -916,7 +962,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#unsubscribe(java.lang.String)
 	 */
 	public IMqttToken unsubscribe(String topicFilter) throws MqttException
@@ -926,7 +972,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#unsubscribe(java.lang.String[])
 	 */
 	public IMqttToken unsubscribe(String[] topicFilters) throws MqttException
@@ -936,7 +982,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#unsubscribe(java.lang.String[], java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttToken unsubscribe(String[] topicFilters, Object userContext, IMqttActionListener callback) throws MqttException
@@ -975,7 +1021,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see IMqttAsyncClient#setCallback(MqttCallback)
 	 */
 	public void setCallback(MqttCallback callback)
@@ -989,7 +1035,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 * When cleanSession is set to false, an application must ensure it uses the same client identifier when it reconnects to the server to resume state and maintain assured
 	 * message delivery.
 	 * </p>
-	 * 
+	 *
 	 * @return a generated client identifier
 	 * @see MqttConnectOptions#setCleanSession(boolean)
 	 */
@@ -1001,7 +1047,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see IMqttAsyncClient#getPendingDeliveryTokens()
 	 */
 	public IMqttDeliveryToken[] getPendingDeliveryTokens()
@@ -1011,7 +1057,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#publish(java.lang.String, byte[], int, boolean, java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
 	public IMqttDeliveryToken publish(String topic, byte[] payload, int qos, boolean retained, Object userContext, IMqttActionListener callback) throws MqttException,
@@ -1025,7 +1071,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#publish(java.lang.String, byte[], int, boolean)
 	 */
 	public IMqttDeliveryToken publish(String topic, byte[] payload, int qos, boolean retained) throws MqttException, MqttPersistenceException
@@ -1035,7 +1081,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#publish(java.lang.String, org.eclipse.paho.client.mqttv3.MqttMessage)
 	 */
 	public IMqttDeliveryToken publish(String topic, MqttMessage message) throws MqttException, MqttPersistenceException
@@ -1045,7 +1091,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#publish(java.lang.String, org.eclipse.paho.client.mqttv3.MqttMessage, java.lang.Object,
 	 * org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
@@ -1073,7 +1119,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#close()
 	 */
 	public void close() throws MqttException
