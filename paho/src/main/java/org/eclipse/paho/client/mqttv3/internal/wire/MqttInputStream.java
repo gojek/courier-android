@@ -88,7 +88,11 @@ public class MqttInputStream extends InputStream
 		MqttWireMessage message = MqttWireMessage.createWireMessage(packet, mqttVersion);
 		byte[] updatedPacket = packet;
 		if (message instanceof MqttPublish) {
-			updatedPacket = messageInterceptorCallback.mqttMessageIntercepted(packet, false);
+			updatedPacket = messageInterceptorCallback.mqttMessageIntercepted(
+					((MqttPublish) message).getTopicName(),
+					packet,
+					false
+			);
 		}
 		intercept(mqttInterceptorCallback, updatedPacket);
 		// @TRACE 501= received {0}

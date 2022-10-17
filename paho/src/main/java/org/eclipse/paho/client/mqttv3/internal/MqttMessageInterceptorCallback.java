@@ -11,11 +11,11 @@ public class MqttMessageInterceptorCallback {
         this.mqttInterceptorList = mqttInterceptorList;
     }
 
-    public byte[] mqttMessageIntercepted(byte[] mqttWireMessageBytes, boolean isSent) {
+    public byte[] mqttMessageIntercepted(String topic, byte[] mqttWireMessageBytes, boolean isSent) {
         byte[] messageBytes = mqttWireMessageBytes;
         if (mqttInterceptorList != null) {
             for (MqttMessageInterceptor interceptor : mqttInterceptorList) {
-                messageBytes = interceptor.intercept(messageBytes, isSent);
+                messageBytes = interceptor.intercept(topic, messageBytes, isSent);
             }
         }
         return messageBytes;

@@ -152,10 +152,11 @@ class MainActivity : AppCompatActivity() {
 
     private val mqttMessageInterceptor = object : MqttMessageInterceptor {
         override fun intercept(
+            topic: String,
             mqttWireMessageBytes: ByteArray,
             isSent: Boolean
         ): ByteArray {
-            Timber.tag("Courier").d("message intercepted: %s, isSent: %s", String(mqttWireMessageBytes), isSent)
+            Timber.tag("Courier").d("topic: $topic, message intercepted: %s, isSent: %s", String(mqttWireMessageBytes), isSent)
             return mqttWireMessageBytes
         }
     }

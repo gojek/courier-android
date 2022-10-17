@@ -195,7 +195,10 @@ public class CommsSender implements Runnable
 								if (message instanceof MqttPublish) {
 									updatedMessage =
 											messageInterceptorCallback.mqttMessageIntercepted(
-													packet, true);
+													((MqttPublish) message).getTopicName(),
+													packet,
+													true
+                                            );
 								}
 								out.write(updatedMessage);
 								try

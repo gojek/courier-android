@@ -1,14 +1,14 @@
 package com.gojek.mqtt.client
 
 interface MqttMessageInterceptor {
-    fun intercept(mqttWireMessageBytes: ByteArray, isSent: Boolean): ByteArray
+    fun intercept(topic: String, mqttWireMessageBytes: ByteArray, isSent: Boolean): ByteArray
 }
 
 private class MqttMessageInterceptorInternal(
     private val mqttInterceptor: MqttMessageInterceptor
 ) : org.eclipse.paho.client.mqttv3.MqttMessageInterceptor {
-    override fun intercept(mqttWireMessageBytes: ByteArray, isSent: Boolean): ByteArray {
-        return mqttInterceptor.intercept(mqttWireMessageBytes, isSent)
+    override fun intercept(topic: String, mqttWireMessageBytes: ByteArray, isSent: Boolean): ByteArray {
+        return mqttInterceptor.intercept(topic, mqttWireMessageBytes, isSent)
     }
 }
 
