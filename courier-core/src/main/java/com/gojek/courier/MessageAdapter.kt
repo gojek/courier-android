@@ -5,10 +5,10 @@ import java.lang.reflect.Type
 interface MessageAdapter<T> {
 
     /** Returns an object of type `T` that represents a [Message]. */
-    fun fromMessage(message: Message): T
+    fun fromMessage(topic: String, message: Message): T
 
     /** Returns a [Message] that represents [data]. */
-    fun toMessage(data: T): Message
+    fun toMessage(topic: String, data: T): Message
 
     /** Creates [MessageAdapter] instances based on a type and target usage. */
     interface Factory {
