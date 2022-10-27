@@ -8,8 +8,9 @@ public final class com/gojek/courier/Message$Bytes : com/gojek/courier/Message {
 }
 
 public abstract interface class com/gojek/courier/MessageAdapter {
-	public abstract fun fromMessage (Lcom/gojek/courier/Message;)Ljava/lang/Object;
-	public abstract fun toMessage (Ljava/lang/Object;)Lcom/gojek/courier/Message;
+	public abstract fun contentType ()Ljava/lang/String;
+	public abstract fun fromMessage (Ljava/lang/String;Lcom/gojek/courier/Message;)Ljava/lang/Object;
+	public abstract fun toMessage (Ljava/lang/String;Ljava/lang/Object;)Lcom/gojek/courier/Message;
 }
 
 public abstract interface class com/gojek/courier/MessageAdapter$Factory {

@@ -36,6 +36,8 @@ private class GsonMessageAdapter<T> constructor(
         val stringValue = buffer.readByteString().utf8()
         return Message.Bytes(stringValue.toByteArray())
     }
+
+    override fun contentType() = "application/json"
 }
 
 class GsonMessageAdapterFactory(

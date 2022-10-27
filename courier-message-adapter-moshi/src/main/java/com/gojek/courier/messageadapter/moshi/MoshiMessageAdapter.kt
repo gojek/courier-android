@@ -37,6 +37,8 @@ private class MoshiMessageAdapter<T> constructor(
         return Message.Bytes(stringValue.toByteArray())
     }
 
+    override fun contentType() = "application/json"
+
     private companion object {
         private val UTF8_BOM = ByteString.decodeHex("EFBBBF")
     }

@@ -10,6 +10,9 @@ interface MessageAdapter<T> {
     /** Returns a [Message] that represents [data]. */
     fun toMessage(topic: String, data: T): Message
 
+    /** Returns the content type supported by this adapter. */
+    fun contentType(): String
+
     /** Creates [MessageAdapter] instances based on a type and target usage. */
     interface Factory {
 

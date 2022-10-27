@@ -32,6 +32,8 @@ private class ProtobufMessageAdapter<T : MessageLite> constructor(
     }
 
     override fun toMessage(topic: String, data: T): Message = Message.Bytes(data.toByteArray())
+
+    override fun contentType() = "application/x-protobuf"
 }
 
 class ProtobufMessageAdapterFactory(

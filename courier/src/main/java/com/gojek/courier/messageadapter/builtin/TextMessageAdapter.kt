@@ -10,4 +10,6 @@ internal class TextMessageAdapter : MessageAdapter<String> {
     }
 
     override fun toMessage(topic: String, data: String): Message = Message.Bytes(data.toByteArray())
+
+    override fun contentType() = "text/plain"
 }

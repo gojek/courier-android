@@ -10,4 +10,6 @@ internal class ByteArrayMessageAdapter : MessageAdapter<ByteArray> {
     }
 
     override fun toMessage(topic: String, data: ByteArray): Message = Message.Bytes(data)
+
+    override fun contentType() = "application/octet-stream"
 }
