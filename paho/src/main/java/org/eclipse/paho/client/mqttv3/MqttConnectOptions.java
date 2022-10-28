@@ -162,7 +162,7 @@ public class MqttConnectOptions
 	{
 		if ((userName != null) && (userName.trim().equals("")))
 		{
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Username is empty");
 		}
 		this.userName = userName;
 	}
