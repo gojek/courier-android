@@ -111,7 +111,6 @@ class MqttConnectOptions private constructor(
         }
 
         fun userName(username: String) = apply {
-            require(username.isNotEmpty()) { "username cannot be empty" }
             this.username = username
         }
 
