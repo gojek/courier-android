@@ -19,7 +19,7 @@ private class GsonMessageAdapter<T> constructor(
     private val typeAdapter: TypeAdapter<T>
 ) : MessageAdapter<T> {
 
-    override fun fromMessage(message: Message): T {
+    override fun fromMessage(topic: String, message: Message): T {
         val stringValue = when (message) {
             is Message.Bytes -> String(message.value)
         }
@@ -27,7 +27,7 @@ private class GsonMessageAdapter<T> constructor(
         return typeAdapter.read(jsonReader)!!
     }
 
-    override fun toMessage(data: T): Message {
+    override fun toMessage(topic: String, data: T): Message {
         val buffer = Buffer()
         val writer = OutputStreamWriter(buffer.outputStream(), UTF_8)
         val jsonWriter = gson.newJsonWriter(writer)
@@ -36,6 +36,8 @@ private class GsonMessageAdapter<T> constructor(
         val stringValue = buffer.readByteString().utf8()
         return Message.Bytes(stringValue.toByteArray())
     }
+
+    override fun contentType() = "application/json"
 }
 
 class GsonMessageAdapterFactory(

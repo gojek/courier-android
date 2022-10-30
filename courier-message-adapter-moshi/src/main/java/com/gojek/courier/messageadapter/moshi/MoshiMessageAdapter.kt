@@ -16,7 +16,7 @@ private class MoshiMessageAdapter<T> constructor(
     private val jsonAdapter: JsonAdapter<T>
 ) : MessageAdapter<T> {
 
-    override fun fromMessage(message: Message): T {
+    override fun fromMessage(topic: String, message: Message): T {
         val stringValue = when (message) {
             is Message.Bytes -> {
                 val byteString = ByteString.of(message.value, 0, message.value.size)
@@ -32,10 +32,12 @@ private class MoshiMessageAdapter<T> constructor(
         return jsonAdapter.fromJson(stringValue)!!
     }
 
-    override fun toMessage(data: T): Message {
+    override fun toMessage(topic: String, data: T): Message {
         val stringValue = jsonAdapter.toJson(data)
         return Message.Bytes(stringValue.toByteArray())
     }
+
+    override fun contentType() = "application/json"
 
     private companion object {
         private val UTF8_BOM = ByteString.decodeHex("EFBBBF")

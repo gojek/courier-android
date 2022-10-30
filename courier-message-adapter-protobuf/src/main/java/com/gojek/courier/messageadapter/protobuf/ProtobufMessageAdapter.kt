@@ -17,7 +17,7 @@ private class ProtobufMessageAdapter<T : MessageLite> constructor(
     private val registry: ExtensionRegistryLite?
 ) : MessageAdapter<T> {
 
-    override fun fromMessage(message: Message): T {
+    override fun fromMessage(topic: String, message: Message): T {
         val bytesValue = when (message) {
             is Message.Bytes -> message.value
         }
@@ -31,7 +31,9 @@ private class ProtobufMessageAdapter<T : MessageLite> constructor(
         }
     }
 
-    override fun toMessage(data: T): Message = Message.Bytes(data.toByteArray())
+    override fun toMessage(topic: String, data: T): Message = Message.Bytes(data.toByteArray())
+
+    override fun contentType() = "application/x-protobuf"
 }
 
 class ProtobufMessageAdapterFactory(

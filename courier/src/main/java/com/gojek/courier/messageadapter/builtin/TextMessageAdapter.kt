@@ -5,9 +5,11 @@ import com.gojek.courier.MessageAdapter
 
 internal class TextMessageAdapter : MessageAdapter<String> {
 
-    override fun fromMessage(message: Message): String = when (message) {
+    override fun fromMessage(topic: String, message: Message): String = when (message) {
         is Message.Bytes -> String(message.value)
     }
 
-    override fun toMessage(data: String): Message = Message.Bytes(data.toByteArray())
+    override fun toMessage(topic: String, data: String): Message = Message.Bytes(data.toByteArray())
+
+    override fun contentType() = "text/plain"
 }

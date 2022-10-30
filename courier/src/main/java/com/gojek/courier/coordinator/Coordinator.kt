@@ -23,9 +23,9 @@ internal class Coordinator(
     @Synchronized
     override fun send(stubMethod: StubMethod.Send, args: Array<Any>): Any {
         val data = stubMethod.argumentProcessor.getDataArgument(args)
-        val message = stubMethod.messageAdapter.toMessage(data)
-        stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
+        val message = stubMethod.messageAdapter.toMessage(topic, data)
+        stubMethod.argumentProcessor.inject(args)
         return client.send(message, topic, stubMethod.qos)
     }
 
@@ -50,9 +50,13 @@ internal class Coordinator(
         )
 
         val stream = flowable
-            .map { it.message }
             .observeOn(Schedulers.computation())
-            .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty() }
+            .flatMap { mqttMessage ->
+                mqttMessage.message.adapt(
+                    mqttMessage.topic,
+                    stubMethod.messageAdapter
+                )?.let { Flowable.just(it) } ?: Flowable.empty()
+            }
             .toStream()
         return stubMethod.streamAdapter.adapt(stream)
     }
@@ -87,9 +91,13 @@ internal class Coordinator(
         )
 
         val stream = flowable
-            .map { it.message }
             .observeOn(Schedulers.computation())
-            .flatMap { message -> message.adapt(stubMethod.messageAdapter)?.let { Flowable.just(it) } ?: Flowable.empty() }
+            .flatMap { mqttMessage ->
+                mqttMessage.message.adapt(
+                    mqttMessage.topic,
+                    stubMethod.messageAdapter
+                )?.let { Flowable.just(it) } ?: Flowable.empty()
+            }
             .toStream()
         return stubMethod.streamAdapter.adapt(stream)
     }
@@ -113,9 +121,9 @@ internal class Coordinator(
         }
     }
 
-    private fun <T> Message.adapt(messageAdapter: MessageAdapter<T>): T? {
+    private fun <T> Message.adapt(topic: String, messageAdapter: MessageAdapter<T>): T? {
         return try {
-            val message = messageAdapter.fromMessage(this)
+            val message = messageAdapter.fromMessage(topic, this)
             logger.d("Coordinator", "Message after parsing: $message")
             message
         } catch (th: Throwable) {
