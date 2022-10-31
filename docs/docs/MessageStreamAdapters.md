@@ -26,12 +26,16 @@ class MyCustomMessageAdapterFactory : MessageAdapter.Factory {
 
 private class MyCustomMessageAdapter<T> constructor() : MessageAdapter<T> {
 
-    override fun fromMessage(message: Message): T {
+    override fun fromMessage(topic: String, message: Message): T {
         // convert message to custom type
     }
 
-    override fun toMessage(data: T): Message {
+    override fun toMessage(topic: String, data: T): Message {
         // convert custom type to message
+    }
+
+    override fun contentType(): String {
+        // content-type supported by this adapter.
     }
 }
 ~~~
