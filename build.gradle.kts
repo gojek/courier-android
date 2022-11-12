@@ -56,6 +56,7 @@ val clean by tasks.creating(Delete::class) {
     delete("${rootDir}/courier/build")
     delete("${rootDir}/courier-core/build")
     delete("${rootDir}/courier-core-android/build")
+    delete("${rootDir}/courier-message-adapter-text/build")
     delete("${rootDir}/courier-message-adapter-gson/build")
     delete("${rootDir}/courier-message-adapter-moshi/build")
     delete("${rootDir}/courier-message-adapter-protobuf/build")

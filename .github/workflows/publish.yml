@@ -34,6 +34,7 @@ jobs:
           :timer-pingsender:publishReleasePublicationToSonatypeRepository
           :adaptive-keep-alive:publishReleasePublicationToSonatypeRepository
           :network-tracker:publishReleasePublicationToSonatypeRepository
+          :courier-message-adapter-text:publishReleasePublicationToSonatypeRepository
           :courier-message-adapter-gson:publishReleasePublicationToSonatypeRepository
           :courier-message-adapter-moshi:publishReleasePublicationToSonatypeRepository
           :courier-message-adapter-protobuf:publishReleasePublicationToSonatypeRepository

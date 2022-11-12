@@ -3,8 +3,6 @@ package com.gojek.courier
 import com.gojek.courier.coordinator.Coordinator
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.logging.NoOpLogger
-import com.gojek.courier.messageadapter.builtin.BuiltInMessageAdapterFactory
-import com.gojek.courier.streamadapter.builtin.BuiltInStreamAdapterFactory
 import com.gojek.courier.stub.ProxyFactory
 import com.gojek.courier.stub.StubInterface
 import com.gojek.courier.stub.StubMethod
@@ -52,10 +50,10 @@ class Courier(configuration: Configuration) {
     )
 
     private fun Configuration.createStreamAdapterResolver(): StreamAdapterResolver {
-        return StreamAdapterResolver(listOf(BuiltInStreamAdapterFactory()) + streamAdapterFactories)
+        return StreamAdapterResolver(streamAdapterFactories)
     }
 
     private fun Configuration.createMessageAdapterResolver(): MessageAdapterResolver {
-        return MessageAdapterResolver(listOf(BuiltInMessageAdapterFactory()) + messageAdapterFactories)
+        return MessageAdapterResolver(messageAdapterFactories)
     }
 }
