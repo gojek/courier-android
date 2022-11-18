@@ -23,9 +23,9 @@ internal class Coordinator(
     @Synchronized
     override fun send(stubMethod: StubMethod.Send, args: Array<Any>): Any {
         val data = stubMethod.argumentProcessor.getDataArgument(args)
+        stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
         val message = stubMethod.messageAdapter.toMessage(topic, data)
-        stubMethod.argumentProcessor.inject(args)
         return client.send(message, topic, stubMethod.qos)
     }
 
