@@ -1,4 +1,4 @@
-package com.gojek.chuckmqtt.internal.presentation.theme
+package com.gojek.chuckmqttcompose.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes

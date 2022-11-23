@@ -1,4 +1,4 @@
-package com.gojek.chuckmqtt.internal.presentation.theme
+package com.gojek.chuckmqttcompose.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
@@ -22,7 +22,7 @@ private val LightColorPalette = lightColors(
 )
 
 @Composable
-internal fun ChuckMqttTheme(
+fun ChuckMqttTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

@@ -55,7 +55,7 @@ internal object MqttChuck {
 
     @JvmStatic
     fun getLaunchIntent(context: Context): Intent {
-        val isComposeEnabled = false
+        val isComposeEnabled = true
 
         return if (isComposeEnabled) {
             Intent(context, TransactionListComposeActivity::class.java)

@@ -34,11 +34,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gojek.chuckmqtt.R
 import com.gojek.chuckmqtt.internal.presentation.model.MqttTransactionUiModel
-import com.gojek.chuckmqtt.internal.presentation.theme.ChuckMqttTheme
+import com.gojek.chuckmqttcompose.theme.ChuckMqttTheme
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.ClearTransactionHistoryIntent
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListIntent.StartObservingAllTransactionsIntent
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.mvi.TransactionListViewState
 import com.gojek.chuckmqtt.internal.presentation.transactionlist.viewmodel.TransactionListViewModel
+import com.gojek.chuckmqttcompose.ListAppBar
 
 @Composable
 internal fun TransactionListScreen(
@@ -70,34 +71,6 @@ internal fun TransactionListScreen(
             }
         )
     }
-}
-
-@Composable
-internal fun ListAppBar(
-    toolbarSubtitle: CharSequence,
-    onClearButtonClicked: () -> Unit
-) {
-    TopAppBar(
-        title = {
-            Column {
-                Text("MQTT Chuck")
-                Text(
-                    text = toolbarSubtitle.toString(),
-                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal)
-                )
-            }
-        },
-        actions = {
-            IconButton(onClick = { onClearButtonClicked() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.mqtt_chuck_ic_delete_white_24dp),
-                    contentDescription = "Delete Packets"
-                )
-            }
-        },
-        backgroundColor = MaterialTheme.colors.primarySurface,
-        elevation = 4.dp
-    )
 }
 
 @Composable
