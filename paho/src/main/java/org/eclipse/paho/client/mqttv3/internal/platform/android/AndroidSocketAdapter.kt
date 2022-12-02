@@ -59,10 +59,12 @@ open class AndroidSocketAdapter(private val sslSocketClass: Class<in SSLSocket>)
                 }
 
                 // Enable ALPN.
-                setAlpnProtocols.invoke(
-                    sslSocket,
-                    Platform.concatLengthPrefixed(protocols)
-                )
+                if (protocols.isNotEmpty()) {
+                    setAlpnProtocols.invoke(
+                        sslSocket,
+                        Platform.concatLengthPrefixed(protocols)
+                    )
+                }
             } catch (e: IllegalAccessException) {
                 throw AssertionError(e)
             } catch (e: InvocationTargetException) {
