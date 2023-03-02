@@ -10,6 +10,7 @@ import com.gojek.courier.utils.MessageAdapterResolver
 import com.gojek.courier.utils.RuntimePlatform
 import com.gojek.courier.utils.StreamAdapterResolver
 import com.gojek.mqtt.client.MqttClient
+import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.event.MqttEvent
 
 class Courier(configuration: Configuration) {
@@ -45,6 +46,10 @@ class Courier(configuration: Configuration) {
 
     fun getEventStream(): Stream<MqttEvent> {
         return coordinator.getEventStream()
+    }
+
+    fun getConnectionState(): ConnectionState {
+        return coordinator.getConnectionState()
     }
 
     data class Configuration(

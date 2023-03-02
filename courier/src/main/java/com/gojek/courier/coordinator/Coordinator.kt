@@ -12,6 +12,7 @@ import com.gojek.courier.stub.StubMethod
 import com.gojek.courier.utils.toStream
 import com.gojek.mqtt.client.MqttClient
 import com.gojek.mqtt.client.listener.MessageListener
+import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
@@ -166,6 +167,10 @@ internal class Coordinator(
                 client.addEventHandler(eventHandler)
             }
         }
+    }
+
+    override fun getConnectionState(): ConnectionState {
+        return client.getCurrentState()
     }
 
     private fun <T> Message.adapt(topic: String, messageAdapter: MessageAdapter<T>): T? {
