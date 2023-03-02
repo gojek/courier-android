@@ -1,6 +1,8 @@
 package com.gojek.courier.stub
 
+import com.gojek.courier.Stream
 import com.gojek.courier.utils.RuntimePlatform
+import com.gojek.mqtt.event.MqttEvent
 import java.lang.reflect.Method
 
 internal class StubInterface(
@@ -38,6 +40,7 @@ internal class StubInterface(
         fun subscribeWithStream(stubMethod: StubMethod.SubscribeWithStream, args: Array<Any>): Any
         fun unsubscribe(stubMethod: StubMethod.Unsubscribe, args: Array<Any>): Any
         fun subscribeAll(stubMethod: StubMethod.SubscribeAll, args: Array<Any>): Any
+        fun getEventStream(): Stream<MqttEvent>
     }
 
     internal class Factory(

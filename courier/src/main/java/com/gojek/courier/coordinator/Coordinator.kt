@@ -3,6 +3,9 @@ package com.gojek.courier.coordinator
 import com.gojek.courier.Message
 import com.gojek.courier.MessageAdapter
 import com.gojek.courier.QoS
+import com.gojek.courier.Stream
+import com.gojek.courier.Stream.Disposable
+import com.gojek.courier.Stream.Observer
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.stub.StubInterface
 import com.gojek.courier.stub.StubMethod
@@ -10,10 +13,13 @@ import com.gojek.courier.utils.toStream
 import com.gojek.mqtt.client.MqttClient
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.MqttMessage
+import com.gojek.mqtt.event.EventHandler
+import com.gojek.mqtt.event.MqttEvent
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.FlowableOnSubscribe
 import io.reactivex.schedulers.Schedulers
+import org.reactivestreams.Subscriber
 
 internal class Coordinator(
     private val client: MqttClient,
@@ -118,6 +124,47 @@ internal class Coordinator(
             client.subscribe(topicList[0])
         } else {
             client.subscribe(topicList[0], *topicList.toTypedArray().sliceArray(IntRange(1, topicList.size - 1)))
+        }
+    }
+
+    override fun getEventStream(): Stream<MqttEvent> {
+        return object : Stream<MqttEvent> {
+            override fun start(observer: Observer<MqttEvent>): Disposable {
+                val eventHandler = object : EventHandler {
+                    override fun onEvent(mqttEvent: MqttEvent) {
+                        try {
+                            observer.onNext(mqttEvent)
+                        } catch (throwable: Throwable) {
+                            observer.onError(throwable)
+                        }
+                    }
+                }
+                client.addEventHandler(eventHandler)
+                var isDisposed = false
+                return object : Disposable {
+                    override fun dispose() {
+                        client.removeEventHandler(eventHandler)
+                        isDisposed = true
+                    }
+
+                    override fun isDisposed(): Boolean {
+                        return isDisposed
+                    }
+                }
+            }
+
+            override fun subscribe(s: Subscriber<in MqttEvent>) {
+                val eventHandler = object : EventHandler {
+                    override fun onEvent(mqttEvent: MqttEvent) {
+                        try {
+                            s.onNext(mqttEvent)
+                        } catch (throwable: Throwable) {
+                            s.onError(throwable)
+                        }
+                    }
+                }
+                client.addEventHandler(eventHandler)
+            }
         }
     }
 

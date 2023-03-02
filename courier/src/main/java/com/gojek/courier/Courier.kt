@@ -10,6 +10,7 @@ import com.gojek.courier.utils.MessageAdapterResolver
 import com.gojek.courier.utils.RuntimePlatform
 import com.gojek.courier.utils.StreamAdapterResolver
 import com.gojek.mqtt.client.MqttClient
+import com.gojek.mqtt.event.MqttEvent
 
 class Courier(configuration: Configuration) {
     private val stubInterfaceFactory: StubInterface.Factory
@@ -41,6 +42,10 @@ class Courier(configuration: Configuration) {
      * Same as [create].
      */
     inline fun <reified T : Any> create(): T = create(T::class.java)
+
+    fun getEventStream(): Stream<MqttEvent> {
+        return coordinator.getEventStream()
+    }
 
     data class Configuration(
         val client: MqttClient,
