@@ -20,7 +20,7 @@ import org.eclipse.paho.client.mqttv3.ILogger;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttToken;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPubAck;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPubComp;

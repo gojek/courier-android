@@ -2,7 +2,7 @@ package com.gojek.mqtt.policies.hostfallback
 
 import com.gojek.mqtt.model.ServerUri
 import java.lang.IllegalArgumentException
-import org.eclipse.paho.client.mqttv3.MqttException
+import org.eclipse.paho.client.mqtt.MqttException
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,19 +34,35 @@ class HostFallbackPolicyTest {
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
 
         // Test onConnectFailure with MqttException (rc != 0) should not change the index
-        hostFallbackPolicy.onConnectFailure(MqttException(3000))
+        hostFallbackPolicy.onConnectFailure(
+            MqttException(
+                3000
+            )
+        )
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
 
         // Test onConnectFailure with MqttException (rc = 0) should change the index
-        hostFallbackPolicy.onConnectFailure(MqttException(0))
+        hostFallbackPolicy.onConnectFailure(
+            MqttException(
+                0
+            )
+        )
         assertEquals("ssl://test_uri:2000", hostFallbackPolicy.getServerUri().toString())
 
         // Test onConnectFailure with MqttException (rc = 0) should change the index
-        hostFallbackPolicy.onConnectFailure(MqttException(0))
+        hostFallbackPolicy.onConnectFailure(
+            MqttException(
+                0
+            )
+        )
         assertEquals("ssl://test_uri2:1000", hostFallbackPolicy.getServerUri().toString())
 
         // Test onConnectFailure with MqttException (rc = 0) should bring the index to 0
-        hostFallbackPolicy.onConnectFailure(MqttException(0))
+        hostFallbackPolicy.onConnectFailure(
+            MqttException(
+                0
+            )
+        )
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
     }
 
@@ -59,7 +75,11 @@ class HostFallbackPolicyTest {
         hostFallbackPolicy = HostFallbackPolicy(serverUris)
         assertEquals("ssl://test_uri:1000", hostFallbackPolicy.getServerUri().toString())
 
-        hostFallbackPolicy.onConnectFailure(MqttException(0))
+        hostFallbackPolicy.onConnectFailure(
+            MqttException(
+                0
+            )
+        )
         assertEquals("ssl://test_uri:2000", hostFallbackPolicy.getServerUri().toString())
 
         hostFallbackPolicy.resetParams()

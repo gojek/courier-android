@@ -1,7 +1,7 @@
 package com.gojek.mqtt.event
 
 import com.gojek.mqtt.connection.event.ConnectionEventHandler
-import org.eclipse.paho.client.mqttv3.IPahoEvents
+import org.eclipse.paho.client.mqtt.IPahoEvents
 
 internal class PahoEventHandler(
     private val connectionEventHandler: ConnectionEventHandler

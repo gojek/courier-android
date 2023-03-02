@@ -22,7 +22,7 @@ import com.gojek.mqtt.client.IncomingMsgControllerImpl
 import com.gojek.mqtt.client.config.SubscriptionStore.IN_MEMORY
 import com.gojek.mqtt.client.config.SubscriptionStore.PERSISTABLE
 import com.gojek.mqtt.client.config.SubscriptionStore.PERSISTABLE_V2
-import com.gojek.mqtt.client.config.v3.MqttV3Configuration
+import com.gojek.mqtt.client.config.MqttConfigurationImpl
 import com.gojek.mqtt.client.connectioninfo.ConnectionInfo
 import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
 import com.gojek.mqtt.client.event.adapter.MqttClientEventAdapter
@@ -38,8 +38,8 @@ import com.gojek.mqtt.client.model.ConnectionState.INITIALISED
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.connection.IMqttConnection
-import com.gojek.mqtt.connection.MqttConnection
-import com.gojek.mqtt.connection.config.v3.ConnectionConfig
+import com.gojek.mqtt.connection.v10.MqttConnectionV10
+import com.gojek.mqtt.connection.v10.config.ConnectionConfig
 import com.gojek.mqtt.constants.MAX_INFLIGHT_MESSAGES_ALLOWED
 import com.gojek.mqtt.constants.MESSAGE
 import com.gojek.mqtt.constants.MSG_APP_PUBLISH
@@ -58,7 +58,7 @@ import com.gojek.mqtt.handler.IncomingHandler
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 import com.gojek.mqtt.network.NetworkHandler
-import com.gojek.mqtt.persistence.impl.PahoPersistence
+import com.gojek.mqtt.persistence.impl.v3.PahoPersistence
 import com.gojek.mqtt.persistence.model.MqttReceivePacket
 import com.gojek.mqtt.persistence.model.toMqttMessage
 import com.gojek.mqtt.pingsender.MqttPingSender
@@ -77,13 +77,13 @@ import com.gojek.mqtt.wakelock.WakeLockProvider
 import com.gojek.networktracker.NetworkStateTracker
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
-import org.eclipse.paho.client.mqttv3.MqttException
-import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
+import org.eclipse.paho.client.mqtt.MqttException
+import org.eclipse.paho.client.mqtt.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException
 
 internal class AndroidMqttClient(
     private val context: Context,
-    private val mqttConfiguration: MqttV3Configuration,
+    private val mqttConfiguration: MqttConfigurationImpl,
     private val networkStateTracker: NetworkStateTracker,
     private val mqttPingSender: MqttPingSender,
     private val isAdaptiveKAConnection: Boolean = false,
@@ -180,7 +180,7 @@ internal class AndroidMqttClient(
                 shouldUseNewSSLFlow = experimentConfigs.shouldUseNewSSLFlow
             )
 
-        mqttConnection = MqttConnection(
+        mqttConnection = MqttConnectionV10(
             context = context,
             connectionConfig = connectionConfig,
             runnableScheduler = runnableScheduler,
@@ -379,7 +379,10 @@ internal class AndroidMqttClient(
             if (e.nextRetrySeconds > 0) {
                 runnableScheduler.connectMqtt(TimeUnit.SECONDS.toMillis(e.nextRetrySeconds))
             } else {
-                val mqttException = MqttException(REASON_CODE_UNEXPECTED_ERROR.toInt(), e)
+                val mqttException = MqttException(
+                    REASON_CODE_UNEXPECTED_ERROR.toInt(),
+                    e
+                )
                 runnableScheduler.scheduleMqttHandleExceptionRunnable(mqttException, true)
             }
         } catch (e: Exception) /* this exception cannot be thrown on connect */ {
@@ -392,7 +395,10 @@ internal class AndroidMqttClient(
                     timeTakenMillis = (clock.nanoTime() - startTime).fromNanosToMillis()
                 )
             )
-            val mqttException = MqttException(REASON_CODE_UNEXPECTED_ERROR.toInt(), e)
+            val mqttException = MqttException(
+                REASON_CODE_UNEXPECTED_ERROR.toInt(),
+                e
+            )
             runnableScheduler.scheduleMqttHandleExceptionRunnable(mqttException, true)
         }
     }

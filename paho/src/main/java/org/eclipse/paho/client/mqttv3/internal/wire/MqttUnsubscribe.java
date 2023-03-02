@@ -21,7 +21,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqtt.MqttException;
 
 /**
  * An on-the-wire representation of an MQTT UNSUBSCRIBE message.

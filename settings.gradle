@@ -1,6 +1,8 @@
 rootProject.name='Courier'
 include ':app'
 include ':paho'
+include ':paho-v10'
+include ':paho-common'
 include ':mqtt-client'
 include ':courier'
 include ':courier-core'

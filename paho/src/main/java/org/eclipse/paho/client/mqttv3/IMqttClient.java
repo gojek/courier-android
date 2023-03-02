@@ -1,5 +1,7 @@
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.MqttException;
+
 /**
  * Enables an application to communicate with an MQTT server using using blocking methods.
  * <p>

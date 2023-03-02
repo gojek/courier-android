@@ -22,7 +22,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.eclipse.paho.client.mqttv3.IToken;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**

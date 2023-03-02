@@ -8,7 +8,7 @@ interface MqttInterceptor {
 
 private class MqttInterceptorInternal(
     private val mqttInterceptor: MqttInterceptor
-) : org.eclipse.paho.client.mqttv3.MqttInterceptor {
+) : org.eclipse.paho.client.mqtt.MqttInterceptor {
     override fun onMqttWireMessageSent(mqttWireMessageBytes: ByteArray) {
         mqttInterceptor.onMqttWireMessageSent(mqttWireMessageBytes)
     }
@@ -20,6 +20,6 @@ private class MqttInterceptorInternal(
 
 internal fun mapToPahoInterceptor(
     mqttInterceptor: MqttInterceptor
-): org.eclipse.paho.client.mqttv3.MqttInterceptor {
+): org.eclipse.paho.client.mqtt.MqttInterceptor {
     return MqttInterceptorInternal(mqttInterceptor)
 }

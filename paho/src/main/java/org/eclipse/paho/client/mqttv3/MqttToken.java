@@ -13,6 +13,7 @@
 
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.internal.Token;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 

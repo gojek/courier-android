@@ -15,8 +15,7 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.wire;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttInterceptor;
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.internal.MqttInterceptorCallback;
 
 import java.io.BufferedOutputStream;

@@ -15,6 +15,9 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.IPahoEvents;
+import org.eclipse.paho.client.mqtt.MqttException;
+import org.eclipse.paho.client.mqtt.MqttInterceptor;
 import org.eclipse.paho.client.mqttv3.internal.ClientComms;
 import org.eclipse.paho.client.mqttv3.internal.ClientState;
 import org.eclipse.paho.client.mqttv3.internal.ConnectActionListener;

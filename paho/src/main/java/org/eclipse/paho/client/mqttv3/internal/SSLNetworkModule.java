@@ -16,8 +16,8 @@
 package org.eclipse.paho.client.mqttv3.internal;
 
 import org.eclipse.paho.client.mqttv3.ILogger;
-import org.eclipse.paho.client.mqttv3.IPahoEvents;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqtt.IPahoEvents;
+import org.eclipse.paho.client.mqtt.MqttException;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

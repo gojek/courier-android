@@ -8,7 +8,7 @@ import com.gojek.keepalive.OptimalKeepAliveFailureHandler
 import com.gojek.keepalive.OptimalKeepAliveObserver
 import com.gojek.keepalive.OptimalKeepAliveProvider
 import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
-import com.gojek.mqtt.client.config.v3.MqttV3Configuration
+import com.gojek.mqtt.client.config.MqttConfigurationImpl
 import com.gojek.mqtt.client.event.interceptor.MqttEventsInterceptor
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
 import com.gojek.mqtt.client.listener.MessageListener
@@ -24,7 +24,7 @@ import com.gojek.networktracker.NetworkStateTrackerFactory
 
 internal class MqttClientInternal(
     private val context: Context,
-    private val mqttConfiguration: MqttV3Configuration
+    private val mqttConfiguration: MqttConfigurationImpl
 ) {
     private val androidMqttClientFactory = getAndroidMqttClientFactory()
 

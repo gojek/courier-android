@@ -1,5 +1,7 @@
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.IPahoEvents;
+
 public class NoOpsPahoEvents implements IPahoEvents {
 
     @Override

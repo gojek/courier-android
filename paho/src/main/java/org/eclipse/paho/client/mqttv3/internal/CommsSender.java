@@ -16,8 +16,7 @@
 package org.eclipse.paho.client.mqttv3.internal;
 
 import org.eclipse.paho.client.mqttv3.ILogger;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttInterceptor;
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttToken;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttAck;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttDisconnect;
@@ -29,7 +28,6 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
 
 public class CommsSender implements Runnable
 {

@@ -15,8 +15,7 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.wire;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttInterceptor;
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.internal.ExceptionHelper;
 import org.eclipse.paho.client.mqttv3.internal.MqttInterceptorCallback;
 
@@ -24,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * An <code>MqttInputStream</code> lets applications read instances of <code>MqttWireMessage</code>.

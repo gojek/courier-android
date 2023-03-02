@@ -1,7 +1,7 @@
 package com.gojek.mqtt.exception
 
 import com.gojek.courier.exception.AuthApiException
-import org.eclipse.paho.client.mqttv3.MqttException
+import org.eclipse.paho.client.mqtt.MqttException
 
 data class CourierException(
     val reasonCode: Int = -1,

@@ -15,6 +15,8 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.MqttException;
+
 /**
  * This exception is thrown by the implementor of the persistence interface if there is a problem reading or writing persistent data.
  */

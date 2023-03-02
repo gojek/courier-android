@@ -15,6 +15,7 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import java.util.Properties;

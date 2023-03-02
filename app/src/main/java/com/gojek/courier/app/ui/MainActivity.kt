@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.gojek.chuckmqtt.external.MqttChuckConfig
 import com.gojek.chuckmqtt.external.MqttChuckInterceptor
-import com.gojek.chuckmqtt.external.Period
+import com.gojek.chuckmqtt.external.Period.ONE_HOUR
 import com.gojek.courier.Courier
 import com.gojek.courier.app.R
 import com.gojek.courier.app.data.network.CourierService
@@ -16,7 +16,7 @@ import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttClient
 import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
-import com.gojek.mqtt.client.config.v3.MqttV3Configuration
+import com.gojek.mqtt.client.config.MqttConfigurationImpl
 import com.gojek.mqtt.client.factory.MqttClientFactory
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initialiseCourier() {
-        val mqttConfig = MqttV3Configuration(
+        val mqttConfig = MqttConfigurationImpl(
             logger = getLogger(),
             eventHandler = eventHandler,
             authenticator = object : Authenticator {
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                         .build()
                 }
             },
-            mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = Period.ONE_HOUR))),
+            mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = ONE_HOUR))),
             persistenceOptions = PahoPersistenceOptions(100, false),
             experimentConfigs = ExperimentConfigs(
                 adaptiveKeepAliveConfig = AdaptiveKeepAliveConfig(

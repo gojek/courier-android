@@ -5,9 +5,9 @@ import com.gojek.mqtt.model.MqttVersion.VERSION_3_1_1
 import javax.net.SocketFactory
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
-import org.eclipse.paho.client.mqttv3.ConnectionSpec
-import org.eclipse.paho.client.mqttv3.Protocol
-import org.eclipse.paho.client.mqttv3.internal.platform.Platform
+import org.eclipse.paho.client.mqtt.ConnectionSpec
+import org.eclipse.paho.client.mqtt.Protocol
+import org.eclipse.paho.client.mqtt.internal.platform.Platform
 
 class MqttConnectOptions private constructor(
     builder: Builder
@@ -216,5 +216,7 @@ class MqttConnectOptions private constructor(
 }
 
 enum class MqttVersion(internal val protocolName: String, internal val protocolLevel: Int) {
-    VERSION_3_1("MQIsdp", 3), VERSION_3_1_1("MQTT", 4)
+    VERSION_3_1("MQIsdp", 3),
+    VERSION_3_1_1("MQTT", 4),
+    VERSION_10("MQTT", 10)
 }

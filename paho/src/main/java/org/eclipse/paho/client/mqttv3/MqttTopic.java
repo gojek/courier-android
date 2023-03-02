@@ -17,6 +17,7 @@ package org.eclipse.paho.client.mqttv3;
 
 import java.io.UnsupportedEncodingException;
 
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.internal.ClientComms;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish;
 import org.eclipse.paho.client.mqttv3.util.Strings;
@@ -89,7 +90,8 @@ public class MqttTopic
 	 * @see MqttMessage#setQos(int)
 	 * @see MqttMessage#setRetained(boolean)
 	 */
-	public MqttDeliveryToken publish(byte[] payload, int qos, boolean retained) throws MqttException, MqttPersistenceException
+	public MqttDeliveryToken publish(byte[] payload, int qos, boolean retained) throws
+            MqttException, MqttPersistenceException
 	{
 		MqttMessage message = new MqttMessage(payload);
 		message.setQos(qos);

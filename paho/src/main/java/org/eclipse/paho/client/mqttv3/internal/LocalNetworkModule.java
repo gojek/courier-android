@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.Socket;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqtt.MqttException;
 
 /**
  * Special comms class that allows an MQTT client to use a non TCP / optimised mechanism to talk to an MQTT server when running in the same JRE instance as the MQTT server.

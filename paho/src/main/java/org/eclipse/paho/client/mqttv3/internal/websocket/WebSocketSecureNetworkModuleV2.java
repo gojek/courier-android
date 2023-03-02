@@ -15,13 +15,14 @@
  */
 package org.eclipse.paho.client.mqttv3.internal.websocket;
 
-import org.eclipse.paho.client.mqttv3.ConnectionSpec;
+import org.eclipse.paho.client.mqtt.Protocol;
+import org.eclipse.paho.client.mqtt.ConnectionSpec;
+
+
 import org.eclipse.paho.client.mqttv3.ILogger;
-import org.eclipse.paho.client.mqttv3.IPahoEvents;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.Protocol;
+import org.eclipse.paho.client.mqtt.IPahoEvents;
+import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv3.internal.SSLNetworkModuleV2;
-import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;

@@ -15,20 +15,20 @@
  */
 package org.eclipse.paho.client.mqttv3.internal;
 
-import org.eclipse.paho.client.mqttv3.ConnectionSpec;
+import org.eclipse.paho.client.mqtt.Protocol;
+import org.eclipse.paho.client.mqtt.ConnectionSpec;
+import org.eclipse.paho.client.mqtt.internal.platform.Platform;
+
 import org.eclipse.paho.client.mqttv3.ILogger;
-import org.eclipse.paho.client.mqttv3.IPahoEvents;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.Protocol;
-import org.eclipse.paho.client.mqttv3.internal.platform.Platform;
-import org.eclipse.paho.client.mqttv3.internal.tls.CertificateChainCleaner;
+import org.eclipse.paho.client.mqtt.IPahoEvents;
+import org.eclipse.paho.client.mqtt.MqttException;
+
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 

@@ -3,7 +3,7 @@ package com.gojek.mqtt.client.factory
 import android.content.Context
 import com.gojek.courier.logging.NoOpLogger
 import com.gojek.keepalive.KeepAliveFailureHandler
-import com.gojek.mqtt.client.config.v3.MqttV3Configuration
+import com.gojek.mqtt.client.config.MqttConfigurationImpl
 import com.gojek.mqtt.client.internal.KeepAliveProvider
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.client.v3.impl.AndroidMqttClient
@@ -16,7 +16,7 @@ import com.gojek.networktracker.NetworkStateTracker
 internal interface IAndroidMqttClientFactory {
     fun createAndroidMqttClient(
         context: Context,
-        mqttConfiguration: MqttV3Configuration,
+        mqttConfiguration: MqttConfigurationImpl,
         networkStateTracker: NetworkStateTracker,
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
@@ -26,7 +26,7 @@ internal interface IAndroidMqttClientFactory {
     fun createAdaptiveAndroidMqttClient(
         pingSender: MqttPingSender,
         context: Context,
-        mqttConfiguration: MqttV3Configuration,
+        mqttConfiguration: MqttConfigurationImpl,
         networkStateTracker: NetworkStateTracker,
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
@@ -37,7 +37,7 @@ internal interface IAndroidMqttClientFactory {
 internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
     override fun createAndroidMqttClient(
         context: Context,
-        mqttConfiguration: MqttV3Configuration,
+        mqttConfiguration: MqttConfigurationImpl,
         networkStateTracker: NetworkStateTracker,
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
@@ -61,7 +61,7 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
     override fun createAdaptiveAndroidMqttClient(
         pingSender: MqttPingSender,
         context: Context,
-        mqttConfiguration: MqttV3Configuration,
+        mqttConfiguration: MqttConfigurationImpl,
         networkStateTracker: NetworkStateTracker,
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,

@@ -21,6 +21,9 @@ java {
 }
 
 dependencies {
+
+    implementation(project(":paho-common"))
+
     implementation(deps.kotlin.stdlib.core)
     implementation("com.squareup.okio:okio:3.2.0")
 

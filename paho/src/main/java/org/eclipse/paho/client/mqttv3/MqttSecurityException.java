@@ -15,6 +15,8 @@
  */
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.MqttException;
+
 /**
  * Thrown when a client is not authorized to perform an operation, or if there is a problem with the security configuration.
  */

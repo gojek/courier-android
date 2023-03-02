@@ -1,5 +1,7 @@
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.MqttException;
+
 /**
  * Provides a mechanism for tracking the delivery of a message.
  * 

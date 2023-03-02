@@ -1,7 +1,7 @@
 package org.eclipse.paho.client.mqttv3.internal;
 
 import org.eclipse.paho.client.mqttv3.ILogger;
-import org.eclipse.paho.client.mqttv3.MqttInterceptor;
+import org.eclipse.paho.client.mqtt.MqttInterceptor;
 
 import java.util.List;
 import java.util.Vector;
