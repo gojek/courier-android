@@ -5,6 +5,7 @@ import com.gojek.courier.QoS
 import com.gojek.mqtt.client.internal.MqttClientInternal
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.ConnectionState
+import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 
@@ -49,5 +50,13 @@ internal class MqttCourierClient(
 
     override fun addGlobalMessageListener(listener: MessageListener) {
         mqttClient.addGlobalMessageListener(listener)
+    }
+
+    override fun addEventHandler(eventHandler: EventHandler) {
+        mqttClient.addEventHandler(eventHandler)
+    }
+
+    override fun removeEventHandler(eventHandler: EventHandler) {
+        mqttClient.removeEventHandler(eventHandler)
     }
 }

@@ -4,9 +4,10 @@ import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
 import java.util.concurrent.CopyOnWriteArrayList
 
-internal class MqttEventsInterceptor(private val eventHandler: EventHandler) : EventHandler {
+internal class MqttEventHandler : EventHandler {
 
     private val interceptorList = CopyOnWriteArrayList<EventInterceptor>()
+    private val eventHandlers = CopyOnWriteArrayList<EventHandler>()
 
     init {
         interceptorList.add(ConnectionInfoInterceptor())
@@ -17,7 +18,15 @@ internal class MqttEventsInterceptor(private val eventHandler: EventHandler) : E
         interceptorList.forEach {
             event = it.intercept(event)
         }
-        eventHandler.onEvent(event)
+        eventHandlers.forEach { it.onEvent(mqttEvent) }
+    }
+
+    fun addEventHandler(handler: EventHandler) {
+        eventHandlers.add(handler)
+    }
+
+    fun removeEventHandler(handler: EventHandler) {
+        eventHandlers.remove(handler)
     }
 
     fun addInterceptor(interceptor: EventInterceptor) {
