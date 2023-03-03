@@ -107,7 +107,6 @@ class MainActivity : AppCompatActivity() {
     private fun initialiseCourier() {
         val mqttConfig = MqttV3Configuration(
             logger = getLogger(),
-            eventHandler = eventHandler,
             authenticator = object : Authenticator {
                 override fun authenticate(
                     connectOptions: MqttConnectOptions,
@@ -136,6 +135,7 @@ class MainActivity : AppCompatActivity() {
             pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
         )
         mqttClient = MqttClientFactory.create(this, mqttConfig)
+        mqttClient.addEventHandler(eventHandler)
 
         val configuration = Courier.Configuration(
             client = mqttClient,

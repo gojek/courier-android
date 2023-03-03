@@ -1,6 +1,8 @@
 public final class com/gojek/courier/Courier {
 	public fun <init> (Lcom/gojek/courier/Courier$Configuration;)V
 	public final fun create (Ljava/lang/Class;)Ljava/lang/Object;
+	public final fun getConnectionState ()Lcom/gojek/mqtt/client/model/ConnectionState;
+	public final fun getEventStream ()Lcom/gojek/courier/Stream;
 }
 
 public final class com/gojek/courier/Courier$Configuration {

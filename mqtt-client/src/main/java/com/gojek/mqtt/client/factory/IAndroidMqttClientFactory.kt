@@ -48,13 +48,12 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
         pingSender.setPingEventHandler(pingEventHandler)
         return AndroidMqttClient(
             context = context,
-            mqttConfiguration = mqttConfiguration.copy(
-                eventHandler = eventHandler
-            ),
+            mqttConfiguration = mqttConfiguration,
             networkStateTracker = networkStateTracker,
             mqttPingSender = pingSender,
             keepAliveProvider = keepAliveProvider,
-            keepAliveFailureHandler = keepAliveFailureHandler
+            keepAliveFailureHandler = keepAliveFailureHandler,
+            eventHandler = eventHandler
         )
     }
 
@@ -71,14 +70,14 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
         return AndroidMqttClient(
             context = context,
             mqttConfiguration = mqttConfiguration.copy(
-                logger = NoOpLogger(),
-                eventHandler = NoOpEventHandler()
+                logger = NoOpLogger()
             ),
             networkStateTracker = networkStateTracker,
             mqttPingSender = pingSender,
             isAdaptiveKAConnection = true,
             keepAliveProvider = keepAliveProvider,
-            keepAliveFailureHandler = keepAliveFailureHandler
+            keepAliveFailureHandler = keepAliveFailureHandler,
+            eventHandler = NoOpEventHandler()
         )
     }
 }

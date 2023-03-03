@@ -43,6 +43,7 @@ import com.gojek.mqtt.connection.config.v3.ConnectionConfig
 import com.gojek.mqtt.constants.MAX_INFLIGHT_MESSAGES_ALLOWED
 import com.gojek.mqtt.constants.MESSAGE
 import com.gojek.mqtt.constants.MSG_APP_PUBLISH
+import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.AuthenticatorErrorEvent
 import com.gojek.mqtt.event.MqttEvent.MqttConnectDiscardedEvent
 import com.gojek.mqtt.event.MqttEvent.MqttConnectFailureEvent
@@ -88,6 +89,7 @@ internal class AndroidMqttClient(
     private val mqttPingSender: MqttPingSender,
     private val isAdaptiveKAConnection: Boolean = false,
     private val keepAliveProvider: KeepAliveProvider,
+    private val eventHandler: EventHandler,
     keepAliveFailureHandler: KeepAliveFailureHandler
 ) : IAndroidMqttClient, IClientSchedulerBridge {
 
@@ -144,7 +146,7 @@ internal class AndroidMqttClient(
             mqttThreadHandler,
             this,
             logger,
-            mqttConfiguration.eventHandler,
+            eventHandler,
             experimentConfigs.activityCheckIntervalSeconds
         )
         mqttUtils = MqttUtils()
@@ -158,7 +160,7 @@ internal class AndroidMqttClient(
             networkStateTracker = networkStateTracker
         )
         mqttClientEventAdapter = MqttClientEventAdapter(
-            eventHandler = mqttConfiguration.eventHandler,
+            eventHandler = eventHandler,
             networkHandler = networkHandler
         )
         val connectionConfig =
@@ -198,7 +200,7 @@ internal class AndroidMqttClient(
             mqttUtils,
             mqttPersistence,
             logger,
-            mqttConfiguration.eventHandler,
+            eventHandler,
             experimentConfigs.incomingMessagesTTLSecs,
             experimentConfigs.incomingMessagesCleanupIntervalSecs,
             clock
@@ -217,7 +219,7 @@ internal class AndroidMqttClient(
 
     // This can be invoked on any thread
     override fun reconnect() {
-        mqttConfiguration.eventHandler.onEvent(MqttReconnectEvent())
+        eventHandler.onEvent(MqttReconnectEvent())
         runnableScheduler.disconnectMqtt(true)
     }
 
@@ -245,14 +247,14 @@ internal class AndroidMqttClient(
                     "with qos ${mqttPacket.qos}"
             )
             with(mqttPacket) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageSendEvent(topic, qos, message.size)
                 )
             }
             mqttConnection.publish(mqttPacket, mqttPacket.qos, mqttPacket.topic)
         } catch (e: MqttPersistenceException) {
             with(mqttPacket) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageSendFailureEvent(
                         topic = topic,
                         qos = qos,
@@ -263,7 +265,7 @@ internal class AndroidMqttClient(
             }
         } catch (e: MqttException) {
             with(mqttPacket) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageSendFailureEvent(
                         topic = topic,
                         qos = qos,
@@ -276,7 +278,7 @@ internal class AndroidMqttClient(
         } catch (e: java.lang.Exception) {
             // this might happen if mqtt object becomes null while disconnect, so just ignore
             with(mqttPacket) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageSendFailureEvent(
                         topic = topic,
                         qos = qos,
@@ -337,7 +339,7 @@ internal class AndroidMqttClient(
             logger.d(TAG, "Sending onConnectAttempt event")
             if (!isInitialised) {
                 logger.d(TAG, "Mqtt Client not initialised")
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttConnectDiscardedEvent(
                         "Mqtt Client not initialised",
                         networkHandler.getActiveNetworkInfo()
@@ -368,7 +370,7 @@ internal class AndroidMqttClient(
         } catch (e: AuthApiException) /* this exception can be thrown by authenticator */ {
             logger.e(TAG, "Auth exception : ${e.message}")
             forceRefresh = true
-            mqttConfiguration.eventHandler.onEvent(
+            eventHandler.onEvent(
                 AuthenticatorErrorEvent(
                     exception = e.toCourierException(),
                     nextRetryTimeSecs = e.nextRetrySeconds,
@@ -384,7 +386,7 @@ internal class AndroidMqttClient(
             }
         } catch (e: Exception) /* this exception cannot be thrown on connect */ {
             logger.e(TAG, "Connect exception : ${e.message}")
-            mqttConfiguration.eventHandler.onEvent(
+            eventHandler.onEvent(
                 MqttConnectFailureEvent(
                     exception = e.toCourierException(),
                     activeNetInfo = networkHandler.getActiveNetworkInfo(),
@@ -399,7 +401,7 @@ internal class AndroidMqttClient(
 
     // This runs on Mqtt thread
     override fun disconnectMqtt(clearState: Boolean) {
-        mqttConfiguration.eventHandler.onEvent(MqttDisconnectEvent())
+        eventHandler.onEvent(MqttDisconnectEvent())
         mqttConnection.disconnect()
         if (clearState) {
             mqttConnection.shutDown()
@@ -537,7 +539,7 @@ internal class AndroidMqttClient(
         IMessageReceiveListener {
         override fun messageArrived(topic: String, byteArray: ByteArray): Boolean {
             try {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageReceiveEvent(topic, byteArray.size)
                 )
                 val bytes = mqttUtils.uncompressByteArray(byteArray)!!
@@ -555,14 +557,14 @@ internal class AndroidMqttClient(
                 globalListener?.onMessageReceived(mqttPacket.toMqttMessage())
                 triggerHandleMessage()
             } catch (e: IllegalStateException) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageReceiveErrorEvent(topic, byteArray.size, e.toCourierException())
                 )
                 logger.e(TAG, "Exception when msg arrived : ", e)
                 runnableScheduler.disconnectMqtt(true)
                 return false
             } catch (e: Throwable) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageReceiveErrorEvent(topic, byteArray.size, e.toCourierException())
                 )
                 logger.e(TAG, "Exception when msg arrived : ", e)
@@ -575,7 +577,7 @@ internal class AndroidMqttClient(
         IMessageSendListener {
         override fun onSuccess(packet: MqttSendPacket) {
             with(packet) {
-                mqttConfiguration.eventHandler.onEvent(
+                eventHandler.onEvent(
                     MqttMessageSendSuccessEvent(
                         topic,
                         qos,
