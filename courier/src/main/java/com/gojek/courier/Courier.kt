@@ -13,7 +13,7 @@ import com.gojek.mqtt.client.MqttClient
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.event.MqttEvent
 
-class Courier(configuration: Configuration) {
+class Courier(private val configuration: Configuration) {
     private val stubInterfaceFactory: StubInterface.Factory
     private val proxyFactory: ProxyFactory
     private val coordinator: Coordinator
@@ -52,6 +52,10 @@ class Courier(configuration: Configuration) {
         return coordinator.getConnectionState()
     }
 
+    fun newBuilder(): Builder {
+        return Builder(configuration)
+    }
+
     data class Configuration(
         val client: MqttClient,
         val streamAdapterFactories: List<StreamAdapter.Factory> = emptyList(),
@@ -65,5 +69,26 @@ class Courier(configuration: Configuration) {
 
     private fun Configuration.createMessageAdapterResolver(): MessageAdapterResolver {
         return MessageAdapterResolver(messageAdapterFactories)
+    }
+
+    class Builder(private var configuration: Configuration) {
+
+        fun addMessageAdapterFactories(messageAdapterFactories: List<MessageAdapter.Factory>): Builder {
+            configuration = configuration.copy(
+                messageAdapterFactories = messageAdapterFactories + configuration.messageAdapterFactories
+            )
+            return this
+        }
+
+        fun addStreamAdapterFactories(streamAdapterFactories: List<StreamAdapter.Factory>): Builder {
+            configuration = configuration.copy(
+                streamAdapterFactories = streamAdapterFactories + configuration.streamAdapterFactories
+            )
+            return this
+        }
+
+        fun build(): Courier {
+            return Courier(configuration)
+        }
     }
 }
