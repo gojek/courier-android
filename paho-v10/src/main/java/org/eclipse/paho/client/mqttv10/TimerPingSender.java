@@ -16,6 +16,8 @@ package org.eclipse.paho.client.mqttv10;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.paho.client.mqtt.ILogger;
+import org.eclipse.paho.client.mqtt.MqttPingSender;
 import org.eclipse.paho.client.mqttv10.internal.ClientComms;
 
 

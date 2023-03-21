@@ -15,7 +15,7 @@
  */
 package org.eclipse.paho.client.mqttv10.internal;
 
-import org.eclipse.paho.client.mqttv10.ILogger;
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqtt.MqttInterceptor;
 import org.eclipse.paho.client.mqttv10.MqttToken;

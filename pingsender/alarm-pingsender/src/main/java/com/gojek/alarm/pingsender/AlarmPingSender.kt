@@ -24,10 +24,9 @@ import com.gojek.courier.utils.extensions.addImmutableFlag
 import com.gojek.mqtt.pingsender.IPingSenderEvents
 import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
-import org.eclipse.paho.client.mqttv3.ILogger
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.internal.ClientComms
+import org.eclipse.paho.client.mqtt.ILogger
+import org.eclipse.paho.client.mqtt.internal.IClientComms
+import org.eclipse.paho.client.mqtt.internal.PingActivityCallBack
 
 /**
  * Default ping sender implementation on Android. It is based on AlarmManager.
@@ -46,7 +45,7 @@ internal class AlarmPingSender(
     private val clock: Clock = Clock(),
     private val buildInfoProvider: BuildInfoProvider = BuildInfoProvider()
 ) : MqttPingSender {
-    private lateinit var comms: ClientComms
+    private lateinit var comms: IClientComms
     private lateinit var logger: ILogger
     private val alarmReceiver = AlarmReceiver()
     private var pendingIntent: PendingIntent? = null
@@ -56,7 +55,7 @@ internal class AlarmPingSender(
     @Volatile
     private var hasStarted = false
 
-    override fun init(comms: ClientComms, logger: ILogger) {
+    override fun init(comms: IClientComms, logger: ILogger) {
         this.comms = comms
         this.logger = logger
     }
@@ -100,7 +99,7 @@ internal class AlarmPingSender(
         }
         logger.d(
             TAG,
-            "Unregister alarmreceiver to MqttService" + comms.client.clientId
+            "Unregister alarmreceiver to MqttService" + comms.clientId
         )
         if (hasStarted) {
             hasStarted = false
@@ -196,18 +195,9 @@ internal class AlarmPingSender(
                 "Check time :" + System.currentTimeMillis()
             )
             logger.setAppKillTime(System.currentTimeMillis())
-            var serverUri = ""
-            if (comms.client != null) {
-                serverUri = comms.client.serverURI
-            }
+            val serverUri = comms.serverUri ?: ""
             pingSenderEvents.mqttPingInitiated(serverUri, comms.keepAlive.fromMillisToSeconds())
-            val token: IMqttToken? = comms.checkForActivity()
 
-            // No ping has been sent.
-            if (token == null) {
-                pingSenderEvents.pingMqttTokenNull(serverUri, comms.keepAlive.fromMillisToSeconds())
-                return
-            }
             try {
                 // Assign new callback to token to execute code after PingResq
                 // arrives. Get another wakelock even receiver already has one,
@@ -234,8 +224,13 @@ internal class AlarmPingSender(
                 )
             }
             val sTime = clock.nanoTime()
-            token.actionCallback = object : IMqttActionListener {
-                override fun onSuccess(asyncActionToken: IMqttToken) {
+            comms.checkActivityWithCallback(object: PingActivityCallBack {
+                override fun onPingMqttTokenNull() {
+                    logger.d(TAG, "Mqtt Ping Token null")
+                    pingSenderEvents.pingMqttTokenNull(serverUri, comms.keepAlive.fromMillisToSeconds())
+                }
+
+                override fun onSuccess() {
                     logger.d(
                         TAG,
                         "Success. Release lock(" + Companion.wakeLockTag + "):" +
@@ -249,10 +244,7 @@ internal class AlarmPingSender(
                     pingSenderEvents.pingEventSuccess(serverUri, timeTaken, comms.keepAlive.fromMillisToSeconds())
                 }
 
-                override fun onFailure(
-                    asyncActionToken: IMqttToken,
-                    exception: Throwable
-                ) {
+                override fun onFailure(throwable: Throwable) {
                     logger.w(
                         TAG,
                         "Failure. Release lock(" + Companion.wakeLockTag + "):" +
@@ -263,9 +255,9 @@ internal class AlarmPingSender(
                         wakelock!!.release()
                     }
                     val timeTaken = (clock.nanoTime() - sTime).fromNanosToMillis()
-                    pingSenderEvents.pingEventFailure(serverUri, timeTaken, exception, comms.keepAlive.fromMillisToSeconds())
+                    pingSenderEvents.pingEventFailure(serverUri, timeTaken, throwable, comms.keepAlive.fromMillisToSeconds())
                 }
-            }
+            })
         }
     }
 

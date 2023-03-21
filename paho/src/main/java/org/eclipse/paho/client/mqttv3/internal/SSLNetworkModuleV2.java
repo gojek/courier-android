@@ -19,7 +19,7 @@ import org.eclipse.paho.client.mqtt.Protocol;
 import org.eclipse.paho.client.mqtt.ConnectionSpec;
 import org.eclipse.paho.client.mqtt.internal.platform.Platform;
 
-import org.eclipse.paho.client.mqttv3.ILogger;
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqtt.IPahoEvents;
 import org.eclipse.paho.client.mqtt.MqttException;
 

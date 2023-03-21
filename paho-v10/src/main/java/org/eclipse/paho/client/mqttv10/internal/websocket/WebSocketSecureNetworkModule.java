@@ -15,7 +15,7 @@
  */
 package org.eclipse.paho.client.mqttv10.internal.websocket;
 
-import org.eclipse.paho.client.mqttv10.ILogger;
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqtt.IPahoEvents;
 import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv10.internal.SSLNetworkModule;

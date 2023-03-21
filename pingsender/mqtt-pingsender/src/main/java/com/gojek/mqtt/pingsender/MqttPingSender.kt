@@ -1,12 +1,12 @@
 package com.gojek.mqtt.pingsender
 
 import androidx.annotation.RestrictTo
-import org.eclipse.paho.client.mqttv3.ILogger
-import org.eclipse.paho.client.mqttv3.MqttPingSender as PahoPingSender
-import org.eclipse.paho.client.mqttv3.internal.ClientComms
+import org.eclipse.paho.client.mqtt.ILogger
+import org.eclipse.paho.client.mqtt.internal.IClientComms
+import org.eclipse.paho.client.mqtt.MqttPingSender as PahoPingSender
 
 interface MqttPingSender {
-    fun init(comms: ClientComms, logger: ILogger)
+    fun init(comms: IClientComms, logger: ILogger)
     fun start()
     fun stop()
     fun schedule(delayInMilliseconds: Long)
@@ -19,7 +19,7 @@ interface MqttPingSender {
 fun MqttPingSender.toPahoPingSender(): PahoPingSender {
     val mqttPingSender = this
     return object : PahoPingSender {
-        override fun init(comms: ClientComms, logger: ILogger) {
+        override fun init(comms: IClientComms, logger: ILogger) {
             mqttPingSender.init(comms, logger)
         }
 

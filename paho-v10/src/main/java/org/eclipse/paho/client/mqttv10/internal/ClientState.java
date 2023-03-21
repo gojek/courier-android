@@ -18,7 +18,7 @@ package org.eclipse.paho.client.mqttv10.internal;
 
 import org.eclipse.paho.client.mqttv10.ICommsCallback;
 import org.eclipse.paho.client.mqttv10.IExperimentsConfig;
-import org.eclipse.paho.client.mqttv10.ILogger;
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqttv10.IMqttActionListenerNew;
 import org.eclipse.paho.client.mqtt.IPahoEvents;
 import org.eclipse.paho.client.mqttv10.MqttClientPersistence;
@@ -27,7 +27,7 @@ import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv10.MqttMessage;
 import org.eclipse.paho.client.mqttv10.MqttPersistable;
 import org.eclipse.paho.client.mqttv10.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv10.MqttPingSender;
+import org.eclipse.paho.client.mqtt.MqttPingSender;
 import org.eclipse.paho.client.mqttv10.MqttToken;
 import org.eclipse.paho.client.mqttv10.internal.wire.MqttAck;
 import org.eclipse.paho.client.mqttv10.internal.wire.MqttConnack;

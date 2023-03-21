@@ -27,11 +27,9 @@ import com.gojek.mqtt.pingsender.KeepAlive
 import com.gojek.mqtt.pingsender.KeepAliveCalculator
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
 import com.gojek.mqtt.pingsender.keepAliveMillis
-import org.eclipse.paho.client.mqttv3.ILogger
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.MqttPingSender
-import org.eclipse.paho.client.mqttv3.internal.ClientComms
+import org.eclipse.paho.client.mqtt.MqttPingSender
+import org.eclipse.paho.client.mqtt.internal.IClientComms
+import org.eclipse.paho.client.mqtt.internal.PingActivityCallBack
 
 /**
  * Default ping sender implementation on Android. It is based on AlarmManager.
@@ -50,8 +48,8 @@ internal class AdaptiveAlarmPingSender(
     private val clock: Clock = Clock(),
     private val buildInfoProvider: BuildInfoProvider = BuildInfoProvider()
 ) : AdaptiveMqttPingSender {
-    private lateinit var comms: ClientComms
-    private lateinit var logger: ILogger
+    private lateinit var comms: IClientComms
+    private lateinit var logger: org.eclipse.paho.client.mqtt.ILogger
     private val alarmReceiver = AlarmReceiver()
     private var pendingIntent: PendingIntent? = null
 
@@ -67,7 +65,7 @@ internal class AdaptiveAlarmPingSender(
         this.keepAliveCalculator = keepAliveCalculator
     }
 
-    override fun init(comms: ClientComms, logger: ILogger) {
+    override fun init(comms: IClientComms, logger: org.eclipse.paho.client.mqtt.ILogger) {
         this.comms = comms
         this.logger = logger
     }
@@ -111,7 +109,7 @@ internal class AdaptiveAlarmPingSender(
         }
         logger.d(
             TAG,
-            "Unregister alarmreceiver to MqttService" + comms.client.clientId
+            "Unregister alarmreceiver to MqttService" + comms.clientId
         )
         if (hasStarted) {
             hasStarted = false
@@ -209,19 +207,9 @@ internal class AdaptiveAlarmPingSender(
                 "Check time :" + System.currentTimeMillis()
             )
             logger.setAppKillTime(System.currentTimeMillis())
-            var serverUri = ""
-            if (comms.client != null) {
-                serverUri = comms.client.serverURI
-            }
+            var serverUri = comms.serverUri
             pingSenderEvents.mqttPingInitiated(serverUri, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
-            val token: IMqttToken? = comms.sendPingRequest()
-            token?.userContext = adaptiveKeepAlive
 
-            // No ping has been sent.
-            if (token == null) {
-                pingSenderEvents.pingMqttTokenNull(serverUri, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
-                return
-            }
             try {
                 // Assign new callback to token to execute code after PingResq
                 // arrives. Get another wakelock even receiver already has one,
@@ -248,6 +236,33 @@ internal class AdaptiveAlarmPingSender(
                 )
             }
             val sTime = clock.nanoTime()
+            comms.sendPingRequestWithCallback(object : PingActivityCallBack{
+                override fun onPingMqttTokenNull() {
+                    pingSenderEvents.pingMqttTokenNull(serverUri, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
+                    return
+                }
+
+                override fun onSuccess() {
+                    logger.d(
+                        TAG,
+                        "Success. Release lock(" + wakeLockTag + "):" +
+                            System.currentTimeMillis()
+                    )
+                    // Release wakelock when it is done.
+                    if (wakelock != null && wakelock!!.isHeld) {
+                        wakelock!!.release()
+                    }
+                    val timeTaken = (clock.nanoTime() - sTime).fromNanosToMillis()
+                    pingSenderEvents.pingEventSuccess(serverUri, timeTaken, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
+                    val keepAlive = asyncActionToken.userContext as KeepAlive
+                    keepAliveCalculator.onKeepAliveSuccess(keepAlive)
+                    schedule(0)
+                }
+
+                override fun onFailure(throwable: Throwable?) {
+                }
+            })
+
             token.actionCallback = object : IMqttActionListener {
                 override fun onSuccess(asyncActionToken: IMqttToken) {
                     logger.d(

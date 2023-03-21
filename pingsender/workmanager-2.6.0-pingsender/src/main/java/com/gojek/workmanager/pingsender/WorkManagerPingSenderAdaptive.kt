@@ -10,7 +10,7 @@ import com.gojek.mqtt.pingsender.KeepAlive
 import com.gojek.mqtt.pingsender.KeepAliveCalculator
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
 import com.gojek.mqtt.pingsender.keepAliveMillis
-import org.eclipse.paho.client.mqttv3.ILogger
+import org.eclipse.paho.client.mqtt.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.internal.ClientComms
@@ -21,7 +21,7 @@ internal class WorkManagerPingSenderAdaptive(
     private val clock: Clock = Clock()
 ) : AdaptiveMqttPingSender {
     private lateinit var comms: ClientComms
-    private lateinit var logger: ILogger
+    private lateinit var logger: org.eclipse.paho.client.mqtt.ILogger
 
     private lateinit var keepAliveCalculator: KeepAliveCalculator
 
@@ -36,7 +36,7 @@ internal class WorkManagerPingSenderAdaptive(
 
     override fun init(
         comms: ClientComms,
-        logger: ILogger
+        logger: org.eclipse.paho.client.mqtt.ILogger
     ) {
         pingSender = this
         this.comms = comms

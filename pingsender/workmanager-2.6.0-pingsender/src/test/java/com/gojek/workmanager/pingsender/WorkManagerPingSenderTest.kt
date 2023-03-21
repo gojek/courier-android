@@ -9,7 +9,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.eclipse.paho.client.mqttv3.ILogger
+import org.eclipse.paho.client.mqtt.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
 import org.eclipse.paho.client.mqttv3.MqttToken
@@ -25,7 +25,7 @@ class WorkManagerPingSenderTest {
     private val pingSenderConfig = mock<WorkManagerPingSenderConfig>()
     private val clock = mock<Clock>()
     private val comms = mock<ClientComms>()
-    private val logger = mock<ILogger>()
+    private val logger = mock<org.eclipse.paho.client.mqtt.ILogger>()
     private val pingSenderEvents = mock<IPingSenderEvents>()
 
     private val pingSender = WorkManagerPingSender(pingWorkScheduler, pingSenderConfig, clock)

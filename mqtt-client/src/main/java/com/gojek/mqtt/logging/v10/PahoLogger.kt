@@ -1,6 +1,6 @@
 package com.gojek.mqtt.logging.v10
 
-import org.eclipse.paho.client.mqttv10.ILogger
+import org.eclipse.paho.client.mqtt.ILogger
 import org.eclipse.paho.client.mqttv10.internal.wire.MqttWireMessage
 
 internal class PahoLogger(

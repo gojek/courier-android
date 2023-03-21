@@ -16,7 +16,7 @@
 package org.eclipse.paho.client.mqttv10.internal;
 
 import org.eclipse.paho.client.mqttv10.ICommsCallback;
-import org.eclipse.paho.client.mqttv10.ILogger;
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqttv10.IMqttActionListener;
 import org.eclipse.paho.client.mqttv10.MqttCallback;
 import org.eclipse.paho.client.mqttv10.MqttDeliveryToken;

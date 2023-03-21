@@ -15,12 +15,16 @@
  */
 package org.eclipse.paho.client.mqttv10.internal;
 
+import org.eclipse.paho.client.mqtt.internal.IClientComms;
+import org.eclipse.paho.client.mqtt.internal.PingActivityCallBack;
 import org.eclipse.paho.client.mqttv10.BufferedMessage;
 import org.eclipse.paho.client.mqttv10.ICommsCallback;
 import org.eclipse.paho.client.mqttv10.IExperimentsConfig;
-import org.eclipse.paho.client.mqttv10.ILogger;
+import org.eclipse.paho.client.mqtt.ILogger;
+import org.eclipse.paho.client.mqttv10.IMqttActionListener;
 import org.eclipse.paho.client.mqttv10.IMqttAsyncClient;
 import org.eclipse.paho.client.mqtt.IPahoEvents;
+import org.eclipse.paho.client.mqttv10.IMqttToken;
 import org.eclipse.paho.client.mqttv10.MqttCallback;
 import org.eclipse.paho.client.mqttv10.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv10.MqttConnectOptions;
@@ -29,7 +33,7 @@ import org.eclipse.paho.client.mqtt.MqttException;
 import org.eclipse.paho.client.mqttv10.MqttMessage;
 import org.eclipse.paho.client.mqtt.MqttInterceptor;
 import org.eclipse.paho.client.mqttv10.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv10.MqttPingSender;
+import org.eclipse.paho.client.mqtt.MqttPingSender;
 import org.eclipse.paho.client.mqttv10.MqttToken;
 import org.eclipse.paho.client.mqttv10.MqttTopic;
 import org.eclipse.paho.client.mqttv10.NoOpsPahoEvents;
@@ -49,7 +53,7 @@ import java.util.concurrent.Executors;
 /**
  * Handles client communications with the server. Sends and receives MQTT V3 messages.
  */
-public class ClientComms {
+public class ClientComms implements IClientComms {
     public static String VERSION = "${project.version}";
 
     public static String BUILD_LEVEL = "L${build.level}";
@@ -612,8 +616,66 @@ public class ClientComms {
         return client;
     }
 
+    @Override
     public long getKeepAlive() {
         return this.clientState.getKeepAlive();
+    }
+
+    @Override
+    public String getServerUri() {
+        if(client == null) {
+            return "";
+        } else {
+            return this.client.getServerURI();
+        }
+    }
+
+    @Override
+    public String getClientId() {
+        return this.client.getClientId();
+    }
+
+    @Override
+    public void checkActivityWithCallback(PingActivityCallBack callBack) {
+        MqttToken token = checkForActivity();
+        if (token == null) {
+            callBack.onPingMqttTokenNull();
+            return;
+        }
+        token.setActionCallback(new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                callBack.onSuccess();
+            }
+
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                callBack.onFailure(exception);
+            }
+        });
+    }
+
+    /*
+     * Check and send a ping and check for ping timeout.
+     */
+    @Override
+    public void sendPingRequestWithCallback(PingActivityCallBack callBack) {
+        MqttToken token = sendPingRequest();
+        if (token == null) {
+            callBack.onPingMqttTokenNull();
+            return;
+        }
+        token.setActionCallback(new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                callBack.onSuccess();
+            }
+
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                callBack.onFailure(exception);
+            }
+        });
     }
 
     public ClientState getClientState() {

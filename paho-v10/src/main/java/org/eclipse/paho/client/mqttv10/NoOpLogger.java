@@ -1,5 +1,6 @@
 package org.eclipse.paho.client.mqttv10;
 
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqttv10.internal.wire.MqttWireMessage;
 
 public class NoOpLogger implements ILogger {
@@ -100,16 +101,6 @@ public class NoOpLogger implements ILogger {
 
     @Override
     public void setAppKillTime(long time) {
-
-    }
-
-    @Override
-    public void logMessageSentData(MqttWireMessage message) {
-
-    }
-
-    @Override
-    public void logMessageReceivedData(MqttWireMessage message) {
 
     }
 }

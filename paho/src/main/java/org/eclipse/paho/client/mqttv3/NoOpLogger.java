@@ -1,5 +1,6 @@
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqtt.ILogger;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 
 public class NoOpLogger implements ILogger {

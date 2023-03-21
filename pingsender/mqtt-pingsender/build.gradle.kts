@@ -27,6 +27,7 @@ apiValidation {
 
 dependencies {
     api(project(":paho"))
+    api(project(":paho-common"))
     implementation(project(":courier-core"))
     implementation(deps.android.androidx.annotation)
 

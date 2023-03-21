@@ -1,6 +1,4 @@
-package org.eclipse.paho.client.mqttv3;
-
-import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
+package org.eclipse.paho.client.mqtt;
 
 public interface ILogger {
 
@@ -43,9 +41,4 @@ public interface ILogger {
     void logFastReconnectEvent(long fastReconnectCheckStartTime, long lastInboundActivity);
 
     void setAppKillTime(long time);
-
-    void logMessageSentData(MqttWireMessage message);
-
-    void logMessageReceivedData(MqttWireMessage message);
-
 }

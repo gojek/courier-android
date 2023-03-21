@@ -11,7 +11,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import java.util.Timer
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
-import org.eclipse.paho.client.mqttv3.ILogger
+import org.eclipse.paho.client.mqtt.ILogger
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
 import org.eclipse.paho.client.mqttv3.MqttToken
@@ -26,7 +26,7 @@ class TimerPingSenderTest {
     private val clock = mock<Clock>()
     private val timerFactory = mock<TimerFactory>()
     private val comms = mock<ClientComms>()
-    private val logger = mock<ILogger>()
+    private val logger = mock<org.eclipse.paho.client.mqtt.ILogger>()
     private val pingSenderEvents = mock<IPingSenderEvents>()
 
     private val pingSender = TimerPingSender(clock, timerFactory)
