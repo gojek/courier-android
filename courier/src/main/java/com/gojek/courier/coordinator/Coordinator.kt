@@ -21,6 +21,7 @@ import io.reactivex.Flowable
 import io.reactivex.FlowableOnSubscribe
 import io.reactivex.schedulers.Schedulers
 import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 
 internal class Coordinator(
     private val client: MqttClient,
@@ -164,7 +165,15 @@ internal class Coordinator(
                         }
                     }
                 }
-                client.addEventHandler(eventHandler)
+                s.onSubscribe(object : Subscription {
+                    override fun request(n: Long) {
+                        client.addEventHandler(eventHandler)
+                    }
+
+                    override fun cancel() {
+                        client.removeEventHandler(eventHandler)
+                    }
+                })
             }
         }
     }

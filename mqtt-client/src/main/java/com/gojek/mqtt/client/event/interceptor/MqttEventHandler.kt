@@ -22,7 +22,7 @@ internal class MqttEventHandler : EventHandler {
     }
 
     fun addEventHandler(handler: EventHandler) {
-        eventHandlers.add(handler)
+        eventHandlers.addIfAbsent(handler)
     }
 
     fun removeEventHandler(handler: EventHandler) {
@@ -30,6 +30,6 @@ internal class MqttEventHandler : EventHandler {
     }
 
     fun addInterceptor(interceptor: EventInterceptor) {
-        interceptorList.add(interceptor)
+        interceptorList.addIfAbsent(interceptor)
     }
 }
