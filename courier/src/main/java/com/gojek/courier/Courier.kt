@@ -75,14 +75,14 @@ class Courier(private val configuration: Configuration) {
 
         fun addMessageAdapterFactories(messageAdapterFactories: List<MessageAdapter.Factory>): Builder {
             configuration = configuration.copy(
-                messageAdapterFactories = messageAdapterFactories + configuration.messageAdapterFactories
+                messageAdapterFactories = configuration.messageAdapterFactories + messageAdapterFactories
             )
             return this
         }
 
         fun addStreamAdapterFactories(streamAdapterFactories: List<StreamAdapter.Factory>): Builder {
             configuration = configuration.copy(
-                streamAdapterFactories = streamAdapterFactories + configuration.streamAdapterFactories
+                streamAdapterFactories = configuration.streamAdapterFactories + streamAdapterFactories
             )
             return this
         }
