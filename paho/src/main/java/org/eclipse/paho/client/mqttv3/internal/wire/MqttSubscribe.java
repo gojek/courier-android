@@ -20,6 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -32,6 +34,8 @@ public class MqttSubscribe extends MqttWireMessage
 	private String[] names;
 
 	private int[] qos;
+
+	List<Map.Entry<Boolean, Boolean>> persistableRetryableList;
 
 	private int count;
 
@@ -75,11 +79,12 @@ public class MqttSubscribe extends MqttWireMessage
 	 * @param qos
 	 *            - the max QoS that each each topic will be subscribed at
 	 */
-	public MqttSubscribe(String[] names, int[] qos)
+	public MqttSubscribe(String[] names, int[] qos, List<Map.Entry<Boolean, Boolean>> persistableRetryableList)
 	{
 		super(MqttWireMessage.MESSAGE_TYPE_SUBSCRIBE);
 		this.names = names;
 		this.qos = qos;
+		this.persistableRetryableList = persistableRetryableList;
 		this.count = names.length;
 
 		if (names.length != qos.length)
@@ -153,7 +158,16 @@ public class MqttSubscribe extends MqttWireMessage
 			for (int i = 0; i < names.length; i++)
 			{
 				encodeUTF8(dos, names[i]);
-				dos.writeByte(qos[i]);
+				byte nextByte = 0;
+				nextByte = (byte) (nextByte | qos[i]);
+				if (!persistableRetryableList.get(i).getKey()) {
+					nextByte |= 0x4;
+				}
+				if (!persistableRetryableList.get(i).getValue()) {
+					nextByte |= 0x8;
+				}
+				System.out.println("Courier: Topic: " + names[i] + "qos: " + qos[i] + "byte: "  + String.valueOf(nextByte));
+				dos.writeByte(nextByte);
 			}
 			return baos.toByteArray();
 		}

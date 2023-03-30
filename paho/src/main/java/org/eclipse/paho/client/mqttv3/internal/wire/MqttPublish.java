@@ -130,7 +130,8 @@ public class MqttPublish extends MqttPersistableWireMessage implements IToken
 
 	protected byte getMessageInfo()
 	{
-		byte info = (byte) (message.getQos() << 1);
+		int qos = message.getType() > 2 ? 1 : message.getQos();
+		byte info = (byte) (qos << 1);
 		if (message.isRetained())
 		{
 			info |= 0x01;

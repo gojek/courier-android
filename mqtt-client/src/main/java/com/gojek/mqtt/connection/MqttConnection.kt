@@ -3,6 +3,8 @@ package com.gojek.mqtt.connection
 import android.content.Context
 import android.os.SystemClock
 import com.gojek.courier.QoS
+import com.gojek.courier.QoS.ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY
+import com.gojek.courier.QoS.ONE_WITHOUT_PERSISTENCE_AND_RETRY
 import com.gojek.courier.extensions.fromNanosToMillis
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
@@ -29,6 +31,7 @@ import com.gojek.mqtt.send.listener.IMessageSendListener
 import com.gojek.mqtt.subscription.SubscriptionStore
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
+import java.util.AbstractMap.SimpleEntry
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions
 import org.eclipse.paho.client.mqttv3.IExperimentsConfig
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
@@ -226,14 +229,16 @@ internal class MqttConnection(
     override fun publish(
         mqttPacket: MqttSendPacket,
         qos: Int,
+        type: Int,
         topic: String
     ) {
         logger.d(TAG, "Current inflight msg count : " + mqtt!!.inflightMessages)
 
-        mqtt!!.publish(
+        mqtt!!.publishWithNewType(
             topic,
             mqttPacket.message,
             qos,
+            type,
             false,
             mqttPacket,
             object : IMqttActionListenerNew {
@@ -465,16 +470,31 @@ internal class MqttConnection(
         if (topicMap.isNotEmpty()) {
             val topicArray: Array<String> = topicMap.keys.toTypedArray()
             val qosArray = IntArray(topicMap.size)
+            val persistableRetryableList = arrayListOf<Map.Entry<Boolean, Boolean>>()
             for ((index, qos) in topicMap.values.withIndex()) {
                 qosArray[index] = qos.value
+            }
+            for ((index, qos) in topicMap.values.withIndex()) {
+                when (qos) {
+                    ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY -> {
+                        persistableRetryableList.add(index, SimpleEntry(false, false))
+                    }
+                    ONE_WITHOUT_PERSISTENCE_AND_RETRY -> {
+                        persistableRetryableList.add(index, SimpleEntry(false, true))
+                    }
+                    else -> {
+                        persistableRetryableList.add(index, SimpleEntry(true, true))
+                    }
+                }
             }
             val subscribeStartTime = clock.nanoTime()
             try {
                 logger.d(TAG, "Subscribing to topics: ${topicMap.keys}")
                 connectionConfig.connectionEventHandler.onMqttSubscribeAttempt(topicMap)
-                mqtt!!.subscribe(
+                mqtt!!.subscribeWithPersistableRetryableFlags(
                     topicArray,
                     qosArray,
+                    persistableRetryableList.toMutableList(),
                     MqttContext(subscribeStartTime),
                     getSubscribeListener(topicMap)
                 )

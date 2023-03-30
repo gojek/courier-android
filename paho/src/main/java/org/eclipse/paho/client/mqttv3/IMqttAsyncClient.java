@@ -1,5 +1,8 @@
 package org.eclipse.paho.client.mqttv3;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Enables an application to communicate with an MQTT server using non-blocking methods.
  * <p>
@@ -615,6 +618,9 @@ public interface IMqttAsyncClient
 	 *             if the two supplied arrays are not the same size.
 	 */
 	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback) throws MqttException;
+
+	public IMqttToken subscribeWithPersistableRetryableFlags(String[] topicFilters, int[] qos,
+			List<Map.Entry<Boolean, Boolean>> persistableRetryableList, Object userContext, IMqttActionListener callback) throws MqttException;
 
 	/**
 	 * Requests the server unsubscribe the client from a topic.

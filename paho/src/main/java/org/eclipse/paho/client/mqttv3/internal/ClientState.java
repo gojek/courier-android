@@ -369,7 +369,7 @@ public class ClientState
 		while (messageKeys.hasMoreElements())
 		{
 			key = (String) messageKeys.nextElement();
-			persistable = persistence.get(key);
+			persistable = persistence. get(key);
 			MqttWireMessage message = restoreMessage(key, persistable);
 			if (message != null)
 			{
@@ -555,6 +555,7 @@ public class ClientState
 					persistence.put(getSendPersistenceKey(message), (MqttPublish) message);
 					break;
 				}
+
 				tokenStore.saveToken(token, message);
 				pendingMessages.addElement(message);
 				queueLock.notifyAll();

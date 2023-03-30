@@ -39,8 +39,12 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 
@@ -913,8 +917,22 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 *
 	 * @see org.eclipse.paho.client.mqttv3.IMqttAsyncClient#subscribe(java.lang.String[], int[], java.lang.Object, org.eclipse.paho.client.mqttv3.IMqttActionListener)
 	 */
-	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback) throws MqttException
-	{
+
+	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback) throws MqttException {
+		List<Map.Entry<Boolean, Boolean>> persistableRetryableList = new ArrayList<>();
+		for(int i = 0; i < qos.length ; i++) {
+			persistableRetryableList.add(new SimpleEntry<>(true, true));
+		}
+		return subscribeWithPersistableRetryableFlags(topicFilters, qos, persistableRetryableList, userContext, callback);
+	}
+
+	public IMqttToken subscribeWithPersistableRetryableFlags(
+			String[] topicFilters,
+			int[] qos,
+			List<Map.Entry<Boolean, Boolean>> persistableRetryableList,
+			Object userContext,
+			IMqttActionListener callback
+	) throws MqttException {
 		final String methodName = "subscribe";
 
 		if (topicFilters.length != qos.length)
@@ -942,7 +960,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 		token.setUserContext(userContext);
 		token.internalTok.setTopics(topicFilters);
 
-		MqttSubscribe register = new MqttSubscribe(topicFilters, qos);
+		MqttSubscribe register = new MqttSubscribe(topicFilters, qos, persistableRetryableList);
 
 		comms.sendNoWait(register, token);
 		// @TRACE 109=<
@@ -1063,8 +1081,15 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	public IMqttDeliveryToken publish(String topic, byte[] payload, int qos, boolean retained, Object userContext, IMqttActionListener callback) throws MqttException,
 			MqttPersistenceException
 	{
+		return this.publishWithNewType(topic, payload, qos, qos, retained, userContext, callback);
+	}
+
+	public IMqttDeliveryToken publishWithNewType(String topic, byte[] payload, int qos, int type, boolean retained, Object userContext, IMqttActionListener callback) throws MqttException,
+			MqttPersistenceException
+	{
 		MqttMessage message = new MqttMessage(payload);
 		message.setQos(qos);
+		message.setType(type);
 		message.setRetained(retained);
 		return this.publish(topic, message, userContext, callback);
 	}
