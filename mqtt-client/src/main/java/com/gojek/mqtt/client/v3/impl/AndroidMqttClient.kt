@@ -205,7 +205,6 @@ internal class AndroidMqttClient(
             experimentConfigs.incomingMessagesCleanupIntervalSecs,
             clock
         )
-        networkHandler.init()
     }
 
     // This can be invoked on any thread
@@ -213,6 +212,7 @@ internal class AndroidMqttClient(
         connectOptions: MqttConnectOptions
     ) {
         this.connectOptions = connectOptions
+        networkHandler.init()
         isInitialised = true
         runnableScheduler.connectMqtt()
     }
@@ -225,6 +225,7 @@ internal class AndroidMqttClient(
 
     // This can be invoked on any thread
     override fun disconnect(clearState: Boolean) {
+        networkHandler.destroy()
         isInitialised = false
         runnableScheduler.disconnectMqtt(false, clearState)
     }
