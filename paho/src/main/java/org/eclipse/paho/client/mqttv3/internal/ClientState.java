@@ -15,8 +15,6 @@
  */
 package org.eclipse.paho.client.mqttv3.internal;
 
-
-import android.media.audio.common.Int;
 import org.eclipse.paho.client.mqttv3.ICommsCallback;
 import org.eclipse.paho.client.mqttv3.IExperimentsConfig;
 import org.eclipse.paho.client.mqttv3.ILogger;
