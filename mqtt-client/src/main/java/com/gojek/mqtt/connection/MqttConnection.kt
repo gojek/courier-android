@@ -467,7 +467,7 @@ internal class MqttConnection(
         if (topicMap.isNotEmpty()) {
             val topicArray: Array<String> = topicMap.keys.toTypedArray()
             val qosArray = IntArray(topicMap.size)
-            val persistableRetryableList = arrayListOf<Map.Entry<Boolean, Boolean>>()
+            val persistableRetryableList = ArrayList<Map.Entry<Boolean, Boolean>>(topicMap.size)
             for ((index, qos) in topicMap.values.withIndex()) {
                 if (qos == ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY || qos == ONE_WITHOUT_PERSISTENCE_AND_RETRY) {
                     qosArray[index] = 1
