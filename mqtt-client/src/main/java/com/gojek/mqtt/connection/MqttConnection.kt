@@ -227,18 +227,15 @@ internal class MqttConnection(
     }
 
     override fun publish(
-        mqttPacket: MqttSendPacket,
-        qos: Int,
-        type: Int,
-        topic: String
+        mqttPacket: MqttSendPacket
     ) {
         logger.d(TAG, "Current inflight msg count : " + mqtt!!.inflightMessages)
 
         mqtt!!.publishWithNewType(
-            topic,
+            mqttPacket.topic,
             mqttPacket.message,
-            qos,
-            type,
+            mqttPacket.qos,
+            mqttPacket.type,
             false,
             mqttPacket,
             object : IMqttActionListenerNew {
@@ -472,7 +469,11 @@ internal class MqttConnection(
             val qosArray = IntArray(topicMap.size)
             val persistableRetryableList = arrayListOf<Map.Entry<Boolean, Boolean>>()
             for ((index, qos) in topicMap.values.withIndex()) {
-                qosArray[index] = qos.value
+                if (qos == ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY || qos == ONE_WITHOUT_PERSISTENCE_AND_RETRY) {
+                    qosArray[index] = 1
+                } else {
+                    qosArray[index] = qos.value
+                }
             }
             for ((index, qos) in topicMap.values.withIndex()) {
                 when (qos) {
@@ -494,7 +495,7 @@ internal class MqttConnection(
                 mqtt!!.subscribeWithPersistableRetryableFlags(
                     topicArray,
                     qosArray,
-                    persistableRetryableList.toMutableList(),
+                    persistableRetryableList,
                     MqttContext(subscribeStartTime),
                     getSubscribeListener(topicMap)
                 )

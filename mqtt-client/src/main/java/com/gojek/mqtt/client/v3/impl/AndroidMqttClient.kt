@@ -251,7 +251,7 @@ internal class AndroidMqttClient(
                     MqttMessageSendEvent(topic, qos, message.size)
                 )
             }
-            mqttConnection.publish(mqttPacket, mqttPacket.qos, mqttPacket.type, mqttPacket.topic)
+            mqttConnection.publish(mqttPacket)
         } catch (e: MqttPersistenceException) {
             with(mqttPacket) {
                 eventHandler.onEvent(

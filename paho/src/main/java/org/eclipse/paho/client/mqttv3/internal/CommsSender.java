@@ -281,8 +281,16 @@ public class CommsSender implements Runnable
 		{
 			mex = (MqttException) ex;
 		}
-
+		if((message instanceof MqttPublish) && (
+						(((MqttPublish) message)).getMessage().getQos() == 0
+						|| (((MqttPublish) message)).getMessage().getType() > 2
+				)
+		) {
+			clientState.releaseMessageId(message.getMessageId());
+		}
+		clientState.releaseMessageId(message.getType());
 		running = false;
+
 		clientComms.shutdownConnection(null, mex);
 	}
 

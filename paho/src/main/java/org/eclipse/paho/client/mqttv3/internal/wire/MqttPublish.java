@@ -114,7 +114,7 @@ public class MqttPublish extends MqttPersistableWireMessage implements IToken
 		StringBuffer sb = new StringBuffer();
 		sb.append(super.toString());
 		sb.append(" qos:" + message.getQos());
-		if (message.getQos() > 0)
+		if (message.getQos() > 0 || message.getType() > 2)
 		{
 			sb.append(" msgId:" + msgId);
 		}
@@ -197,7 +197,7 @@ public class MqttPublish extends MqttPersistableWireMessage implements IToken
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
 			encodeUTF8(dos, topicName);
-			if (message.getQos() > 0)
+			if (message.getQos() > 0 || message.getType() > 2)
 			{
 				dos.writeShort(msgId);
 			}
