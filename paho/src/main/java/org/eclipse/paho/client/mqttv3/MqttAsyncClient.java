@@ -34,6 +34,7 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttPingReq;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttPublish;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttSubscribe;
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttUnsubscribe;
+import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
@@ -919,17 +920,17 @@ public class MqttAsyncClient implements IMqttAsyncClient
 	 */
 
 	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback) throws MqttException {
-		List<Map.Entry<Boolean, Boolean>> persistableRetryableList = new ArrayList<>();
+		List<SubscribeFlags> subscribeFlagsList = new ArrayList<>();
 		for(int i = 0; i < qos.length ; i++) {
-			persistableRetryableList.add(new SimpleEntry<>(true, true));
+			subscribeFlagsList.add(new SubscribeFlags(true, true));
 		}
-		return subscribeWithPersistableRetryableFlags(topicFilters, qos, persistableRetryableList, userContext, callback);
+		return subscribeWithPersistableRetryableFlags(topicFilters, qos, subscribeFlagsList, userContext, callback);
 	}
 
 	public IMqttToken subscribeWithPersistableRetryableFlags(
 			String[] topicFilters,
 			int[] qos,
-			List<Map.Entry<Boolean, Boolean>> persistableRetryableList,
+			List<SubscribeFlags> subscribeFlagsList,
 			Object userContext,
 			IMqttActionListener callback
 	) throws MqttException {
@@ -960,7 +961,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 		token.setUserContext(userContext);
 		token.internalTok.setTopics(topicFilters);
 
-		MqttSubscribe register = new MqttSubscribe(topicFilters, qos, persistableRetryableList);
+		MqttSubscribe register = new MqttSubscribe(topicFilters, qos, subscribeFlagsList);
 
 		comms.sendNoWait(register, token);
 		// @TRACE 109=<

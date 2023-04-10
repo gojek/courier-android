@@ -31,7 +31,6 @@ import com.gojek.mqtt.send.listener.IMessageSendListener
 import com.gojek.mqtt.subscription.SubscriptionStore
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
-import java.util.AbstractMap.SimpleEntry
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions
 import org.eclipse.paho.client.mqttv3.IExperimentsConfig
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
@@ -47,6 +46,7 @@ import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.MqttSecurityException
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttSuback
+import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags
 import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty
 
 internal class MqttConnection(
@@ -467,7 +467,7 @@ internal class MqttConnection(
         if (topicMap.isNotEmpty()) {
             val topicArray: Array<String> = topicMap.keys.toTypedArray()
             val qosArray = IntArray(topicMap.size)
-            val persistableRetryableList = ArrayList<Map.Entry<Boolean, Boolean>>(topicMap.size)
+            val subscribeFlagList = ArrayList<SubscribeFlags>(topicMap.size)
             for ((index, qos) in topicMap.values.withIndex()) {
                 if (qos == ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY || qos == ONE_WITHOUT_PERSISTENCE_AND_RETRY) {
                     qosArray[index] = 1
@@ -478,13 +478,13 @@ internal class MqttConnection(
             for ((index, qos) in topicMap.values.withIndex()) {
                 when (qos) {
                     ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY -> {
-                        persistableRetryableList.add(index, SimpleEntry(false, false))
+                        subscribeFlagList.add(index, SubscribeFlags(false, false))
                     }
                     ONE_WITHOUT_PERSISTENCE_AND_RETRY -> {
-                        persistableRetryableList.add(index, SimpleEntry(false, true))
+                        subscribeFlagList.add(index, SubscribeFlags(false, true))
                     }
                     else -> {
-                        persistableRetryableList.add(index, SimpleEntry(true, true))
+                        subscribeFlagList.add(index, SubscribeFlags(true, true))
                     }
                 }
             }
@@ -495,7 +495,7 @@ internal class MqttConnection(
                 mqtt!!.subscribeWithPersistableRetryableFlags(
                     topicArray,
                     qosArray,
-                    persistableRetryableList,
+                    subscribeFlagList,
                     MqttContext(subscribeStartTime),
                     getSubscribeListener(topicMap)
                 )

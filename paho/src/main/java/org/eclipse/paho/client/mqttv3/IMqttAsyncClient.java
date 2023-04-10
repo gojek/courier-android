@@ -1,5 +1,7 @@
 package org.eclipse.paho.client.mqttv3;
 
+import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags;
+
 import java.util.List;
 import java.util.Map;
 
@@ -620,7 +622,7 @@ public interface IMqttAsyncClient
 	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback) throws MqttException;
 
 	public IMqttToken subscribeWithPersistableRetryableFlags(String[] topicFilters, int[] qos,
-			List<Map.Entry<Boolean, Boolean>> persistableRetryableList, Object userContext, IMqttActionListener callback) throws MqttException;
+			List<SubscribeFlags> subscribeFlagsList, Object userContext, IMqttActionListener callback) throws MqttException;
 
 	/**
 	 * Requests the server unsubscribe the client from a topic.
