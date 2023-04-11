@@ -18,10 +18,10 @@ These are non standard QoS options. You need to have compatible broker to use th
 
 We added two more Qos options
 
-- QoS1 with no persistence and no retry: Like QoS1, Message delivery is acknowledged with PubAck, but unlike Qos1 messages, these are
-  neither persisted and nor retried at send after single attempt. The message arrives at the receiver either once or not at all
-- QoS1 with no persistence and with retry: Like QoS1, Message delivery is acknowledged with PubAck, but unlike Qos1 messages, these are
-  not persisted. The messages are retried within current session if delivery is not acknowledged
+- QoS1 with no persistence and no retry: Like QoS1, Message delivery is acknowledged with PUBACK, but unlike QoS1 messages are
+  neither persisted nor retried at send after one attempt. The message arrives at the receiver either once or not at all
+- QoS1 with no persistence and with retry: Like QoS1, Message delivery is acknowledged with PUBACK, but unlike QoS1 messages are
+  not persisted. The messages are retried within active connection if delivery is not acknowledged.
 
 <b> Note: </b> Both these Qos options have same behaviour (without retry) during publish and 
 different behaviour for subscribe

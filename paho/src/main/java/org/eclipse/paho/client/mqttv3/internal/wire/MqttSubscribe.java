@@ -168,10 +168,10 @@ public class MqttSubscribe extends MqttWireMessage
 				byte nextByte = 0;
 				nextByte = (byte) (nextByte | qos[i]);
 				if (!subscribeFlagsList.get(i).isPersistableFlagEnabled()) {
-					nextByte |= 0x4;
+					nextByte |= 0x04;
 				}
 				if (!subscribeFlagsList.get(i).isRetryableFlagEnabled()) {
-					nextByte |= 0x8;
+					nextByte |= 0x08;
 				}
 				dos.writeByte(nextByte);
 			}
