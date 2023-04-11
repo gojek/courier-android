@@ -11,11 +11,11 @@ enum class QoS(val value: Int, val type: Int) {
     TWO(2, 2),
 
     /** Like QoS1, Message delivery is acknowledged with PUBACK, but unlike QoS1 messages are
-    neither persisted nor retried at send after one attempt.
-    The message arrives at the receiver either once or not at all **/
+     neither persisted nor retried at send after one attempt.
+     The message arrives at the receiver either once or not at all **/
     ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY(0, 3),
 
     /** Like QoS1, Message delivery is acknowledged with PUBACK, but unlike QoS1 messages are
-    not persisted. The messages are retried within active connection if delivery is not acknowledged.**/
+     not persisted. The messages are retried within active connection if delivery is not acknowledged.**/
     ONE_WITHOUT_PERSISTENCE_AND_RETRY(0, 4)
 }
