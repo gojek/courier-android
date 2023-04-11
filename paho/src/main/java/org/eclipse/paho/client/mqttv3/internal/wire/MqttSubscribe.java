@@ -20,6 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -32,6 +35,8 @@ public class MqttSubscribe extends MqttWireMessage
 	private String[] names;
 
 	private int[] qos;
+
+	List<SubscribeFlags> subscribeFlagsList;
 
 	private int count;
 
@@ -51,13 +56,19 @@ public class MqttSubscribe extends MqttWireMessage
 		count = 0;
 		names = new String[10];
 		qos = new int[10];
+		subscribeFlagsList = new ArrayList<>(10);
 		boolean end = false;
 		while (!end)
 		{
 			try
 			{
 				names[count] = decodeUTF8(dis);
-				qos[count++] = dis.readByte();
+
+				byte qosAndFlagByte = dis.readByte();
+				qos[count++] = qosAndFlagByte & 0x3;
+				boolean isPersistable = (qosAndFlagByte & 0x04) == 0;
+				boolean isRetryable = (qosAndFlagByte & 0x08) == 0;
+				subscribeFlagsList.add(new SubscribeFlags(isPersistable, isRetryable));
 			}
 			catch (Exception e)
 			{
@@ -75,11 +86,12 @@ public class MqttSubscribe extends MqttWireMessage
 	 * @param qos
 	 *            - the max QoS that each each topic will be subscribed at
 	 */
-	public MqttSubscribe(String[] names, int[] qos)
+	public MqttSubscribe(String[] names, int[] qos, List<SubscribeFlags> subscribeFlagsList)
 	{
 		super(MqttWireMessage.MESSAGE_TYPE_SUBSCRIBE);
 		this.names = names;
 		this.qos = qos;
+		this.subscribeFlagsList = subscribeFlagsList;
 		this.count = names.length;
 
 		if (names.length != qos.length)
@@ -153,7 +165,15 @@ public class MqttSubscribe extends MqttWireMessage
 			for (int i = 0; i < names.length; i++)
 			{
 				encodeUTF8(dos, names[i]);
-				dos.writeByte(qos[i]);
+				byte nextByte = 0;
+				nextByte = (byte) (nextByte | qos[i]);
+				if (!subscribeFlagsList.get(i).isPersistableFlagEnabled()) {
+					nextByte |= 0x04;
+				}
+				if (!subscribeFlagsList.get(i).isRetryableFlagEnabled()) {
+					nextByte |= 0x08;
+				}
+				dos.writeByte(nextByte);
 			}
 			return baos.toByteArray();
 		}

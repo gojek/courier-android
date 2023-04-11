@@ -19,8 +19,11 @@ public abstract interface class com/gojek/courier/MessageAdapter$Factory {
 
 public final class com/gojek/courier/QoS : java/lang/Enum {
 	public static final field ONE Lcom/gojek/courier/QoS;
+	public static final field ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY Lcom/gojek/courier/QoS;
+	public static final field ONE_WITHOUT_PERSISTENCE_AND_RETRY Lcom/gojek/courier/QoS;
 	public static final field TWO Lcom/gojek/courier/QoS;
 	public static final field ZERO Lcom/gojek/courier/QoS;
+	public final fun getType ()I
 	public final fun getValue ()I
 	public static fun valueOf (Ljava/lang/String;)Lcom/gojek/courier/QoS;
 	public static fun values ()[Lcom/gojek/courier/QoS;

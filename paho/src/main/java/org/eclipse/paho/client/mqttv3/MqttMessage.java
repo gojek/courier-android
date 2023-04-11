@@ -28,6 +28,8 @@ public class MqttMessage
 
 	private int qos = 1;
 
+	private int type = -1;
+
 	private boolean retained = false;
 
 	private boolean dup = false;
@@ -148,6 +150,10 @@ public class MqttMessage
 		return qos;
 	}
 
+	public int getType()
+	{
+		return type;
+	}
 	/**
 	 * Sets the quality of service for this message.
 	 * <ul>
@@ -178,6 +184,12 @@ public class MqttMessage
 		checkMutable();
 		validateQos(qos);
 		this.qos = qos;
+	}
+
+	public void setType(int type)
+	{
+		checkMutable();
+		this.type = type;
 	}
 
 	/**

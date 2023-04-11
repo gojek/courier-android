@@ -17,7 +17,7 @@ internal interface IMqttConnection {
     fun subscribe(topicMap: Map<String, QoS>)
     fun unsubscribe(topics: Set<String>)
 
-    fun publish(mqttPacket: MqttSendPacket, qos: Int, topic: String)
+    fun publish(mqttPacket: MqttSendPacket)
 
     fun disconnect()
 

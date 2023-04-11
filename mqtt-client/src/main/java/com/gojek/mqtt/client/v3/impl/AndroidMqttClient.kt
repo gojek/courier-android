@@ -251,7 +251,7 @@ internal class AndroidMqttClient(
                     MqttMessageSendEvent(topic, qos, message.size)
                 )
             }
-            mqttConnection.publish(mqttPacket, mqttPacket.qos, mqttPacket.topic)
+            mqttConnection.publish(mqttPacket)
         } catch (e: MqttPersistenceException) {
             with(mqttPacket) {
                 eventHandler.onEvent(
@@ -297,7 +297,8 @@ internal class AndroidMqttClient(
             0,
             System.currentTimeMillis(),
             mqttPacket.qos.value,
-            mqttPacket.topic
+            mqttPacket.topic,
+            mqttPacket.qos.type
         )
 
         val msg = Message.obtain()

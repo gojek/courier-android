@@ -202,7 +202,7 @@ internal class MqttTransactionUiModelMapper : Mapper<MqttTransactionDomainModel,
             is MqttPublish -> {
                 sb.append("PUBLISH \n")
                 sb.append("Qos : ${mqttWireMessage.message.qos} \n")
-                if (mqttWireMessage.message.qos > 0) {
+                if (mqttWireMessage.message.qos > 0 || mqttWireMessage.message.type > 2) {
                     sb.append("MsgId : ${mqttWireMessage.messageId} \n")
                 }
                 sb.append("Retained : ${mqttWireMessage.message.isRetained} \n")

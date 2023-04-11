@@ -12,3 +12,16 @@ When you talk about QoS in MQTT, you need to consider the two sides of message d
 - Message delivery from the broker to the subscribing client.
 
 You can read more about the detail of QoS in MQTT from [HiveMQ site](https://www.hivemq.com/blog/mqtt-essentials-part-6-mqtt-quality-of-service-levels/).
+
+:warning: **
+These are non standard QoS options. You need to have compatible broker to use these QoS options
+
+We added two more Qos options
+
+- QoS1 with no persistence and no retry: Like QoS1, Message delivery is acknowledged with PUBACK, but unlike QoS1 messages are
+  neither persisted nor retried at send after one attempt. The message arrives at the receiver either once or not at all
+- QoS1 with no persistence and with retry: Like QoS1, Message delivery is acknowledged with PUBACK, but unlike QoS1 messages are
+  not persisted. The messages are retried within active connection if delivery is not acknowledged.
+
+<b> Note: </b> Both these Qos options have same behaviour (without retry) during publish and 
+different behaviour for subscribe
