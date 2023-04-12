@@ -40,7 +40,6 @@ import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.connection.IMqttConnection
 import com.gojek.mqtt.connection.MqttConnection
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
-import com.gojek.mqtt.constants.MAX_INFLIGHT_MESSAGES_ALLOWED
 import com.gojek.mqtt.constants.MESSAGE
 import com.gojek.mqtt.constants.MSG_APP_PUBLISH
 import com.gojek.mqtt.event.EventHandler
@@ -170,7 +169,7 @@ internal class AndroidMqttClient(
                 subscriptionRetryPolicy = mqttConfiguration.subscriptionRetryPolicy,
                 unsubscriptionRetryPolicy = mqttConfiguration.unsubscriptionRetryPolicy,
                 wakeLockTimeout = mqttConfiguration.wakeLockTimeout,
-                maxInflightMessages = MAX_INFLIGHT_MESSAGES_ALLOWED,
+                maxInflightMessages = experimentConfigs.maxInflightMessagesLimit,
                 logger = mqttConfiguration.logger,
                 connectionEventHandler = mqttClientEventAdapter.adapt(),
                 mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map {
