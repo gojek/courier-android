@@ -30,15 +30,20 @@ internal class Coordinator(
 
     @Synchronized
     override fun send(stubMethod: StubMethod.Send, args: Array<Any>): Any {
+        logger.d("Coordinator", "Send method invoked")
         val data = stubMethod.argumentProcessor.getDataArgument(args)
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
         val message = stubMethod.messageAdapter.toMessage(topic, data)
-        return client.send(message, topic, stubMethod.qos)
+        val qos = stubMethod.qos
+        val sent = client.send(message, topic, qos)
+        logger.d("Coordinator", "Sending message on topic: $topic, qos: $qos, message: $data")
+        return sent
     }
 
     @Synchronized
     override fun receive(stubMethod: StubMethod.Receive, args: Array<Any>): Any {
+        logger.d("Coordinator", "Receive method invoked")
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
 
@@ -70,18 +75,25 @@ internal class Coordinator(
     }
 
     override fun subscribe(stubMethod: StubMethod.Subscribe, args: Array<Any>): Any {
+        logger.d("Coordinator", "Subscribe method invoked")
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
-        return client.subscribe(topic to stubMethod.qos)
+        val qos = stubMethod.qos
+        val status = client.subscribe(topic to qos)
+        logger.d("Coordinator", "Subscribing topic: $topic with qos: $qos")
+        return status
     }
 
     override fun subscribeWithStream(
         stubMethod: StubMethod.SubscribeWithStream,
         args: Array<Any>
     ): Any {
+        logger.d("Coordinator", "Subscribe method invoked with a returning stream")
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
-        client.subscribe(topic to stubMethod.qos)
+        val qos = stubMethod.qos
+        client.subscribe(topic to qos)
+        logger.d("Coordinator", "Subscribing topic: $topic with qos: $qos")
 
         val flowable = Flowable.create(
             FlowableOnSubscribe<MqttMessage> { emitter ->
@@ -111,22 +123,28 @@ internal class Coordinator(
     }
 
     override fun unsubscribe(stubMethod: StubMethod.Unsubscribe, args: Array<Any>): Any {
+        logger.d("Coordinator", "Unsubscribe method invoked")
         stubMethod.argumentProcessor.inject(args)
         val topics = stubMethod.argumentProcessor.getTopics()
-        return if (topics.size == 1) {
+        val status = if (topics.size == 1) {
             client.unsubscribe(topics[0])
         } else {
             client.unsubscribe(topics[0], *topics.sliceArray(IntRange(1, topics.size - 1)))
         }
+        logger.d("Coordinator", "Unsubscribing topics: $topics")
+        return status
     }
 
     override fun subscribeAll(stubMethod: StubMethod.SubscribeAll, args: Array<Any>): Any {
+        logger.d("Coordinator", "Subscribe method invoked for multiple topics")
         val topicList = (args[0] as Map<String, QoS>).toList()
-        return if (topicList.size == 1) {
+        val status = if (topicList.size == 1) {
             client.subscribe(topicList[0])
         } else {
             client.subscribe(topicList[0], *topicList.toTypedArray().sliceArray(IntRange(1, topicList.size - 1)))
         }
+        logger.d("Coordinator", "Subscribing topics: $topicList")
+        return status
     }
 
     override fun getEventStream(): Stream<MqttEvent> {
