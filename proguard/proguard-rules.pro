@@ -138,3 +138,13 @@
     public static int e(...);
 }
 ##---------------End: proguard configuration for android.Log----------
+
+##---------------Begin: proguard configuration for courier annotations----------
+-keepclasseswithmembers class * {
+    @com.gojek.courier.annotation.* <methods>;
+}
+-if interface * { @com.gojek.courier.annotation.* <methods>; }
+-keepclassmembers,allowshrinking,allowobfuscation interface * {
+    @com.gojek.courier.annotation.* <methods>;
+}
+##---------------End: proguard configuration for courier annotations----------
