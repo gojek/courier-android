@@ -60,6 +60,7 @@ internal class StubInterface(
         private fun Class<*>.findStubMethods(): Map<Method, StubMethod> {
             // Remove all default methods
             val methods = declaredMethods.filterNot { runtimePlatform.isDefaultMethod(it) }
+            require(methods.isNotEmpty()) { "Service interface should have atleast one abstract method" }
             val stubMethods = methods.mapNotNull { stubMethodFactory.create(it) }
             return methods.zip(stubMethods).toMap()
         }
