@@ -528,7 +528,8 @@ internal class AndroidMqttClient(
                     connectTimeout = mqttConfiguration.connectTimeoutPolicy.getConnectTimeOut(),
                     host = hostFallbackPolicy!!.getServerUri().host,
                     port = hostFallbackPolicy!!.getServerUri().port,
-                    scheme = hostFallbackPolicy!!.getServerUri().scheme
+                    scheme = hostFallbackPolicy!!.getServerUri().scheme,
+                    cleanSession = mqttConnectOptions.isCleanSession
                 )
             )
         }
