@@ -132,7 +132,7 @@ public final class com/gojek/mqtt/client/config/v3/MqttV3Configuration : com/goj
 }
 
 public final class com/gojek/mqtt/client/connectioninfo/ConnectionInfo {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;Z)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()I
@@ -140,9 +140,11 @@ public final class com/gojek/mqtt/client/connectioninfo/ConnectionInfo {
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()I
 	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;ILjava/lang/Object;)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public final fun component8 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;Z)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;ZILjava/lang/Object;)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCleanSession ()Z
 	public final fun getClientId ()Ljava/lang/String;
 	public final fun getConnectTimeout ()I
 	public final fun getHost ()Ljava/lang/String;
