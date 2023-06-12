@@ -12,6 +12,7 @@ import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.event.interceptor.MqttEventHandler
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
 import com.gojek.mqtt.client.listener.MessageListener
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.event.AdaptivePingEventHandler
@@ -97,8 +98,8 @@ internal class MqttClientInternal(
         androidMqttClient.unsubscribe(listOf(*topics))
     }
 
-    fun send(mqttPacket: MqttPacket): Boolean {
-        return androidMqttClient.send(mqttPacket)
+    fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
+        return androidMqttClient.send(mqttPacket, sendMessageCallback)
     }
 
     fun addMessageListener(topic: String, listener: MessageListener) {

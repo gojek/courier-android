@@ -52,6 +52,21 @@ public abstract interface class com/gojek/courier/StreamAdapter$Factory {
 	public abstract fun create (Ljava/lang/reflect/Type;)Lcom/gojek/courier/StreamAdapter;
 }
 
+public final class com/gojek/courier/callback/NoOpSendMessageCallback : com/gojek/courier/callback/SendMessageCallback {
+	public static final field INSTANCE Lcom/gojek/courier/callback/NoOpSendMessageCallback;
+	public fun onMessageSendFailure (Ljava/lang/Throwable;)V
+	public fun onMessageSendSuccess ()V
+	public fun onMessageSendTrigger ()V
+	public fun onMessageWrittenOnSocket ()V
+}
+
+public abstract interface class com/gojek/courier/callback/SendMessageCallback {
+	public abstract fun onMessageSendFailure (Ljava/lang/Throwable;)V
+	public abstract fun onMessageSendSuccess ()V
+	public abstract fun onMessageSendTrigger ()V
+	public abstract fun onMessageWrittenOnSocket ()V
+}
+
 public final class com/gojek/courier/extensions/CollectionExtensionsKt {
 	public static final fun toImmutableMap (Ljava/util/Map;)Ljava/util/Map;
 	public static final fun toImmutableSet (Ljava/util/Set;)Ljava/util/Set;
