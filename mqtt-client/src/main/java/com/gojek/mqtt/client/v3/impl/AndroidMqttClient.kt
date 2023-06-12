@@ -10,6 +10,7 @@ import android.os.Messenger
 import android.os.RemoteException
 import androidx.annotation.RequiresApi
 import com.gojek.courier.QoS
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.courier.exception.AuthApiException
 import com.gojek.courier.extensions.fromNanosToMillis
 import com.gojek.courier.logging.ILogger
@@ -28,7 +29,6 @@ import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
 import com.gojek.mqtt.client.event.adapter.MqttClientEventAdapter
 import com.gojek.mqtt.client.internal.KeepAliveProvider
 import com.gojek.mqtt.client.listener.MessageListener
-import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.mqtt.client.mapToPahoInterceptor
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.model.ConnectionState.CONNECTED

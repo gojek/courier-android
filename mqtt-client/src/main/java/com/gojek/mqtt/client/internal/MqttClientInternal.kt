@@ -2,6 +2,7 @@ package com.gojek.mqtt.client.internal
 
 import android.content.Context
 import com.gojek.courier.QoS
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.keepalive.NoOpKeepAliveFailureHandler
 import com.gojek.keepalive.OptimalKeepAliveFailureHandler
@@ -12,7 +13,6 @@ import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.event.interceptor.MqttEventHandler
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
 import com.gojek.mqtt.client.listener.MessageListener
-import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.event.AdaptivePingEventHandler
