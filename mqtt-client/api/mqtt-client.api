@@ -12,13 +12,14 @@ public abstract interface class com/gojek/mqtt/client/MqttClient {
 	public abstract fun reconnect ()V
 	public abstract fun removeEventHandler (Lcom/gojek/mqtt/event/EventHandler;)V
 	public abstract fun removeMessageListener (Ljava/lang/String;Lcom/gojek/mqtt/client/listener/MessageListener;)V
-	public abstract fun send (Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;)Z
+	public abstract fun send (Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;Lcom/gojek/courier/callback/SendMessageCallback;)Z
 	public abstract fun subscribe (Lkotlin/Pair;[Lkotlin/Pair;)V
 	public abstract fun unsubscribe (Ljava/lang/String;[Ljava/lang/String;)V
 }
 
 public final class com/gojek/mqtt/client/MqttClient$DefaultImpls {
 	public static synthetic fun disconnect$default (Lcom/gojek/mqtt/client/MqttClient;ZILjava/lang/Object;)V
+	public static synthetic fun send$default (Lcom/gojek/mqtt/client/MqttClient;Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;Lcom/gojek/courier/callback/SendMessageCallback;ILjava/lang/Object;)Z
 }
 
 public abstract interface class com/gojek/mqtt/client/MqttInterceptor {

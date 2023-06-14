@@ -2,6 +2,7 @@ package com.gojek.mqtt.client.internal
 
 import android.content.Context
 import com.gojek.courier.QoS
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.keepalive.NoOpKeepAliveFailureHandler
 import com.gojek.keepalive.OptimalKeepAliveFailureHandler
@@ -97,8 +98,8 @@ internal class MqttClientInternal(
         androidMqttClient.unsubscribe(listOf(*topics))
     }
 
-    fun send(mqttPacket: MqttPacket): Boolean {
-        return androidMqttClient.send(mqttPacket)
+    fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
+        return androidMqttClient.send(mqttPacket, sendMessageCallback)
     }
 
     fun addMessageListener(topic: String, listener: MessageListener) {

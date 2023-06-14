@@ -2,6 +2,7 @@ package com.gojek.mqtt.client
 
 import com.gojek.courier.Message
 import com.gojek.courier.QoS
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.mqtt.client.internal.MqttClientInternal
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.ConnectionState
@@ -36,8 +37,8 @@ internal class MqttCourierClient(
         mqttClient.unsubscribe(topic, *topics)
     }
 
-    override fun send(message: Message, topic: String, qos: QoS): Boolean {
-        return mqttClient.send(MqttPacket((message as Message.Bytes).value, topic, qos))
+    override fun send(message: Message, topic: String, qos: QoS, sendMessageCallback: SendMessageCallback): Boolean {
+        return mqttClient.send(MqttPacket((message as Message.Bytes).value, topic, qos), sendMessageCallback)
     }
 
     override fun addMessageListener(topic: String, listener: MessageListener) {

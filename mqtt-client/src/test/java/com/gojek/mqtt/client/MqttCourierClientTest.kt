@@ -2,12 +2,14 @@ package com.gojek.mqtt.client
 
 import com.gojek.courier.Message
 import com.gojek.courier.QoS
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.mqtt.client.internal.MqttClientInternal
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -71,13 +73,14 @@ class MqttCourierClientTest {
     @Test
     fun `test send`() {
         val message = mock<Message.Bytes>()
+        val callback = mock<SendMessageCallback>()
         val byteArray = ByteArray(10)
         whenever(message.value).thenReturn(byteArray)
         val topic = "test/topic"
         val qos = QoS.ZERO
-        mqttCourierClient.send(message, topic, qos)
+        mqttCourierClient.send(message, topic, qos, callback)
         val argumentCaptor = argumentCaptor<MqttPacket>()
-        verify(mqttClientInternal).send(argumentCaptor.capture())
+        verify(mqttClientInternal).send(argumentCaptor.capture(), eq(callback))
         assertEquals(argumentCaptor.lastValue.message, byteArray)
         assertEquals(argumentCaptor.lastValue.topic, topic)
         assertEquals(argumentCaptor.lastValue.qos, qos)

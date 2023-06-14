@@ -31,6 +31,9 @@ public final class com/gojek/courier/Courier$Configuration {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface annotation class com/gojek/courier/annotation/Callback : java/lang/annotation/Annotation {
+}
+
 public abstract interface annotation class com/gojek/courier/annotation/Data : java/lang/annotation/Annotation {
 }
 
