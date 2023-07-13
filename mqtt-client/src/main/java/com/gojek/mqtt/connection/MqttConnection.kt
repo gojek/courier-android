@@ -192,7 +192,7 @@ internal class MqttConnection(
                 connectOptions.keepAlive.isOptimal,
                 serverUri
             )
-            mqtt!!.connect(options, null, getConnectListener(subscriptionTopicMap))
+            mqtt!!.connect(options, null, getConnectListener())
             runnableScheduler.scheduleNextActivityCheck()
         } catch (e: MqttSecurityException) {
             logger.e(TAG, "mqtt security exception while connecting $e")
@@ -407,7 +407,7 @@ internal class MqttConnection(
         return mqttAsyncClient
     }
 
-    private fun getConnectListener(subscriptionTopicMap: Map<String, QoS>): IMqttActionListener? {
+    private fun getConnectListener(): IMqttActionListener {
         return object : IMqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
                 try {

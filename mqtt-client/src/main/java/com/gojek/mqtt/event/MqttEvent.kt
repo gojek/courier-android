@@ -25,6 +25,7 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         val activeNetInfo: ActiveNetInfo,
         val serverUri: ServerUri?,
         val timeTakenMillis: Long,
+        val connectPacketRTTime: Long,
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
 

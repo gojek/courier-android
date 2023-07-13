@@ -1,6 +1,7 @@
 package com.gojek.mqtt.client.event.adapter
 
 import com.gojek.courier.QoS
+import com.gojek.courier.extensions.fromNanosToMillis
 import com.gojek.mqtt.connection.event.ConnectionEventHandler
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.ConnectPacketSendEvent
@@ -34,6 +35,9 @@ internal class MqttClientEventAdapter(
     private val eventHandler: EventHandler,
     private val networkHandler: NetworkHandler
 ) {
+
+    private var connectPacketSendTime = 0L
+
     fun adapt(): ConnectionEventHandler {
         return object : ConnectionEventHandler {
             override fun onMqttConnectAttempt(
@@ -57,7 +61,8 @@ internal class MqttClientEventAdapter(
                     MqttConnectSuccessEvent(
                         activeNetInfo = networkHandler.getActiveNetworkInfo(),
                         serverUri = serverUri,
-                        timeTakenMillis = timeTakenMillis
+                        timeTakenMillis = timeTakenMillis,
+                        connectPacketRTTime = (System.nanoTime() - connectPacketSendTime).fromNanosToMillis()
                     )
                 )
             }
@@ -207,6 +212,7 @@ internal class MqttClientEventAdapter(
             }
 
             override fun onConnectPacketSend() {
+                connectPacketSendTime = System.nanoTime()
                 eventHandler.onEvent(ConnectPacketSendEvent())
             }
 
