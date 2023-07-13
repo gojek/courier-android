@@ -1345,6 +1345,10 @@ public class ClientState
 				// Reset pingOutstanding to allow reconnects to assume no previous ping.
 				pingOutstanding = Boolean.FALSE;
 			}
+			fastReconnectCheckStartTime = 0;
+			lastInboundActivity = 0;
+			lastOutboundActivity = 0;
+			lastPing = 0;
 		}
 		catch (MqttException e)
 		{
