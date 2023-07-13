@@ -166,6 +166,7 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         val topic: String,
         val qos: Int,
         val sizeBytes: Int,
+        val timeTakenMillis: Long,
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
 
@@ -174,6 +175,7 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         val qos: Int,
         val sizeBytes: Int,
         val exception: CourierException,
+        val timeTakenMillis: Long,
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
 
