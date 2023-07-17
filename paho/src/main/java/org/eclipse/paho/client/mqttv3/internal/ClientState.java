@@ -45,7 +45,6 @@ import org.eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage;
 import java.io.EOFException;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -150,6 +149,8 @@ public class ClientState
 	private final static String className = ClientState.class.getName();
 
 	private long inactivityTimeout = DEFAULT_INACTIVITY_TIMEOUT;
+
+	private long connectPacketTimeout = DEFAULT_INACTIVITY_TIMEOUT;
 	private final static long DEFAULT_INACTIVITY_TIMEOUT = 60 * 1000;
 
 	private IPahoEvents pahoEvents;
@@ -191,6 +192,7 @@ public class ClientState
 
 		if (experimentsConfig != null) {
 			inactivityTimeout = experimentsConfig.inactivityTimeoutSecs() * 1000L;
+			connectPacketTimeout = experimentsConfig.connectPacketTimeoutSecs() * 1000L;
 		}
 
 		restoreState();
@@ -775,8 +777,13 @@ public class ClientState
 		{	
 			if (fastReconnectCheckStartTime > lastInboundActivity)
 			{
-				if(System.currentTimeMillis() - fastReconnectCheckStartTime >= inactivityTimeout)
-					
+				long timeout;
+				if (clientComms.isConnecting()) {
+					timeout = connectPacketTimeout;
+				} else {
+					timeout = inactivityTimeout;
+				}
+				if(System.currentTimeMillis() - fastReconnectCheckStartTime >= timeout)
 				{
 					logger.logFastReconnectEvent(fastReconnectCheckStartTime, lastInboundActivity);
 					logger.e(TAG, "not recieved ack for 1 min so disconnecting");
@@ -1345,6 +1352,10 @@ public class ClientState
 				// Reset pingOutstanding to allow reconnects to assume no previous ping.
 				pingOutstanding = Boolean.FALSE;
 			}
+			fastReconnectCheckStartTime = 0;
+			lastInboundActivity = 0;
+			lastOutboundActivity = 0;
+			lastPing = 0;
 		}
 		catch (MqttException e)
 		{

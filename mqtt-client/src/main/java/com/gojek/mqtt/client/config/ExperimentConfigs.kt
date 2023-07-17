@@ -12,6 +12,7 @@ data class ExperimentConfigs(
     val adaptiveKeepAliveConfig: AdaptiveKeepAliveConfig? = null,
     val activityCheckIntervalSeconds: Int = DEFAULT_ACTIVITY_CHECK_INTERVAL_SECS,
     val inactivityTimeoutSeconds: Int = DEFAULT_INACTIVITY_TIMEOUT_SECS,
+    val connectPacketTimeoutSeconds: Int = DEFAULT_INACTIVITY_TIMEOUT_SECS,
     val policyResetTimeSeconds: Int = DEFAULT_POLICY_RESET_TIME_SECS,
     val incomingMessagesTTLSecs: Long = 360,
     val incomingMessagesCleanupIntervalSecs: Long = 60,

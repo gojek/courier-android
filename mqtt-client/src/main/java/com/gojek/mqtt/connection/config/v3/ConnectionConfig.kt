@@ -25,5 +25,6 @@ internal data class ConnectionConfig(
     val persistenceOptions: PersistenceOptions,
     val inactivityTimeoutSeconds: Int,
     val policyResetTimeSeconds: Int,
-    val shouldUseNewSSLFlow: Boolean
+    val shouldUseNewSSLFlow: Boolean,
+    val connectPacketTimeoutSeconds: Int
 )

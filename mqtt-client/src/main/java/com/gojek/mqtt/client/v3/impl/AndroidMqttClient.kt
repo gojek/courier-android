@@ -179,7 +179,8 @@ internal class AndroidMqttClient(
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
                 policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
-                shouldUseNewSSLFlow = experimentConfigs.shouldUseNewSSLFlow
+                shouldUseNewSSLFlow = experimentConfigs.shouldUseNewSSLFlow,
+                connectPacketTimeoutSeconds = experimentConfigs.connectPacketTimeoutSeconds
             )
 
         mqttConnection = MqttConnection(
@@ -239,7 +240,6 @@ internal class AndroidMqttClient(
         if (!isConnected()) {
             connectMqtt()
         }
-
         try {
             logger.d(
                 TAG,
@@ -261,6 +261,7 @@ internal class AndroidMqttClient(
                         topic = topic,
                         qos = qos,
                         sizeBytes = message.size,
+                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
                         exception = e.toCourierException()
                     )
                 )
@@ -273,6 +274,7 @@ internal class AndroidMqttClient(
                         topic = topic,
                         qos = qos,
                         sizeBytes = message.size,
+                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
                         exception = e.toCourierException()
                     )
                 )
@@ -287,6 +289,7 @@ internal class AndroidMqttClient(
                         topic = topic,
                         qos = qos,
                         sizeBytes = message.size,
+                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
                         exception = e.toCourierException()
                     )
                 )
@@ -297,13 +300,14 @@ internal class AndroidMqttClient(
     // This can be invoked on any thread
     override fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
         val mqttSendPacket = MqttSendPacket(
-            mqttPacket.message,
-            0,
-            System.currentTimeMillis(),
-            mqttPacket.qos.value,
-            mqttPacket.topic,
-            mqttPacket.qos.type,
-            sendMessageCallback
+            message = mqttPacket.message,
+            messageId = 0,
+            timestamp = System.currentTimeMillis(),
+            qos = mqttPacket.qos.value,
+            topic = mqttPacket.topic,
+            type = mqttPacket.qos.type,
+            triggerTime = System.nanoTime(),
+            sendMessageCallback = sendMessageCallback
         )
 
         val msg = Message.obtain()
@@ -587,9 +591,10 @@ internal class AndroidMqttClient(
             with(packet) {
                 eventHandler.onEvent(
                     MqttMessageSendSuccessEvent(
-                        topic,
-                        qos,
-                        message.size
+                        topic = topic,
+                        qos = qos,
+                        sizeBytes = message.size,
+                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis()
                     )
                 )
             }
@@ -597,6 +602,17 @@ internal class AndroidMqttClient(
 
         override fun onFailure(packet: MqttSendPacket, exception: Throwable) {
             packet.sendMessageCallback.onMessageSendFailure(exception)
+            with(packet) {
+                eventHandler.onEvent(
+                    MqttMessageSendFailureEvent(
+                        topic = topic,
+                        qos = qos,
+                        sizeBytes = message.size,
+                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
+                        exception = exception.toCourierException()
+                    )
+                )
+            }
             runnableScheduler.connectMqtt()
         }
 
