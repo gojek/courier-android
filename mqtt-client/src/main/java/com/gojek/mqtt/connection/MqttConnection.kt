@@ -673,6 +673,10 @@ internal class MqttConnection(
                 return connectionConfig.inactivityTimeoutSeconds
             }
 
+            override fun connectPacketTimeoutSecs(): Int {
+                return connectionConfig.connectPacketTimeoutSeconds
+            }
+
             override fun useNewSSLFlow(): Boolean {
                 return connectionConfig.shouldUseNewSSLFlow
             }

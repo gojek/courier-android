@@ -148,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                 ),
                 inactivityTimeoutSeconds = 45,
                 activityCheckIntervalSeconds = 30,
+                connectPacketTimeoutSeconds = 5,
                 incomingMessagesTTLSecs = 60,
                 incomingMessagesCleanupIntervalSecs = 10,
                 maxInflightMessagesLimit = 1000,
