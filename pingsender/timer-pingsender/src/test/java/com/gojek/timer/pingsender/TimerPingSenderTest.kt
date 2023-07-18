@@ -73,10 +73,11 @@ class TimerPingSenderTest {
         val mqttClient = mock<IMqttAsyncClient>()
         val testUri = "test-uri"
         val keepaliveMillis = 30000L
+        whenever(pingSenderConfig.sendForcePing).thenReturn(false)
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
         whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity()).thenReturn(null)
+        whenever(comms.checkForActivity(false)).thenReturn(null)
 
         pingSender.PingTask().run()
 
@@ -92,10 +93,11 @@ class TimerPingSenderTest {
         val keepaliveMillis = 30000L
         val startTime = TimeUnit.MILLISECONDS.toNanos(100)
         val endTime = TimeUnit.MILLISECONDS.toNanos(110)
+        whenever(pingSenderConfig.sendForcePing).thenReturn(false)
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
         whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity()).thenReturn(mqttToken)
+        whenever(comms.checkForActivity(false)).thenReturn(mqttToken)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
 
         pingSender.PingTask().run()
@@ -120,7 +122,7 @@ class TimerPingSenderTest {
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
         whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.sendPingRequest()).thenReturn(mqttToken)
+        whenever(comms.checkForActivity(true)).thenReturn(mqttToken)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
 
         pingSender.PingTask().run()
@@ -141,10 +143,11 @@ class TimerPingSenderTest {
         val keepaliveMillis = 30000L
         val startTime = TimeUnit.MILLISECONDS.toNanos(100)
         val endTime = TimeUnit.MILLISECONDS.toNanos(110)
+        whenever(pingSenderConfig.sendForcePing).thenReturn(false)
         whenever(comms.client).thenReturn(mqttClient)
         whenever(mqttClient.serverURI).thenReturn(testUri)
         whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity()).thenReturn(mqttToken)
+        whenever(comms.checkForActivity(false)).thenReturn(mqttToken)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
 
         pingSender.PingTask().run()
