@@ -1,15 +1,17 @@
 public final class com/gojek/alarm/pingsender/AlarmPingSenderConfig {
 	public fun <init> ()V
-	public fun <init> (ZZIZ)V
-	public synthetic fun <init> (ZZIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZIZZ)V
+	public synthetic fun <init> (ZZIZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Z
 	public final fun component3 ()I
 	public final fun component4 ()Z
-	public final fun copy (ZZIZ)Lcom/gojek/alarm/pingsender/AlarmPingSenderConfig;
-	public static synthetic fun copy$default (Lcom/gojek/alarm/pingsender/AlarmPingSenderConfig;ZZIZILjava/lang/Object;)Lcom/gojek/alarm/pingsender/AlarmPingSenderConfig;
+	public final fun component5 ()Z
+	public final fun copy (ZZIZZ)Lcom/gojek/alarm/pingsender/AlarmPingSenderConfig;
+	public static synthetic fun copy$default (Lcom/gojek/alarm/pingsender/AlarmPingSenderConfig;ZZIZZILjava/lang/Object;)Lcom/gojek/alarm/pingsender/AlarmPingSenderConfig;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getPingWakeLockTimeout ()I
+	public final fun getSendForcePing ()Z
 	public final fun getUseElapsedRealTimeAlarm ()Z
 	public fun hashCode ()I
 	public final fun isMqttAllowWhileIdle ()Z

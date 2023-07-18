@@ -4,8 +4,8 @@ import com.gojek.mqtt.pingsender.MqttPingSender
 
 class TimerPingSenderFactory private constructor() {
     companion object {
-        fun create(): MqttPingSender {
-            return TimerPingSender()
+        fun create(timerPingSenderConfig: TimerPingSenderConfig): MqttPingSender {
+            return TimerPingSender(timerPingSenderConfig)
         }
     }
 }
