@@ -751,7 +751,7 @@ public class ClientState
 					// Wake sender thread since it may be in wait state (in ClientState.get())
 					notifyQueueLock();
 				}
-				else if ((time - lastPing >= keepAlive + delta) && (time - lastInboundActivity >= keepAlive + delta) && (time - lastOutboundActivity >= keepAlive + delta))
+				else if ((time - lastPing >= keepAlive + delta) && (time - lastInboundActivity >= keepAlive + delta))
 				{
 					// any of the conditions is true means the client is active
 					// lastInboundActivity will be updated once receiving is done.
