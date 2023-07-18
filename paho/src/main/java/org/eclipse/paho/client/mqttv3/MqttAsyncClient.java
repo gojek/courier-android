@@ -872,7 +872,7 @@ public class MqttAsyncClient implements IMqttAsyncClient
 		// @TRACE 117=>
 		logger.d(TAG, "checking for ping");
 
-		token = comms.checkForActivity();
+		token = comms.checkForActivity(false);
 		// @TRACE 118=<
 
 		return token;

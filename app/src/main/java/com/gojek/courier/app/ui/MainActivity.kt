@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                 incomingMessagesCleanupIntervalSecs = 10,
                 maxInflightMessagesLimit = 1000,
             ),
-            pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
+            pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig(sendForcePing = true))
         )
         mqttClient = MqttClientFactory.create(this, mqttConfig)
         mqttClient.addEventHandler(eventHandler)

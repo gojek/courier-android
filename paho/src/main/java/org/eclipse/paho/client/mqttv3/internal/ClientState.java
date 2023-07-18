@@ -649,7 +649,7 @@ public class ClientState
 	 *
 	 * @return token of ping command, null if no ping command has been sent.
 	 */
-	public MqttToken checkForActivity() throws MqttException
+	public MqttToken checkForActivity(Boolean forcePing) throws MqttException
 	{
 		final String methodName = "checkForActivity";
 
@@ -672,7 +672,7 @@ public class ClientState
 					long lastActivity = lastInboundActivity;
 
 					// Is a ping required?
-					if (time - lastActivity + keepAliveMargin >= this.keepAlive)
+					if (forcePing || (time - lastActivity + keepAliveMargin >= this.keepAlive))
 					{
 
 						// @TRACE 620=ping needed. keepAlive={0} lastOutboundActivity={1} lastInboundActivity={2}
