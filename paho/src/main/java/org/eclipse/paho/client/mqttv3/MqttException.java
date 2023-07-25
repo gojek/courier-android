@@ -149,6 +149,11 @@ public class MqttException extends Exception
 	 */
 	public static final short REASON_CODE_INVALID_SUBSCRIPTION = 32204;
 
+	/**
+	 * The Client has attempted to connect with invalid arguments.
+	 */
+	public static final short REASON_CODE_INVALID_CONNECT_OPTIONS = 32205;
+
 	private int reasonCode;
 
 	private Throwable cause;
