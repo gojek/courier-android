@@ -120,13 +120,19 @@ internal class MqttExceptionHandlerImpl(
                  */
             }
             MqttException.REASON_CODE_FAILED_AUTHENTICATION -> {
-                runnableScheduler.scheduleAuthFailureRunnable()
+                runnableScheduler.scheduleAuthFailureRunnable(
+                    connectRetryTimePolicy.getConnRetryTimeSecs(true) * 1000L
+                )
             }
             MqttException.REASON_CODE_NOT_AUTHORIZED -> {
-                runnableScheduler.scheduleAuthFailureRunnable()
+                runnableScheduler.scheduleAuthFailureRunnable(
+                    connectRetryTimePolicy.getConnRetryTimeSecs(true) * 1000L
+                )
             }
             MqttException.REASON_CODE_INVALID_CONNECT_OPTIONS -> {
-                runnableScheduler.scheduleAuthFailureRunnable()
+                runnableScheduler.scheduleAuthFailureRunnable(
+                    connectRetryTimePolicy.getConnRetryTimeSecs(true) * 1000L
+                )
             }
             MqttException.REASON_CODE_INVALID_CLIENT_ID -> {
             }

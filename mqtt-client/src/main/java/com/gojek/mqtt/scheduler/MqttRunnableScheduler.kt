@@ -144,11 +144,11 @@ internal class MqttRunnableScheduler(
         }
     }
 
-    override fun scheduleAuthFailureRunnable() {
+    override fun scheduleAuthFailureRunnable(delayMillis: Long) {
         try {
             sendThreadEventIfNotAlive()
             mqttThreadHandler.removeCallbacks(authFailureRunnable)
-            mqttThreadHandler.post(authFailureRunnable)
+            mqttThreadHandler.postDelayed(authFailureRunnable, delayMillis)
         } catch (ex: Exception) {
             logger.e(TAG, "Exception while scheduleAuthFailureRunnable", ex)
         }

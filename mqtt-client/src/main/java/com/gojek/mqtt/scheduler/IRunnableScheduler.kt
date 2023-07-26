@@ -23,5 +23,5 @@ internal interface IRunnableScheduler {
 
     fun scheduleResetParams(delayMillis: Long)
 
-    fun scheduleAuthFailureRunnable()
+    fun scheduleAuthFailureRunnable(delayMillis: Long)
 }
