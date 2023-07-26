@@ -1151,18 +1151,16 @@ public final class com/gojek/mqtt/policies/connectretrytime/ConnectRetryTimeConf
 
 public final class com/gojek/mqtt/policies/connectretrytime/ConnectRetryTimePolicy : com/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy {
 	public fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/ConnectRetryTimeConfig;)V
-	public fun getConnRetryTimeSecs ()I
 	public fun getConnRetryTimeSecs (Z)I
-	public fun getCurrentRetryTime ()I
-	public fun getRetryCount ()I
 	public fun resetParams ()V
 }
 
 public abstract interface class com/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy : com/gojek/mqtt/policies/IFallbackPolicy {
-	public abstract fun getConnRetryTimeSecs ()I
 	public abstract fun getConnRetryTimeSecs (Z)I
-	public abstract fun getCurrentRetryTime ()I
-	public abstract fun getRetryCount ()I
+}
+
+public final class com/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy$DefaultImpls {
+	public static synthetic fun getConnRetryTimeSecs$default (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;ZILjava/lang/Object;)I
 }
 
 public final class com/gojek/mqtt/policies/connecttimeout/ConnectTimeoutConfig {

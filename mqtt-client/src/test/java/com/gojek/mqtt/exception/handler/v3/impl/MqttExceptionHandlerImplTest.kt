@@ -27,6 +27,7 @@ import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_CONNECTION_LOST
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_CONNECT_IN_PROGRESS
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_FAILED_AUTHENTICATION
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_CLIENT_ID
+import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_CONNECT_OPTIONS
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_MESSAGE
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_PROTOCOL_VERSION
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_MAX_INFLIGHT
@@ -146,15 +147,25 @@ class MqttExceptionHandlerImplTest {
     @Test
     fun `test exception with reason code 4`() {
         val exception = MqttException(REASON_CODE_FAILED_AUTHENTICATION.toInt())
+        whenever(connectRetryTimePolicy.getConnRetryTimeSecs(true)).thenReturn(20)
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verify(runnableScheduler).scheduleAuthFailureRunnable()
+        verify(runnableScheduler).scheduleAuthFailureRunnable(20000)
     }
 
     @Test
     fun `test exception with reason code 5`() {
         val exception = MqttException(REASON_CODE_NOT_AUTHORIZED.toInt())
+        whenever(connectRetryTimePolicy.getConnRetryTimeSecs(true)).thenReturn(20)
         mqttExceptionHandlerImpl.handleException(exception, true)
-        verify(runnableScheduler).scheduleAuthFailureRunnable()
+        verify(runnableScheduler).scheduleAuthFailureRunnable(20000)
+    }
+
+    @Test
+    fun `test exception with reason code 32205`() {
+        val exception = MqttException(REASON_CODE_INVALID_CONNECT_OPTIONS.toInt())
+        whenever(connectRetryTimePolicy.getConnRetryTimeSecs(true)).thenReturn(20)
+        mqttExceptionHandlerImpl.handleException(exception, true)
+        verify(runnableScheduler).scheduleAuthFailureRunnable(20000)
     }
 
     @Test

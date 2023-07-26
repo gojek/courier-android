@@ -9,14 +9,16 @@ class ConnectRetryTimePolicy(
     private val reconnectTime: AtomicInteger = AtomicInteger(0)
     private val retryCount: AtomicInteger = AtomicInteger(0)
 
-    // this function works on exponential retrying
-    override fun getConnRetryTimeSecs(forceExp: Boolean): Int {
+    override fun getConnRetryTimeSecs(isAuthFailure: Boolean): Int {
+        if (isAuthFailure) {
+            return 0
+        }
         val maxRetryCount = connectRetryTimeConfig.maxRetryCount
         val reconnectTimeFixed = connectRetryTimeConfig.reconnectTimeFixed
         val reconnectTimeRandom = connectRetryTimeConfig.reconnectTimeRandom
         val maxReconnectTime = connectRetryTimeConfig.maxReconnectTime
         val random = Random()
-        if ((reconnectTime.get() == 0 || retryCount.get() < maxRetryCount) && !forceExp) {
+        if ((reconnectTime.get() == 0 || retryCount.get() < maxRetryCount)) {
             reconnectTime.set(reconnectTimeFixed + random.nextInt(reconnectTimeRandom) + 1)
             retryCount.getAndIncrement()
         } else {
@@ -29,18 +31,6 @@ class ConnectRetryTimePolicy(
             // This will happen in case of forceExp = true
             reconnectTime.set(reconnectTimeFixed + random.nextInt(reconnectTimeRandom) + 1)
         }
-        return reconnectTime.get()
-    }
-
-    override fun getRetryCount(): Int {
-        return retryCount.get()
-    }
-
-    override fun getConnRetryTimeSecs(): Int {
-        return getConnRetryTimeSecs(false)
-    }
-
-    override fun getCurrentRetryTime(): Int {
         return reconnectTime.get()
     }
 
