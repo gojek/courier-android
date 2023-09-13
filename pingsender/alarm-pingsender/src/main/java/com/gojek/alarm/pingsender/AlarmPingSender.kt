@@ -201,7 +201,7 @@ internal class AlarmPingSender(
                 serverUri = comms.client.serverURI
             }
             pingSenderEvents.mqttPingInitiated(serverUri, comms.keepAlive.fromMillisToSeconds())
-            val token: IMqttToken? = comms.checkForActivity()
+            val token = comms.checkForActivity(alarmPingSenderConfig.sendForcePing)
 
             // No ping has been sent.
             if (token == null) {

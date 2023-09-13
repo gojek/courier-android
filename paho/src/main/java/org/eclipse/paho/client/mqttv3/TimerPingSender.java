@@ -86,7 +86,7 @@ public class TimerPingSender implements MqttPingSender
 		{
 			// @Trace 660=Check schedule at {0}
 			logger.d(TAG, "in ping timer task run function");
-			comms.checkForActivity();
+			comms.checkForActivity(false);
 		}
 	}
 }

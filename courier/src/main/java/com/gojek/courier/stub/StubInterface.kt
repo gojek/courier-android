@@ -1,6 +1,9 @@
 package com.gojek.courier.stub
 
+import com.gojek.courier.Stream
 import com.gojek.courier.utils.RuntimePlatform
+import com.gojek.mqtt.client.model.ConnectionState
+import com.gojek.mqtt.event.MqttEvent
 import java.lang.reflect.Method
 
 internal class StubInterface(
@@ -38,6 +41,8 @@ internal class StubInterface(
         fun subscribeWithStream(stubMethod: StubMethod.SubscribeWithStream, args: Array<Any>): Any
         fun unsubscribe(stubMethod: StubMethod.Unsubscribe, args: Array<Any>): Any
         fun subscribeAll(stubMethod: StubMethod.SubscribeAll, args: Array<Any>): Any
+        fun getEventStream(): Stream<MqttEvent>
+        fun getConnectionState(): ConnectionState
     }
 
     internal class Factory(
@@ -55,6 +60,7 @@ internal class StubInterface(
         private fun Class<*>.findStubMethods(): Map<Method, StubMethod> {
             // Remove all default methods
             val methods = declaredMethods.filterNot { runtimePlatform.isDefaultMethod(it) }
+            require(methods.isNotEmpty()) { "Service interface should have atleast one abstract method" }
             val stubMethods = methods.mapNotNull { stubMethodFactory.create(it) }
             return methods.zip(stubMethods).toMap()
         }

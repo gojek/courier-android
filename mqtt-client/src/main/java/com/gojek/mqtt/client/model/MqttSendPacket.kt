@@ -2,20 +2,28 @@ package com.gojek.mqtt.client.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.gojek.courier.callback.NoOpSendMessageCallback
+import com.gojek.courier.callback.SendMessageCallback
 
 internal data class MqttSendPacket(
     var message: ByteArray,
     var messageId: Long,
     var timestamp: Long,
     var qos: Int,
-    var topic: String
+    var topic: String,
+    var type: Int,
+    var triggerTime: Long,
+    var sendMessageCallback: SendMessageCallback
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.createByteArray()!!,
         parcel.readLong(),
         parcel.readLong(),
         parcel.readInt(),
-        parcel.readString()!!
+        parcel.readString()!!,
+        parcel.readInt(),
+        parcel.readLong(),
+        NoOpSendMessageCallback
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -24,6 +32,8 @@ internal data class MqttSendPacket(
         parcel.writeLong(timestamp)
         parcel.writeInt(qos)
         parcel.writeString(topic)
+        parcel.writeInt(type)
+        parcel.writeLong(triggerTime)
     }
 
     override fun describeContents(): Int {

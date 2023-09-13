@@ -3,6 +3,8 @@ package com.gojek.mqtt.connection
 import android.content.Context
 import android.os.SystemClock
 import com.gojek.courier.QoS
+import com.gojek.courier.QoS.ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY
+import com.gojek.courier.QoS.ONE_WITHOUT_PERSISTENCE_AND_RETRY
 import com.gojek.courier.extensions.fromNanosToMillis
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
@@ -44,6 +46,7 @@ import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.MqttSecurityException
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttSuback
+import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags
 import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty
 
 internal class MqttConnection(
@@ -189,7 +192,7 @@ internal class MqttConnection(
                 connectOptions.keepAlive.isOptimal,
                 serverUri
             )
-            mqtt!!.connect(options, null, getConnectListener(subscriptionTopicMap))
+            mqtt!!.connect(options, null, getConnectListener())
             runnableScheduler.scheduleNextActivityCheck()
         } catch (e: MqttSecurityException) {
             logger.e(TAG, "mqtt security exception while connecting $e")
@@ -224,16 +227,15 @@ internal class MqttConnection(
     }
 
     override fun publish(
-        mqttPacket: MqttSendPacket,
-        qos: Int,
-        topic: String
+        mqttPacket: MqttSendPacket
     ) {
         logger.d(TAG, "Current inflight msg count : " + mqtt!!.inflightMessages)
 
-        mqtt!!.publish(
-            topic,
+        mqtt!!.publishWithNewType(
+            mqttPacket.topic,
             mqttPacket.message,
-            qos,
+            mqttPacket.qos,
+            mqttPacket.type,
             false,
             mqttPacket,
             object : IMqttActionListenerNew {
@@ -405,7 +407,7 @@ internal class MqttConnection(
         return mqttAsyncClient
     }
 
-    private fun getConnectListener(subscriptionTopicMap: Map<String, QoS>): IMqttActionListener? {
+    private fun getConnectListener(): IMqttActionListener {
         return object : IMqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
                 try {
@@ -465,16 +467,35 @@ internal class MqttConnection(
         if (topicMap.isNotEmpty()) {
             val topicArray: Array<String> = topicMap.keys.toTypedArray()
             val qosArray = IntArray(topicMap.size)
+            val subscribeFlagList = ArrayList<SubscribeFlags>(topicMap.size)
             for ((index, qos) in topicMap.values.withIndex()) {
-                qosArray[index] = qos.value
+                if (qos == ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY || qos == ONE_WITHOUT_PERSISTENCE_AND_RETRY) {
+                    qosArray[index] = 1
+                } else {
+                    qosArray[index] = qos.value
+                }
+            }
+            for ((index, qos) in topicMap.values.withIndex()) {
+                when (qos) {
+                    ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY -> {
+                        subscribeFlagList.add(index, SubscribeFlags(false, false))
+                    }
+                    ONE_WITHOUT_PERSISTENCE_AND_RETRY -> {
+                        subscribeFlagList.add(index, SubscribeFlags(false, true))
+                    }
+                    else -> {
+                        subscribeFlagList.add(index, SubscribeFlags(true, true))
+                    }
+                }
             }
             val subscribeStartTime = clock.nanoTime()
             try {
                 logger.d(TAG, "Subscribing to topics: ${topicMap.keys}")
                 connectionConfig.connectionEventHandler.onMqttSubscribeAttempt(topicMap)
-                mqtt!!.subscribe(
+                mqtt!!.subscribeWithPersistableRetryableFlags(
                     topicArray,
                     qosArray,
+                    subscribeFlagList,
                     MqttContext(subscribeStartTime),
                     getSubscribeListener(topicMap)
                 )
@@ -650,6 +671,10 @@ internal class MqttConnection(
         return object : IExperimentsConfig {
             override fun inactivityTimeoutSecs(): Int {
                 return connectionConfig.inactivityTimeoutSeconds
+            }
+
+            override fun connectPacketTimeoutSecs(): Int {
+                return connectionConfig.connectPacketTimeoutSeconds
             }
 
             override fun useNewSSLFlow(): Boolean {

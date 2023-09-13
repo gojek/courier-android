@@ -758,10 +758,10 @@ public class ClientComms {
     /*
      * Check and send a ping if needed and check for ping timeout. Need to send a ping if nothing has been sent or received in the last keepalive interval.
      */
-    public MqttToken checkForActivity() {
+    public MqttToken checkForActivity(Boolean forcePing) {
         MqttToken token = null;
         try {
-            token = clientState.checkForActivity();
+            token = clientState.checkForActivity(forcePing);
         } catch (MqttException e) {
             handleRunException(e);
         } catch (Exception e) {

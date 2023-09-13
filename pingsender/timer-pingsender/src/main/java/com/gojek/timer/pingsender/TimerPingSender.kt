@@ -22,6 +22,7 @@ import org.eclipse.paho.client.mqttv3.internal.ClientComms
  * @see MqttPingSender
  */
 internal class TimerPingSender(
+    private val pingSenderConfig: TimerPingSenderConfig,
     private val clock: Clock = Clock(),
     private val timerFactory: TimerFactory = TimerFactory()
 ) : MqttPingSender {
@@ -71,7 +72,7 @@ internal class TimerPingSender(
             val serverUri = comms.client?.serverURI ?: ""
             val keepAliveMillis = comms.keepAlive
             pingSenderEvents.mqttPingInitiated(comms.client.serverURI, keepAliveMillis.fromMillisToSeconds())
-            val token = comms.checkForActivity()
+            val token = comms.checkForActivity(pingSenderConfig.sendForcePing)
             if (token == null) {
                 logger.d(TAG, "Mqtt Ping Token null")
                 pingSenderEvents.pingMqttTokenNull(serverUri, keepAliveMillis.fromMillisToSeconds())

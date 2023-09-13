@@ -3,20 +3,23 @@ public abstract interface class com/gojek/mqtt/auth/Authenticator {
 }
 
 public abstract interface class com/gojek/mqtt/client/MqttClient {
+	public abstract fun addEventHandler (Lcom/gojek/mqtt/event/EventHandler;)V
 	public abstract fun addGlobalMessageListener (Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun addMessageListener (Ljava/lang/String;Lcom/gojek/mqtt/client/listener/MessageListener;)V
 	public abstract fun connect (Lcom/gojek/mqtt/model/MqttConnectOptions;)V
 	public abstract fun disconnect (Z)V
 	public abstract fun getCurrentState ()Lcom/gojek/mqtt/client/model/ConnectionState;
 	public abstract fun reconnect ()V
+	public abstract fun removeEventHandler (Lcom/gojek/mqtt/event/EventHandler;)V
 	public abstract fun removeMessageListener (Ljava/lang/String;Lcom/gojek/mqtt/client/listener/MessageListener;)V
-	public abstract fun send (Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;)Z
+	public abstract fun send (Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;Lcom/gojek/courier/callback/SendMessageCallback;)Z
 	public abstract fun subscribe (Lkotlin/Pair;[Lkotlin/Pair;)V
 	public abstract fun unsubscribe (Ljava/lang/String;[Ljava/lang/String;)V
 }
 
 public final class com/gojek/mqtt/client/MqttClient$DefaultImpls {
 	public static synthetic fun disconnect$default (Lcom/gojek/mqtt/client/MqttClient;ZILjava/lang/Object;)V
+	public static synthetic fun send$default (Lcom/gojek/mqtt/client/MqttClient;Lcom/gojek/courier/Message;Ljava/lang/String;Lcom/gojek/courier/QoS;Lcom/gojek/courier/callback/SendMessageCallback;ILjava/lang/Object;)Z
 }
 
 public abstract interface class com/gojek/mqtt/client/MqttInterceptor {
@@ -26,24 +29,28 @@ public abstract interface class com/gojek/mqtt/client/MqttInterceptor {
 
 public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public fun <init> ()V
-	public fun <init> (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJZ)V
-	public synthetic fun <init> (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIIJJZI)V
+	public synthetic fun <init> (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIIJJZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lcom/gojek/mqtt/client/config/SubscriptionStore;
+	public final fun component10 ()I
 	public final fun component2 ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
 	public final fun component3 ()I
 	public final fun component4 ()I
 	public final fun component5 ()I
-	public final fun component6 ()J
+	public final fun component6 ()I
 	public final fun component7 ()J
-	public final fun component8 ()Z
-	public final fun copy (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJZ)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIJJZILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public final fun component8 ()J
+	public final fun component9 ()Z
+	public final fun copy (Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIIJJZI)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/ExperimentConfigs;Lcom/gojek/mqtt/client/config/SubscriptionStore;Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;IIIIJJZIILjava/lang/Object;)Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActivityCheckIntervalSeconds ()I
 	public final fun getAdaptiveKeepAliveConfig ()Lcom/gojek/mqtt/model/AdaptiveKeepAliveConfig;
+	public final fun getConnectPacketTimeoutSeconds ()I
 	public final fun getInactivityTimeoutSeconds ()I
 	public final fun getIncomingMessagesCleanupIntervalSecs ()J
 	public final fun getIncomingMessagesTTLSecs ()J
+	public final fun getMaxInflightMessagesLimit ()I
 	public final fun getPolicyResetTimeSeconds ()I
 	public final fun getShouldUseNewSSLFlow ()Z
 	public final fun getSubscriptionStore ()Lcom/gojek/mqtt/client/config/SubscriptionStore;
@@ -52,12 +59,11 @@ public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 }
 
 public abstract class com/gojek/mqtt/client/config/MqttConfiguration {
-	public fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;)V
+	public fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;)V
 	public fun getAuthFailureHandler ()Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;
 	public fun getAuthenticator ()Lcom/gojek/mqtt/auth/Authenticator;
 	public fun getConnectRetryTimePolicy ()Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;
 	public fun getConnectTimeoutPolicy ()Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;
-	public fun getEventHandler ()Lcom/gojek/mqtt/event/EventHandler;
 	public fun getExperimentConfigs ()Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public fun getLogger ()Lcom/gojek/courier/logging/ILogger;
 	public fun getMqttInterceptorList ()Ljava/util/List;
@@ -95,13 +101,12 @@ public final class com/gojek/mqtt/client/config/SubscriptionStore : java/lang/En
 }
 
 public final class com/gojek/mqtt/client/config/v3/MqttV3Configuration : com/gojek/mqtt/client/config/MqttConfiguration {
-	public fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;)V
-	public synthetic fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;)V
+	public synthetic fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;
-	public final fun component10 ()Lcom/gojek/mqtt/pingsender/MqttPingSender;
-	public final fun component11 ()Ljava/util/List;
-	public final fun component12 ()Lcom/gojek/mqtt/client/config/PersistenceOptions;
-	public final fun component13 ()Lcom/gojek/mqtt/client/config/ExperimentConfigs;
+	public final fun component10 ()Ljava/util/List;
+	public final fun component11 ()Lcom/gojek/mqtt/client/config/PersistenceOptions;
+	public final fun component12 ()Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public final fun component2 ()Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;
 	public final fun component3 ()Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;
 	public final fun component4 ()Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;
@@ -109,15 +114,14 @@ public final class com/gojek/mqtt/client/config/v3/MqttV3Configuration : com/goj
 	public final fun component6 ()Lcom/gojek/courier/logging/ILogger;
 	public final fun component7 ()Lcom/gojek/mqtt/auth/Authenticator;
 	public final fun component8 ()Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;
-	public final fun component9 ()Lcom/gojek/mqtt/event/EventHandler;
-	public final fun copy (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;)Lcom/gojek/mqtt/client/config/v3/MqttV3Configuration;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/v3/MqttV3Configuration;Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/event/EventHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;ILjava/lang/Object;)Lcom/gojek/mqtt/client/config/v3/MqttV3Configuration;
+	public final fun component9 ()Lcom/gojek/mqtt/pingsender/MqttPingSender;
+	public final fun copy (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;)Lcom/gojek/mqtt/client/config/v3/MqttV3Configuration;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/config/v3/MqttV3Configuration;Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;Lcom/gojek/mqtt/policies/subscriptionretry/ISubscriptionRetryPolicy;ILcom/gojek/courier/logging/ILogger;Lcom/gojek/mqtt/auth/Authenticator;Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;Lcom/gojek/mqtt/pingsender/MqttPingSender;Ljava/util/List;Lcom/gojek/mqtt/client/config/PersistenceOptions;Lcom/gojek/mqtt/client/config/ExperimentConfigs;ILjava/lang/Object;)Lcom/gojek/mqtt/client/config/v3/MqttV3Configuration;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getAuthFailureHandler ()Lcom/gojek/mqtt/exception/handler/v3/AuthFailureHandler;
 	public fun getAuthenticator ()Lcom/gojek/mqtt/auth/Authenticator;
 	public fun getConnectRetryTimePolicy ()Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;
 	public fun getConnectTimeoutPolicy ()Lcom/gojek/mqtt/policies/connecttimeout/IConnectTimeoutPolicy;
-	public fun getEventHandler ()Lcom/gojek/mqtt/event/EventHandler;
 	public fun getExperimentConfigs ()Lcom/gojek/mqtt/client/config/ExperimentConfigs;
 	public fun getLogger ()Lcom/gojek/courier/logging/ILogger;
 	public fun getMqttInterceptorList ()Ljava/util/List;
@@ -131,7 +135,7 @@ public final class com/gojek/mqtt/client/config/v3/MqttV3Configuration : com/goj
 }
 
 public final class com/gojek/mqtt/client/connectioninfo/ConnectionInfo {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;Z)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()I
@@ -139,9 +143,11 @@ public final class com/gojek/mqtt/client/connectioninfo/ConnectionInfo {
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()I
 	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;ILjava/lang/Object;)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public final fun component8 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;Z)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;ILjava/lang/String;ZILjava/lang/Object;)Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCleanSession ()Z
 	public final fun getClientId ()Ljava/lang/String;
 	public final fun getConnectTimeout ()I
 	public final fun getHost ()Ljava/lang/String;
@@ -377,16 +383,18 @@ public final class com/gojek/mqtt/event/MqttEvent$MqttConnectFailureEvent : com/
 }
 
 public final class com/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent : com/gojek/mqtt/event/MqttEvent {
-	public fun <init> (Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
-	public synthetic fun <init> (Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
+	public synthetic fun <init> (Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lcom/gojek/mqtt/network/ActiveNetInfo;
 	public final fun component2 ()Lcom/gojek/mqtt/model/ServerUri;
 	public final fun component3 ()J
-	public final fun component4 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public final fun copy (Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent;Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent;
+	public final fun component4 ()J
+	public final fun component5 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public final fun copy (Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent;Lcom/gojek/mqtt/network/ActiveNetInfo;Lcom/gojek/mqtt/model/ServerUri;JJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$MqttConnectSuccessEvent;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActiveNetInfo ()Lcom/gojek/mqtt/network/ActiveNetInfo;
+	public final fun getConnectPacketRTTime ()J
 	public fun getConnectionInfo ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
 	public final fun getServerUri ()Lcom/gojek/mqtt/model/ServerUri;
 	public final fun getTimeTakenMillis ()J
@@ -516,20 +524,22 @@ public final class com/gojek/mqtt/event/MqttEvent$MqttMessageSendEvent : com/goj
 }
 
 public final class com/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent : com/gojek/mqtt/event/MqttEvent {
-	public fun <init> (Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
-	public synthetic fun <init> (Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
+	public synthetic fun <init> (Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()I
 	public final fun component3 ()I
 	public final fun component4 ()Lcom/gojek/mqtt/exception/CourierException;
-	public final fun component5 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public final fun copy (Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent;Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent;
+	public final fun component5 ()J
+	public final fun component6 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public final fun copy (Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent;Ljava/lang/String;IILcom/gojek/mqtt/exception/CourierException;JLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getConnectionInfo ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
 	public final fun getException ()Lcom/gojek/mqtt/exception/CourierException;
 	public final fun getQos ()I
 	public final fun getSizeBytes ()I
+	public final fun getTimeTakenMillis ()J
 	public final fun getTopic ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun setConnectionInfo (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
@@ -537,18 +547,20 @@ public final class com/gojek/mqtt/event/MqttEvent$MqttMessageSendFailureEvent : 
 }
 
 public final class com/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent : com/gojek/mqtt/event/MqttEvent {
-	public fun <init> (Ljava/lang/String;IILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
-	public synthetic fun <init> (Ljava/lang/String;IILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;IIJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
+	public synthetic fun <init> (Ljava/lang/String;IIJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()I
 	public final fun component3 ()I
-	public final fun component4 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
-	public final fun copy (Ljava/lang/String;IILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent;
-	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent;Ljava/lang/String;IILcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent;
+	public final fun component4 ()J
+	public final fun component5 ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
+	public final fun copy (Ljava/lang/String;IIJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent;Ljava/lang/String;IIJLcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;ILjava/lang/Object;)Lcom/gojek/mqtt/event/MqttEvent$MqttMessageSendSuccessEvent;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getConnectionInfo ()Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;
 	public final fun getQos ()I
 	public final fun getSizeBytes ()I
+	public final fun getTimeTakenMillis ()J
 	public final fun getTopic ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun setConnectionInfo (Lcom/gojek/mqtt/client/connectioninfo/ConnectionInfo;)V
@@ -1139,18 +1151,16 @@ public final class com/gojek/mqtt/policies/connectretrytime/ConnectRetryTimeConf
 
 public final class com/gojek/mqtt/policies/connectretrytime/ConnectRetryTimePolicy : com/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy {
 	public fun <init> (Lcom/gojek/mqtt/policies/connectretrytime/ConnectRetryTimeConfig;)V
-	public fun getConnRetryTimeSecs ()I
 	public fun getConnRetryTimeSecs (Z)I
-	public fun getCurrentRetryTime ()I
-	public fun getRetryCount ()I
 	public fun resetParams ()V
 }
 
 public abstract interface class com/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy : com/gojek/mqtt/policies/IFallbackPolicy {
-	public abstract fun getConnRetryTimeSecs ()I
 	public abstract fun getConnRetryTimeSecs (Z)I
-	public abstract fun getCurrentRetryTime ()I
-	public abstract fun getRetryCount ()I
+}
+
+public final class com/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy$DefaultImpls {
+	public static synthetic fun getConnRetryTimeSecs$default (Lcom/gojek/mqtt/policies/connectretrytime/IConnectRetryTimePolicy;ZILjava/lang/Object;)I
 }
 
 public final class com/gojek/mqtt/policies/connecttimeout/ConnectTimeoutConfig {

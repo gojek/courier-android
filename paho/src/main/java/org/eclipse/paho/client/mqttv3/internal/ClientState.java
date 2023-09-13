@@ -15,7 +15,6 @@
  */
 package org.eclipse.paho.client.mqttv3.internal;
 
-
 import org.eclipse.paho.client.mqttv3.ICommsCallback;
 import org.eclipse.paho.client.mqttv3.IExperimentsConfig;
 import org.eclipse.paho.client.mqttv3.ILogger;
@@ -93,6 +92,8 @@ public class ClientState
 
 	private Hashtable inUseMsgIds; // Used to store a set of in-use message IDs
 
+	private Hashtable<Integer, Integer> inUseMsdIdsQos1WithoutPersistence;
+
 	volatile private Vector pendingMessages;
 
 	volatile private Vector pendingFlows;
@@ -148,6 +149,8 @@ public class ClientState
 	private final static String className = ClientState.class.getName();
 
 	private long inactivityTimeout = DEFAULT_INACTIVITY_TIMEOUT;
+
+	private long connectPacketTimeout = DEFAULT_INACTIVITY_TIMEOUT;
 	private final static long DEFAULT_INACTIVITY_TIMEOUT = 60 * 1000;
 
 	private IPahoEvents pahoEvents;
@@ -169,6 +172,7 @@ public class ClientState
 
 		this.maxInflight = maxInflightMsgs;
 		inUseMsgIds = new Hashtable();
+		inUseMsdIdsQos1WithoutPersistence = new Hashtable();
 		pendingMessages = new Vector(this.maxInflight);
 		pendingFlows = new Vector();
 		outboundQoS2 = new Hashtable();
@@ -188,6 +192,7 @@ public class ClientState
 
 		if (experimentsConfig != null) {
 			inactivityTimeout = experimentsConfig.inactivityTimeoutSecs() * 1000L;
+			connectPacketTimeout = experimentsConfig.connectPacketTimeoutSecs() * 1000L;
 		}
 
 		restoreState();
@@ -234,6 +239,7 @@ public class ClientState
 		persistence.clear();
 		clientComms.clear();
 		inUseMsgIds.clear();
+		inUseMsdIdsQos1WithoutPersistence.clear();
 		pendingMessages.clear();
 		pendingFlows.clear();
 		outboundQoS2.clear();
@@ -516,7 +522,8 @@ public class ClientState
 		final String methodName = "send";
 		if (message.isMessageIdRequired() && (message.getMessageId() == 0))
 		{
-			message.setMessageId(getNextMessageId());
+			boolean isQos1NonPersistenceMessage = (message instanceof MqttPublish) && (((MqttPublish) message).getMessage().getType() > 2);
+			message.setMessageId(getNextMessageId(isQos1NonPersistenceMessage));
 		}
 		if (token != null)
 		{
@@ -555,6 +562,7 @@ public class ClientState
 					persistence.put(getSendPersistenceKey(message), (MqttPublish) message);
 					break;
 				}
+
 				tokenStore.saveToken(token, message);
 				pendingMessages.addElement(message);
 				queueLock.notifyAll();
@@ -641,7 +649,7 @@ public class ClientState
 	 *
 	 * @return token of ping command, null if no ping command has been sent.
 	 */
-	public MqttToken checkForActivity() throws MqttException
+	public MqttToken checkForActivity(Boolean forcePing) throws MqttException
 	{
 		final String methodName = "checkForActivity";
 
@@ -664,7 +672,7 @@ public class ClientState
 					long lastActivity = lastInboundActivity;
 
 					// Is a ping required?
-					if (time - lastActivity + keepAliveMargin >= this.keepAlive)
+					if (forcePing || (time - lastActivity + keepAliveMargin >= this.keepAlive))
 					{
 
 						// @TRACE 620=ping needed. keepAlive={0} lastOutboundActivity={1} lastInboundActivity={2}
@@ -743,7 +751,7 @@ public class ClientState
 					// Wake sender thread since it may be in wait state (in ClientState.get())
 					notifyQueueLock();
 				}
-				else if ((time - lastPing >= keepAlive + delta) && (time - lastInboundActivity >= keepAlive + delta) && (time - lastOutboundActivity >= keepAlive + delta))
+				else if ((time - lastPing >= keepAlive + delta) && (time - lastInboundActivity >= keepAlive + delta))
 				{
 					// any of the conditions is true means the client is active
 					// lastInboundActivity will be updated once receiving is done.
@@ -769,8 +777,13 @@ public class ClientState
 		{	
 			if (fastReconnectCheckStartTime > lastInboundActivity)
 			{
-				if(System.currentTimeMillis() - fastReconnectCheckStartTime >= inactivityTimeout)
-					
+				long timeout;
+				if (clientComms.isConnecting()) {
+					timeout = connectPacketTimeout;
+				} else {
+					timeout = inactivityTimeout;
+				}
+				if(System.currentTimeMillis() - fastReconnectCheckStartTime >= timeout)
 				{
 					logger.logFastReconnectEvent(fastReconnectCheckStartTime, lastInboundActivity);
 					logger.e(TAG, "not recieved ack for 1 min so disconnecting");
@@ -939,7 +952,7 @@ public class ClientState
 		token.internalTok.notifySent();
 		if (message instanceof MqttPublish)
 		{
-			if (((MqttPublish) message).getMessage().getQos() == 0)
+			if (((MqttPublish) message).getMessage().getQos() == 0 && ((MqttPublish) message).getMessage().getType() == 0)
 			{
 				// once a QoS 0 message is sent we can clean up its records straight away as
 				// we won't be hearing about it again
@@ -1021,7 +1034,7 @@ public class ClientState
 	/**
 	 * Called by the CommsReceiver when an ack has arrived.
 	 * 
-	 * @param message
+	 * @param ack
 	 * @throws MqttException
 	 */
 	protected void notifyReceivedAck(MqttAck ack) throws MqttException
@@ -1169,7 +1182,7 @@ public class ClientState
 	 * Called when waiters and callbacks have processed the message. For messages where delivery is complete the message can be removed from persistence and counters adjusted
 	 * accordingly. Also tidy up by removing token from store...
 	 * 
-	 * @param message
+	 * @param token
 	 * @throws MqttException
 	 */
 	protected void notifyComplete(MqttToken token) throws MqttException
@@ -1323,10 +1336,14 @@ public class ClientState
 
 		try
 		{
-			if (cleanSession)
-			{
+			if (cleanSession) {
 				clearState();
 			}
+
+			for (Integer key : inUseMsdIdsQos1WithoutPersistence.keySet()) {
+				inUseMsgIds.remove(key);
+			}
+			inUseMsdIdsQos1WithoutPersistence.clear();
 
 			pendingMessages.clear();
 			pendingFlows.clear();
@@ -1335,6 +1352,10 @@ public class ClientState
 				// Reset pingOutstanding to allow reconnects to assume no previous ping.
 				pingOutstanding = Boolean.FALSE;
 			}
+			fastReconnectCheckStartTime = 0;
+			lastInboundActivity = 0;
+			lastOutboundActivity = 0;
+			lastPing = 0;
 		}
 		catch (MqttException e)
 		{
@@ -1348,17 +1369,19 @@ public class ClientState
 	 * @param msgId
 	 *            A message ID that can be freed up for re-use.
 	 */
-	private synchronized void releaseMessageId(int msgId)
+	public synchronized void releaseMessageId(int msgId)
 	{
 		inUseMsgIds.remove(Integer.valueOf(msgId));
+		inUseMsdIdsQos1WithoutPersistence.remove(Integer.valueOf(msgId));
 	}
 
 	/**
 	 * Get the next MQTT message ID that is not already in use, and marks it as now being in use.
 	 * 
 	 * @return the next MQTT message ID to use
+	 * @param isQos1NonPersistenceMessage
 	 */
-	private synchronized int getNextMessageId() throws MqttException
+	private synchronized int getNextMessageId(boolean isQos1NonPersistenceMessage) throws MqttException
 	{
 		int startingMessageId = nextMsgId;
 		// Allow two complete passes of the message ID range. This gives
@@ -1383,6 +1406,7 @@ public class ClientState
 		while (inUseMsgIds.containsKey(Integer.valueOf(nextMsgId)));
 		Integer id = Integer.valueOf(nextMsgId);
 		inUseMsgIds.put(id, id);
+		if(isQos1NonPersistenceMessage) inUseMsdIdsQos1WithoutPersistence.put(id, id);
 		return nextMsgId;
 	}
 
@@ -1469,6 +1493,7 @@ public class ClientState
 	protected void close()
 	{
 		inUseMsgIds.clear();
+		inUseMsdIdsQos1WithoutPersistence.clear();
 		pendingMessages.clear();
 		pendingFlows.clear();
 		outboundQoS2.clear();
@@ -1476,6 +1501,7 @@ public class ClientState
 		inboundQoS2.clear();
 		tokenStore.clear();
 		inUseMsgIds = null;
+		inUseMsdIdsQos1WithoutPersistence = null;
 		pendingMessages = null;
 		pendingFlows = null;
 		outboundQoS2 = null;
@@ -1552,7 +1578,7 @@ public class ClientState
 
 		// Because the client will have disconnected, we will want to re-open persistence
 		try {
-			message.setMessageId(getNextMessageId());
+			message.setMessageId(getNextMessageId(false));
 			key = getSendBufferedPersistenceKey(message);
 			try {
 				persistence.put(key, (MqttPublish) message);

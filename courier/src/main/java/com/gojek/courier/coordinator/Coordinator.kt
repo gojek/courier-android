@@ -3,17 +3,25 @@ package com.gojek.courier.coordinator
 import com.gojek.courier.Message
 import com.gojek.courier.MessageAdapter
 import com.gojek.courier.QoS
+import com.gojek.courier.Stream
+import com.gojek.courier.Stream.Disposable
+import com.gojek.courier.Stream.Observer
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.stub.StubInterface
 import com.gojek.courier.stub.StubMethod
 import com.gojek.courier.utils.toStream
 import com.gojek.mqtt.client.MqttClient
 import com.gojek.mqtt.client.listener.MessageListener
+import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.model.MqttMessage
+import com.gojek.mqtt.event.EventHandler
+import com.gojek.mqtt.event.MqttEvent
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.FlowableOnSubscribe
 import io.reactivex.schedulers.Schedulers
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 
 internal class Coordinator(
     private val client: MqttClient,
@@ -22,15 +30,21 @@ internal class Coordinator(
 
     @Synchronized
     override fun send(stubMethod: StubMethod.Send, args: Array<Any>): Any {
+        logger.d("Coordinator", "Send method invoked")
         val data = stubMethod.argumentProcessor.getDataArgument(args)
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
+        val callback = stubMethod.argumentProcessor.getCallbackArgument(args)
         val message = stubMethod.messageAdapter.toMessage(topic, data)
-        return client.send(message, topic, stubMethod.qos)
+        val qos = stubMethod.qos
+        val sent = client.send(message, topic, qos, callback)
+        logger.d("Coordinator", "Sending message on topic: $topic, qos: $qos, message: $data")
+        return sent
     }
 
     @Synchronized
     override fun receive(stubMethod: StubMethod.Receive, args: Array<Any>): Any {
+        logger.d("Coordinator", "Receive method invoked")
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
 
@@ -62,18 +76,25 @@ internal class Coordinator(
     }
 
     override fun subscribe(stubMethod: StubMethod.Subscribe, args: Array<Any>): Any {
+        logger.d("Coordinator", "Subscribe method invoked")
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
-        return client.subscribe(topic to stubMethod.qos)
+        val qos = stubMethod.qos
+        val status = client.subscribe(topic to qos)
+        logger.d("Coordinator", "Subscribing topic: $topic with qos: $qos")
+        return status
     }
 
     override fun subscribeWithStream(
         stubMethod: StubMethod.SubscribeWithStream,
         args: Array<Any>
     ): Any {
+        logger.d("Coordinator", "Subscribe method invoked with a returning stream")
         stubMethod.argumentProcessor.inject(args)
         val topic = stubMethod.argumentProcessor.getTopic()
-        client.subscribe(topic to stubMethod.qos)
+        val qos = stubMethod.qos
+        client.subscribe(topic to qos)
+        logger.d("Coordinator", "Subscribing topic: $topic with qos: $qos")
 
         val flowable = Flowable.create(
             FlowableOnSubscribe<MqttMessage> { emitter ->
@@ -103,22 +124,81 @@ internal class Coordinator(
     }
 
     override fun unsubscribe(stubMethod: StubMethod.Unsubscribe, args: Array<Any>): Any {
+        logger.d("Coordinator", "Unsubscribe method invoked")
         stubMethod.argumentProcessor.inject(args)
         val topics = stubMethod.argumentProcessor.getTopics()
-        return if (topics.size == 1) {
+        val status = if (topics.size == 1) {
             client.unsubscribe(topics[0])
         } else {
             client.unsubscribe(topics[0], *topics.sliceArray(IntRange(1, topics.size - 1)))
         }
+        logger.d("Coordinator", "Unsubscribing topics: $topics")
+        return status
     }
 
     override fun subscribeAll(stubMethod: StubMethod.SubscribeAll, args: Array<Any>): Any {
+        logger.d("Coordinator", "Subscribe method invoked for multiple topics")
         val topicList = (args[0] as Map<String, QoS>).toList()
-        return if (topicList.size == 1) {
+        val status = if (topicList.size == 1) {
             client.subscribe(topicList[0])
         } else {
             client.subscribe(topicList[0], *topicList.toTypedArray().sliceArray(IntRange(1, topicList.size - 1)))
         }
+        logger.d("Coordinator", "Subscribing topics: $topicList")
+        return status
+    }
+
+    override fun getEventStream(): Stream<MqttEvent> {
+        return object : Stream<MqttEvent> {
+            override fun start(observer: Observer<MqttEvent>): Disposable {
+                val eventHandler = object : EventHandler {
+                    override fun onEvent(mqttEvent: MqttEvent) {
+                        try {
+                            observer.onNext(mqttEvent)
+                        } catch (throwable: Throwable) {
+                            observer.onError(throwable)
+                        }
+                    }
+                }
+                client.addEventHandler(eventHandler)
+                var isDisposed = false
+                return object : Disposable {
+                    override fun dispose() {
+                        client.removeEventHandler(eventHandler)
+                        isDisposed = true
+                    }
+
+                    override fun isDisposed(): Boolean {
+                        return isDisposed
+                    }
+                }
+            }
+
+            override fun subscribe(s: Subscriber<in MqttEvent>) {
+                val eventHandler = object : EventHandler {
+                    override fun onEvent(mqttEvent: MqttEvent) {
+                        try {
+                            s.onNext(mqttEvent)
+                        } catch (throwable: Throwable) {
+                            s.onError(throwable)
+                        }
+                    }
+                }
+                s.onSubscribe(object : Subscription {
+                    override fun request(n: Long) {
+                        client.addEventHandler(eventHandler)
+                    }
+
+                    override fun cancel() {
+                        client.removeEventHandler(eventHandler)
+                    }
+                })
+            }
+        }
+    }
+
+    override fun getConnectionState(): ConnectionState {
+        return client.getCurrentState()
     }
 
     private fun <T> Message.adapt(topic: String, messageAdapter: MessageAdapter<T>): T? {

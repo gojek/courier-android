@@ -7,5 +7,6 @@ data class ConnectionInfo(
     val connectTimeout: Int,
     val host: String,
     val port: Int,
-    val scheme: String
+    val scheme: String,
+    val cleanSession: Boolean
 )

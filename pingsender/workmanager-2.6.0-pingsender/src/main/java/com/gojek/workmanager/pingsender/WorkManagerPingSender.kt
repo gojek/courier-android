@@ -54,7 +54,7 @@ internal class WorkManagerPingSender(
         val keepAliveMillis = comms.keepAlive
         pingSenderEvents.mqttPingInitiated(serverUri, keepAliveMillis.fromMillisToSeconds())
 
-        val token = comms.checkForActivity()
+        val token = comms.checkForActivity(pingSenderConfig.sendForcePing)
         if (token == null) {
             logger.d(TAG, "Mqtt Ping Token null")
             pingSenderEvents.pingMqttTokenNull(serverUri, keepAliveMillis.fromMillisToSeconds())

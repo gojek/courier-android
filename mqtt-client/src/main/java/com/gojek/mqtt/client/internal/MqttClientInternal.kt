@@ -2,6 +2,7 @@ package com.gojek.mqtt.client.internal
 
 import android.content.Context
 import com.gojek.courier.QoS
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.keepalive.NoOpKeepAliveFailureHandler
 import com.gojek.keepalive.OptimalKeepAliveFailureHandler
@@ -9,12 +10,13 @@ import com.gojek.keepalive.OptimalKeepAliveObserver
 import com.gojek.keepalive.OptimalKeepAliveProvider
 import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
-import com.gojek.mqtt.client.event.interceptor.MqttEventsInterceptor
+import com.gojek.mqtt.client.event.interceptor.MqttEventHandler
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.event.AdaptivePingEventHandler
+import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.OptimalKeepAliveFoundEvent
 import com.gojek.mqtt.event.PingEventHandler
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
@@ -40,7 +42,7 @@ internal class MqttClientInternal(
     private var keepAliveProvider: KeepAliveProvider = NonAdaptiveKeepAliveProvider()
     private var keepAliveFailureHandler: KeepAliveFailureHandler = NoOpKeepAliveFailureHandler()
 
-    private val eventHandler = MqttEventsInterceptor(mqttConfiguration.eventHandler)
+    private val eventHandler = MqttEventHandler()
 
     private val optimalKeepAliveObserver = object : OptimalKeepAliveObserver {
         override fun onOptimalKeepAliveFound(
@@ -96,8 +98,8 @@ internal class MqttClientInternal(
         androidMqttClient.unsubscribe(listOf(*topics))
     }
 
-    fun send(mqttPacket: MqttPacket): Boolean {
-        return androidMqttClient.send(mqttPacket)
+    fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
+        return androidMqttClient.send(mqttPacket, sendMessageCallback)
     }
 
     fun addMessageListener(topic: String, listener: MessageListener) {
@@ -165,5 +167,13 @@ internal class MqttClientInternal(
                 optimalKeepAliveObserver = optimalKeepAliveObserver
             )
         }
+    }
+
+    fun addEventHandler(eventHandler: EventHandler) {
+        this.eventHandler.addEventHandler(eventHandler)
+    }
+
+    fun removeEventHandler(eventHandler: EventHandler) {
+        this.eventHandler.removeEventHandler(eventHandler)
     }
 }

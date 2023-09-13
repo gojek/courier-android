@@ -1,6 +1,7 @@
 package com.gojek.courier.app.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.gojek.chuckmqtt.external.MqttChuckConfig
 import com.gojek.chuckmqtt.external.MqttChuckInterceptor
@@ -9,6 +10,7 @@ import com.gojek.courier.Courier
 import com.gojek.courier.app.R
 import com.gojek.courier.app.data.network.CourierService
 import com.gojek.courier.app.data.network.model.Message
+import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.messageadapter.gson.GsonMessageAdapterFactory
 import com.gojek.courier.streamadapter.rxjava2.RxJava2StreamAdapterFactory
@@ -78,7 +80,24 @@ class MainActivity : AppCompatActivity() {
         send.setOnClickListener {
             courierService.publish(
                 topic = topic.text.toString(),
-                message = Message(123, message.text.toString())
+                message = Message(123, message.text.toString()),
+                callback = object : SendMessageCallback {
+                    override fun onMessageSendTrigger() {
+                        Log.d("Courier", "onMessageSendTrigger")
+                    }
+
+                    override fun onMessageWrittenOnSocket() {
+                        Log.d("Courier", "onMessageWrittenOnSocket")
+                    }
+
+                    override fun onMessageSendSuccess() {
+                        Log.d("Courier", "onMessageSendSuccess")
+                    }
+
+                    override fun onMessageSendFailure(error: Throwable) {
+                        Log.d("Courier", "onMessageSendFailure")
+                    }
+                }
             )
         }
 
@@ -107,7 +126,6 @@ class MainActivity : AppCompatActivity() {
     private fun initialiseCourier() {
         val mqttConfig = MqttV3Configuration(
             logger = getLogger(),
-            eventHandler = eventHandler,
             authenticator = object : Authenticator {
                 override fun authenticate(
                     connectOptions: MqttConnectOptions,
@@ -130,12 +148,15 @@ class MainActivity : AppCompatActivity() {
                 ),
                 inactivityTimeoutSeconds = 45,
                 activityCheckIntervalSeconds = 30,
+                connectPacketTimeoutSeconds = 5,
                 incomingMessagesTTLSecs = 60,
                 incomingMessagesCleanupIntervalSecs = 10,
+                maxInflightMessagesLimit = 1000,
             ),
-            pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig())
+            pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig(sendForcePing = true))
         )
         mqttClient = MqttClientFactory.create(this, mqttConfig)
+        mqttClient.addEventHandler(eventHandler)
 
         val configuration = Courier.Configuration(
             client = mqttClient,

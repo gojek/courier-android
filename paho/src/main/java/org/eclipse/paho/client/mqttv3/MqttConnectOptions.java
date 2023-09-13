@@ -27,6 +27,8 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
+import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_CONNECT_OPTIONS;
+
 /**
  * Holds the set of options that control how the client connects to a server.
  */
@@ -158,11 +160,11 @@ public class MqttConnectOptions
 	 * @throws IllegalArgumentException
 	 *             if the user name is blank or only contains whitespace characters.
 	 */
-	public void setUserName(String userName)
+	public void setUserName(String userName) throws MqttException
 	{
 		if ((userName != null) && (userName.trim().equals("")))
 		{
-			throw new IllegalArgumentException("Username is empty");
+			throw new MqttException(REASON_CODE_INVALID_CONNECT_OPTIONS, new IllegalArgumentException("Username is empty"));
 		}
 		this.userName = userName;
 	}
@@ -260,11 +262,11 @@ public class MqttConnectOptions
 	 * @param keepAliveInterval
 	 *            the interval, measured in seconds, must be >= 0.
 	 */
-	public void setKeepAliveInterval(int keepAliveInterval) throws IllegalArgumentException
+	public void setKeepAliveInterval(int keepAliveInterval) throws MqttException
 	{
 		if (keepAliveInterval < 0)
 		{
-			throw new IllegalArgumentException();
+			throw new MqttException(REASON_CODE_INVALID_CONNECT_OPTIONS);
 		}
 		this.keepAliveInterval = keepAliveInterval;
 	}
@@ -272,11 +274,11 @@ public class MqttConnectOptions
 	/*
 	 *	This interval is used for sending to server in connect packet.
 	 */
-	public void setKeepAliveIntervalServer(int keepAliveInterval) throws IllegalArgumentException
+	public void setKeepAliveIntervalServer(int keepAliveInterval) throws MqttException
 	{
 		if (keepAliveInterval < 0)
 		{
-			throw new IllegalArgumentException();
+			throw new MqttException(REASON_CODE_INVALID_CONNECT_OPTIONS);
 		}
 		this.keepAliveIntervalServer = keepAliveInterval;
 	}
@@ -353,11 +355,11 @@ public class MqttConnectOptions
 	 * @param readTimeout
 	 *            the timeout value, measured in seconds. It must be >0;
 	 */
-	public void setReadTimeout(int readTimeout)
+	public void setReadTimeout(int readTimeout) throws MqttException
 	{
 		if (readTimeout < 0)
 		{
-			throw new IllegalArgumentException();
+			throw new MqttException(REASON_CODE_INVALID_CONNECT_OPTIONS);
 		}
 		this.readTimeout = readTimeout;
 	}
