@@ -537,6 +537,15 @@ internal class MqttConnection(
                     timeTakenMillis = (clock.nanoTime() - unsubscribeStartTime).fromNanosToMillis()
                 )
                 runnableScheduler.scheduleMqttHandleExceptionRunnable(mqttException, true)
+            } catch (illegalArgumentException: IllegalArgumentException) {
+                connectionConfig.connectionEventHandler.onMqttUnsubscribeFailure(
+                    topics = topics,
+                    throwable = MqttException(
+                        REASON_CODE_INVALID_SUBSCRIPTION.toInt(),
+                        illegalArgumentException
+                    ),
+                    timeTakenMillis = (clock.nanoTime() - unsubscribeStartTime).fromNanosToMillis()
+                )
             }
         }
     }
