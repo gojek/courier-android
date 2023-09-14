@@ -4,7 +4,7 @@ Courier provides the functionalities like Send, Receive, Subscribe, Unsubscribe 
 
 ### Usage
 
-Declare a service interface for various actions like Send, Receive, Subscribe, Unsubscribe.
+Declare a service interface for various actions like Send, Receive, Subscribe, SubscribeMultiple, Unsubscribe.
 
 ~~~ kotlin
 interface MessageService {
@@ -16,11 +16,16 @@ interface MessageService {
 	
 	@Subscribe(topic = "topic/{id}/receive", qos = QoS.ONE)
  	fun subscribe(@Path("id") identifier: String): Observable<Message>
+	
+	@SubscribeMultiple
+ 	fun subscribe(@TopicMap topicMap: Map<String, QoS>): Observable<Message>
  	
 	@Unsubscribe(topics = ["topic/{id}/receive"])
  	fun unsubscribe(@Path("id") identifier: String)
 }
 ~~~
+
+
 
 Use Courier to create an implementation of service interface.
 
@@ -44,12 +49,14 @@ Following annotations are supported for service interface.
 
 - **@Subscribe** : A method annotation used for subscribing a single topic over the MQTT connection.
 
-- **@SubscribeMultiple** : A method annotation used for subscribing multiple topic over the MQTT connection.
+- **@SubscribeMultiple** : A method annotation used for subscribing multiple topics over the MQTT connection.
 
-- **@Unsubscribe** : A method annotation used for unsubscribing a single topic over the MQTT connection.
+- **@Unsubscribe** : A method annotation used for unsubscribing topics over the MQTT connection.
 
 - **@Path** : A parameter annotation used for specifying a path variable in an MQTT topic.
 
 - **@Data** : A parameter annotation used for specifying the message object while sending a message over the MQTT connection.
 
 - **@TopicMap** : A parameter annotation used for specifying a topic map. It is always used while subscribing multiple topics. 
+
+**Note** : While subscribing topics using `@SubscribeMultiple` along with a stream, make sure that messages received on all topics follow same format or a message adapter is added for handling different format.

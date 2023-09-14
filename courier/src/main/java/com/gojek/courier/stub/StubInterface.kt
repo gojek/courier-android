@@ -28,6 +28,9 @@ internal class StubInterface(
             is StubMethod.SubscribeAll -> {
                 callback.subscribeAll(stubMethod, args)
             }
+            is StubMethod.SubscribeAllWithStream -> {
+                callback.subscribeAllWithStream(stubMethod, args)
+            }
             is StubMethod.Unsubscribe -> {
                 callback.unsubscribe(stubMethod, args)
             }
@@ -41,6 +44,7 @@ internal class StubInterface(
         fun subscribeWithStream(stubMethod: StubMethod.SubscribeWithStream, args: Array<Any>): Any
         fun unsubscribe(stubMethod: StubMethod.Unsubscribe, args: Array<Any>): Any
         fun subscribeAll(stubMethod: StubMethod.SubscribeAll, args: Array<Any>): Any
+        fun subscribeAllWithStream(stubMethod: StubMethod.SubscribeAllWithStream, args: Array<Any>): Any
         fun getEventStream(): Stream<MqttEvent>
         fun getConnectionState(): ConnectionState
     }

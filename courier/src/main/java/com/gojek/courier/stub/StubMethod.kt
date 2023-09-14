@@ -40,6 +40,11 @@ internal sealed class StubMethod {
 
     object SubscribeAll : StubMethod()
 
+    class SubscribeAllWithStream(
+        val messageAdapter: MessageAdapter<Any>,
+        val streamAdapter: StreamAdapter<Any, Any>
+    ) : StubMethod()
+
     class Unsubscribe(
         val argumentProcessor: UnsubscriptionArgumentProcessor
     ) : StubMethod()
