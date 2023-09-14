@@ -137,28 +137,40 @@ internal class MethodAnnotationsParser(
     }
 
     private fun parseSubscribeAllMethodAnnotations(method: Method) {
-        method.requireReturnTypeIsOneOf(Void.TYPE) {
-            "SubscribeAll method must return Void: $method"
-        }
-        method.requireParameterTypes(ParameterizedType::class.java) {
-            "Only one argument with parameterized type is allowed"
+        method.requireReturnTypeIsOneOf(Void.TYPE, ParameterizedType::class.java) {
+            "Subscribe method must return Void or ParameterizedType: $method"
         }
         val annotations = method.parameterAnnotations[0].filter { it.isParameterAnnotation() }
         require(annotations.size == 1) {
             "A parameter must have one and only one parameter annotation"
         }
         require(method.parameterTypes[0] == Map::class.java) {
-            "Parameter should be of Map<String, Qos> type $method"
+            "Parameter should be of Map<String, QoS> type $method"
         }
         val actualTypeArguments =
             (method.genericParameterTypes[0] as ParameterizedType).actualTypeArguments
         require(actualTypeArguments[0] == String::class.java) {
-            "Parameter should be of Map<String, Qos> type $method"
+            "Parameter should be of Map<String, QoS> type $method"
         }
         require(actualTypeArguments[1].getRawType() == QoS::class.java) {
-            "Parameter should be of Map<String, Qos> type $method"
+            "Parameter should be of Map<String, QoS> type $method"
         }
-        stubMethod = StubMethod.SubscribeAll
+
+        if (method.genericReturnType == Void.TYPE) {
+            stubMethod = StubMethod.SubscribeAll
+        } else {
+            method.requireReturnTypeIsResolvable {
+                "Method return type must not include a type variable or wildcard: ${method.genericReturnType}"
+            }
+
+            val streamType = method.genericReturnType as ParameterizedType
+            val messageType = streamType.getFirstTypeArgument()
+
+            val streamAdapter = streamAdapterResolver.resolve(streamType)
+            val messageAdapter = messageAdapterResolver.resolve(messageType, method.annotations)
+
+            stubMethod = StubMethod.SubscribeAllWithStream(messageAdapter, streamAdapter)
+        }
     }
 
     private fun parseUnsubscribeMethodAnnotations(method: Method) {

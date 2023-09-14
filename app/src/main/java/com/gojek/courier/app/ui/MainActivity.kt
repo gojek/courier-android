@@ -7,12 +7,15 @@ import com.gojek.chuckmqtt.external.MqttChuckConfig
 import com.gojek.chuckmqtt.external.MqttChuckInterceptor
 import com.gojek.chuckmqtt.external.Period
 import com.gojek.courier.Courier
+import com.gojek.courier.QoS
+import com.gojek.courier.QoS.ZERO
 import com.gojek.courier.app.R
 import com.gojek.courier.app.data.network.CourierService
 import com.gojek.courier.app.data.network.model.Message
 import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.messageadapter.gson.GsonMessageAdapterFactory
+import com.gojek.courier.messageadapter.text.TextMessageAdapterFactory
 import com.gojek.courier.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttClient
@@ -102,7 +105,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         subscribe.setOnClickListener {
-            courierService.subscribe(topic = topic.text.toString())
+            val topics = topic.text.toString().split(",")
+            val stream = if (topics.size == 1) {
+                courierService.subscribe(topic = topics[0])
+            } else {
+                val topicMap = mutableMapOf<String, QoS>()
+                for (topic in topics) { topicMap[topic] = ZERO }
+                courierService.subscribeAll(topicMap = topicMap)
+            }
+            stream.subscribe { Log.d("Courier", "Message received: $it") }
         }
 
         unsubscribe.setOnClickListener {
@@ -161,7 +172,7 @@ class MainActivity : AppCompatActivity() {
         val configuration = Courier.Configuration(
             client = mqttClient,
             streamAdapterFactories = listOf(RxJava2StreamAdapterFactory()),
-            messageAdapterFactories = listOf(GsonMessageAdapterFactory()),
+            messageAdapterFactories = listOf(TextMessageAdapterFactory(), GsonMessageAdapterFactory()),
             logger = getLogger()
         )
         val courier = Courier(configuration)

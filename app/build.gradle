@@ -62,6 +62,7 @@ dependencies {
 
     implementation project(':courier-stream-adapter-rxjava2')
     implementation project(':courier-message-adapter-gson')
+    implementation project(':courier-message-adapter-text')
     implementation project(':courier-message-adapter-moshi')
     implementation project(':courier-message-adapter-protobuf')
     implementation project(':adaptive-keep-alive')

@@ -148,6 +148,44 @@ internal class Coordinator(
         return status
     }
 
+    override fun subscribeAllWithStream(stubMethod: StubMethod.SubscribeAllWithStream, args: Array<Any>): Any {
+        logger.d("Coordinator", "Subscribe method invoked for multiple topics")
+        val topicList = (args[0] as Map<String, QoS>).toList()
+        if (topicList.size == 1) {
+            client.subscribe(topicList[0])
+        } else {
+            client.subscribe(topicList[0], *topicList.toTypedArray().sliceArray(IntRange(1, topicList.size - 1)))
+        }
+        logger.d("Coordinator", "Subscribed topics: $topicList")
+        val flowable = Flowable.create(
+            FlowableOnSubscribe<MqttMessage> { emitter ->
+                val listener = object : MessageListener {
+                    override fun onMessageReceived(mqttMessage: MqttMessage) {
+                        if (emitter.isCancelled.not()) {
+                            emitter.onNext(mqttMessage)
+                        }
+                    }
+                }
+                for (topic in topicList) {
+                    client.addMessageListener(topic.first, listener)
+                    emitter.setCancellable { client.removeMessageListener(topic.first, listener) }
+                }
+            },
+            BackpressureStrategy.BUFFER
+        )
+
+        val stream = flowable
+            .observeOn(Schedulers.computation())
+            .flatMap { mqttMessage ->
+                mqttMessage.message.adapt(
+                    mqttMessage.topic,
+                    stubMethod.messageAdapter
+                )?.let { Flowable.just(it) } ?: Flowable.empty()
+            }
+            .toStream()
+        return stubMethod.streamAdapter.adapt(stream)
+    }
+
     override fun getEventStream(): Stream<MqttEvent> {
         return object : Stream<MqttEvent> {
             override fun start(observer: Observer<MqttEvent>): Disposable {
