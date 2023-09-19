@@ -7,4 +7,5 @@ internal interface IMqttReceivePersistence {
     fun getAllIncomingMessagesWithTopicFilter(topics: Set<String>): List<MqttReceivePacket>
     fun removeReceivedMessages(messageIds: List<Long>): Int
     fun removeMessagesWithOlderTimestamp(timestampNanos: Long): Int
+    fun getAllIncomingMessagesForWildCardTopic(topic: String): List<MqttReceivePacket>
 }

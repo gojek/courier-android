@@ -13,6 +13,9 @@ internal interface IncomingMessagesDao {
     @Query("SELECT * from incoming_messages where topic in (:topics)")
     fun getAllMessagesWithTopicFilter(topics: Set<String>): List<MqttReceivePacket>
 
+    @Query("SELECT * from incoming_messages where topic LIKE :topic")
+    fun getAllIncomingMessagesForWildCardTopic(topic: String): List<MqttReceivePacket>
+
     @Query("DELETE from incoming_messages")
     fun clearAllMessages()
 

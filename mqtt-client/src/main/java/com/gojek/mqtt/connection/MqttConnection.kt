@@ -576,7 +576,7 @@ internal class MqttConnection(
                     connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
                         topics = failTopicMap,
                         timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis(),
-                        throwable = MqttException(MqttException.REASON_CODE_INVALID_SUBSCRIPTION.toInt())
+                        throwable = MqttException(REASON_CODE_INVALID_SUBSCRIPTION.toInt())
                     )
                 }
 
