@@ -193,11 +193,13 @@ internal class Coordinator(
                 val eventDisposable = CompositeDisposable()
                 for (topic in topicList) {
                     client.addMessageListener(topic.first, listener)
-                    eventDisposable.add(eventSubject.filter { event ->
-                        isInvalidSubscriptionFailureEvent(event, topic.first)
-                    }.subscribe {
-                        client.removeMessageListener(topic.first, listener)
-                    })
+                    eventDisposable.add(
+                        eventSubject.filter { event ->
+                            isInvalidSubscriptionFailureEvent(event, topic.first)
+                        }.subscribe {
+                            client.removeMessageListener(topic.first, listener)
+                        }
+                    )
                 }
                 emitter.setCancellable {
                     for (topic in topicList) {

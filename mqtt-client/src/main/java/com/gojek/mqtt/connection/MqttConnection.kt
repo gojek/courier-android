@@ -515,6 +515,7 @@ internal class MqttConnection(
                     ),
                     timeTakenMillis = (clock.nanoTime() - subscribeStartTime).fromNanosToMillis()
                 )
+                subscriptionStore.getListener().onInvalidTopicsSubscribeFailure(topicMap)
             }
         }
     }
@@ -546,6 +547,7 @@ internal class MqttConnection(
                     ),
                     timeTakenMillis = (clock.nanoTime() - unsubscribeStartTime).fromNanosToMillis()
                 )
+                subscriptionStore.getListener().onInvalidTopicsUnsubscribeFailure(topics)
             }
         }
     }
@@ -581,6 +583,7 @@ internal class MqttConnection(
                 }
 
                 subscriptionStore.getListener().onTopicsSubscribed(successTopicMap)
+                subscriptionStore.getListener().onInvalidTopicsSubscribeFailure(failTopicMap)
                 subscriptionPolicy.resetParams()
             }
 

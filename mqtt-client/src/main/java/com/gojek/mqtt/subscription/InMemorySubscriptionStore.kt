@@ -4,7 +4,13 @@ import com.gojek.courier.QoS
 
 internal class InMemorySubscriptionStore : SubscriptionStore {
     private var state = State(mapOf())
-    private val listener = object : SubscriptionStoreListener {}
+    private val listener = object : SubscriptionStoreListener {
+        override fun onInvalidTopicsSubscribeFailure(topicMap: Map<String, QoS>) {
+            state = state.copy(
+                subscriptionTopics = state.subscriptionTopics - topicMap.keys
+            )
+        }
+    }
 
     private data class State(val subscriptionTopics: Map<String, QoS>)
 

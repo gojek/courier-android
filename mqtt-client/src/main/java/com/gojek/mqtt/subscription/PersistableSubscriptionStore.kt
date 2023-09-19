@@ -15,6 +15,17 @@ internal class PersistableSubscriptionStore(context: Context) : SubscriptionStor
         override fun onTopicsUnsubscribed(topics: Set<String>) {
             onTopicsUnsubscribedInternal(topics)
         }
+
+        override fun onInvalidTopicsSubscribeFailure(topicMap: Map<String, QoS>) {
+            state = state.copy(
+                subscriptionTopics = state.subscriptionTopics - topicMap.keys,
+                pendingUnsubscribeTopics = state.pendingUnsubscribeTopics
+            )
+        }
+
+        override fun onInvalidTopicsUnsubscribeFailure(topics: Set<String>) {
+            onTopicsUnsubscribedInternal(topics)
+        }
     }
 
     private data class State(
