@@ -22,6 +22,7 @@ import com.gojek.mqtt.event.PingEventHandler
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
+import com.gojek.mqtt.utils.MqttUtils
 import com.gojek.networktracker.NetworkStateTrackerFactory
 
 internal class MqttClientInternal(
@@ -42,7 +43,7 @@ internal class MqttClientInternal(
     private var keepAliveProvider: KeepAliveProvider = NonAdaptiveKeepAliveProvider()
     private var keepAliveFailureHandler: KeepAliveFailureHandler = NoOpKeepAliveFailureHandler()
 
-    private val eventHandler = MqttEventHandler()
+    private val eventHandler = MqttEventHandler(MqttUtils())
 
     private val optimalKeepAliveObserver = object : OptimalKeepAliveObserver {
         override fun onOptimalKeepAliveFound(
