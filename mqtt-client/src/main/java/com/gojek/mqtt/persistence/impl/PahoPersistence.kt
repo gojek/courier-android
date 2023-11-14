@@ -86,6 +86,10 @@ internal class PahoPersistence(private val context: Context) :
         return incomingMessagesDao.getAllMessagesWithTopicFilter(topics)
     }
 
+    override fun getAllIncomingMessagesForWildCardTopic(topic: String): List<MqttReceivePacket> {
+        return incomingMessagesDao.getAllIncomingMessagesForWildCardTopic(topic)
+    }
+
     override fun removeReceivedMessages(messageIds: List<Long>): Int {
         return incomingMessagesDao.removeMessagesById(messageIds)
     }

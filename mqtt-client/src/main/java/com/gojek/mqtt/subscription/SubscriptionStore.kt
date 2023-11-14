@@ -13,5 +13,7 @@ internal interface SubscriptionStore {
 
 internal interface SubscriptionStoreListener {
     fun onTopicsSubscribed(topicMap: Map<String, QoS>) = Unit
+    fun onInvalidTopicsSubscribeFailure(topicMap: Map<String, QoS>) = Unit
     fun onTopicsUnsubscribed(topics: Set<String>) = Unit
+    fun onInvalidTopicsUnsubscribeFailure(topics: Set<String>) = Unit
 }

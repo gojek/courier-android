@@ -72,6 +72,9 @@ public final class com/gojek/courier/extensions/CollectionExtensionsKt {
 	public static final fun toImmutableSet (Ljava/util/Set;)Ljava/util/Set;
 }
 
+public final class com/gojek/courier/extensions/StringExtensionsKt {
+}
+
 public final class com/gojek/courier/extensions/TimeUnitExtensionsKt {
 }
 

@@ -1,6 +1,7 @@
 package com.gojek.mqtt.client
 
 import com.gojek.courier.extensions.fromSecondsToNanos
+import com.gojek.courier.extensions.isWildCardTopic
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
 import com.gojek.mqtt.client.listener.MessageListener
@@ -47,6 +48,8 @@ internal class IncomingMsgControllerImpl(
 
     private val listenerMap = ConcurrentHashMap<String, List<MessageListener>>()
 
+    private val wildcardTopicListenerMap = ConcurrentHashMap<String, List<MessageListener>>()
+
     private var cleanupFuture: ScheduledFuture<*>? = null
 
     override fun triggerHandleMessage() {
@@ -64,39 +67,67 @@ internal class IncomingMsgControllerImpl(
 
     @Synchronized
     override fun registerListener(topic: String, listener: MessageListener) {
-        listenerMap[topic] = (listenerMap[topic] ?: emptyList()) + listener
+        if (topic.isWildCardTopic()) {
+            wildcardTopicListenerMap[topic] = (wildcardTopicListenerMap[topic] ?: emptyList()) + listener
+        } else {
+            listenerMap[topic] = (listenerMap[topic] ?: emptyList()) + listener
+        }
         triggerHandleMessage()
     }
 
     @Synchronized
     override fun unregisterListener(topic: String, listener: MessageListener) {
-        listenerMap[topic] = (listenerMap[topic] ?: emptyList()) - listener
-        if (listenerMap[topic]!!.isEmpty()) {
-            listenerMap.remove(topic)
+        if (topic.isWildCardTopic()) {
+            wildcardTopicListenerMap[topic] = (wildcardTopicListenerMap[topic] ?: emptyList()) - listener
+            if (wildcardTopicListenerMap[topic]!!.isEmpty()) {
+                wildcardTopicListenerMap.remove(topic)
+            }
+        } else {
+            listenerMap[topic] = (listenerMap[topic] ?: emptyList()) - listener
+            if (listenerMap[topic]!!.isEmpty()) {
+                listenerMap.remove(topic)
+            }
         }
     }
 
     private inner class HandleMessage : Runnable {
         override fun run() {
             try {
-                if (listenerMap.keys.isEmpty()) {
+                if (listenerMap.keys.isEmpty() && wildcardTopicListenerMap.isEmpty()) {
                     logger.d(TAG, "No listeners registered")
                     return
                 }
                 val messages: List<MqttReceivePacket> =
                     mqttReceivePersistence.getAllIncomingMessagesWithTopicFilter(listenerMap.keys)
-                if (mqttUtils.isEmpty(messages)) {
-                    logger.d(TAG, "No Messages in Table")
-                    return
-                }
                 val deletedMsgIds = mutableListOf<Long>()
                 for (message in messages) {
                     logger.d(TAG, "Going to process ${message.messageId}")
-                    val listenersNotified = notifyListeners(message)
+                    val listenersNotified = notifyListeners(message, listenerMap[message.topic]!!)
                     if (listenersNotified) {
                         deletedMsgIds.add(message.messageId)
                     }
                     logger.d(TAG, "Successfully Processed Message ${message.messageId}")
+                }
+                // processing messages for wildcard topic subscription
+                for (wildCardTopic in wildcardTopicListenerMap.keys()) {
+                    val topicForDBQuery = parseWildCardTopicForDBQuery(wildCardTopic)
+                    val wildcardMessages: List<MqttReceivePacket> =
+                        mqttReceivePersistence.getAllIncomingMessagesForWildCardTopic(topicForDBQuery)
+                    for (message in wildcardMessages) {
+                        logger.d(TAG, "Going to process ${message.messageId}")
+                        val wildCardTopicRegex = parseWildCardTopicForRegex(wildCardTopic)
+                        if (wildCardTopicRegex.matches(message.topic)) {
+                            logger.d(TAG, "Wildcard topic: $wildCardTopic matches ${message.topic}")
+                            val listenersNotified =
+                                notifyListeners(message, wildcardTopicListenerMap[wildCardTopic]!!)
+                            if (listenersNotified) {
+                                deletedMsgIds.add(message.messageId)
+                            }
+                        } else {
+                            logger.d(TAG, "Wildcard topic: $wildCardTopic does not match ${message.topic}")
+                        }
+                        logger.d(TAG, "Successfully Processed Message ${message.messageId}")
+                    }
                 }
                 if (deletedMsgIds.isNotEmpty()) {
                     val deletedMessagesCount = deleteMessages(deletedMsgIds)
@@ -112,6 +143,18 @@ internal class IncomingMsgControllerImpl(
         }
     }
 
+    private fun parseWildCardTopicForDBQuery(topic: String): String {
+        var updatedTopic: String = topic.replace("+", "%")
+        updatedTopic = updatedTopic.replace("#", "%")
+        return updatedTopic
+    }
+
+    private fun parseWildCardTopicForRegex(topic: String): Regex {
+        var updatedTopic: String = topic.replace("+", "[^\\/]+")
+        updatedTopic = updatedTopic.replace("#", "([^\\/]+(\\/?[^\\/])*)+")
+        return Regex(updatedTopic)
+    }
+
     private inner class CleanupExpiredMessages : Runnable {
         override fun run() {
             logger.d(TAG, "Deleting expired messages")
@@ -123,10 +166,10 @@ internal class IncomingMsgControllerImpl(
         }
     }
 
-    private fun notifyListeners(message: MqttReceivePacket): Boolean {
+    private fun notifyListeners(message: MqttReceivePacket, listeners: List<MessageListener>): Boolean {
         var notified = false
         try {
-            listenerMap[message.topic]!!.forEach {
+            listeners.forEach {
                 notified = true
                 it.onMessageReceived(message.toMqttMessage())
             }

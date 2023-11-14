@@ -515,6 +515,7 @@ internal class MqttConnection(
                     ),
                     timeTakenMillis = (clock.nanoTime() - subscribeStartTime).fromNanosToMillis()
                 )
+                subscriptionStore.getListener().onInvalidTopicsSubscribeFailure(topicMap)
             }
         }
     }
@@ -546,6 +547,7 @@ internal class MqttConnection(
                     ),
                     timeTakenMillis = (clock.nanoTime() - unsubscribeStartTime).fromNanosToMillis()
                 )
+                subscriptionStore.getListener().onInvalidTopicsUnsubscribeFailure(topics)
             }
         }
     }
@@ -576,11 +578,12 @@ internal class MqttConnection(
                     connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
                         topics = failTopicMap,
                         timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis(),
-                        throwable = MqttException(MqttException.REASON_CODE_INVALID_SUBSCRIPTION.toInt())
+                        throwable = MqttException(REASON_CODE_INVALID_SUBSCRIPTION.toInt())
                     )
                 }
 
                 subscriptionStore.getListener().onTopicsSubscribed(successTopicMap)
+                subscriptionStore.getListener().onInvalidTopicsSubscribeFailure(failTopicMap)
                 subscriptionPolicy.resetParams()
             }
 

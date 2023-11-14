@@ -16,10 +16,14 @@ import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.model.MqttMessage
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
+import com.gojek.mqtt.event.MqttEvent.MqttSubscribeFailureEvent
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.FlowableOnSubscribe
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
+import org.eclipse.paho.client.mqttv3.MqttException
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 
@@ -27,6 +31,18 @@ internal class Coordinator(
     private val client: MqttClient,
     private val logger: ILogger
 ) : StubInterface.Callback {
+
+    private val eventSubject = PublishSubject.create<MqttEvent> { emitter ->
+        val eventHandler = object : EventHandler {
+            override fun onEvent(mqttEvent: MqttEvent) {
+                if (emitter.isDisposed.not()) {
+                    emitter.onNext(mqttEvent)
+                }
+            }
+        }
+        client.addEventHandler(eventHandler)
+        emitter.setCancellable { client.removeEventHandler(eventHandler) }
+    }
 
     @Synchronized
     override fun send(stubMethod: StubMethod.Send, args: Array<Any>): Any {
@@ -106,7 +122,15 @@ internal class Coordinator(
                     }
                 }
                 client.addMessageListener(topic, listener)
-                emitter.setCancellable { client.removeMessageListener(topic, listener) }
+                val eventDisposable = eventSubject.filter { event ->
+                    isInvalidSubscriptionFailureEvent(event, topic)
+                }.subscribe {
+                    client.removeMessageListener(topic, listener)
+                }
+                emitter.setCancellable {
+                    client.removeMessageListener(topic, listener)
+                    eventDisposable.dispose()
+                }
             },
             BackpressureStrategy.BUFFER
         )
@@ -166,9 +190,22 @@ internal class Coordinator(
                         }
                     }
                 }
+                val eventDisposable = CompositeDisposable()
                 for (topic in topicList) {
                     client.addMessageListener(topic.first, listener)
-                    emitter.setCancellable { client.removeMessageListener(topic.first, listener) }
+                    eventDisposable.add(
+                        eventSubject.filter { event ->
+                            isInvalidSubscriptionFailureEvent(event, topic.first)
+                        }.subscribe {
+                            client.removeMessageListener(topic.first, listener)
+                        }
+                    )
+                }
+                emitter.setCancellable {
+                    for (topic in topicList) {
+                        client.removeMessageListener(topic.first, listener)
+                        eventDisposable.dispose()
+                    }
                 }
             },
             BackpressureStrategy.BUFFER
@@ -248,5 +285,11 @@ internal class Coordinator(
             logger.e("Coordinator", "Message parsing exception ${th.message}")
             null
         }
+    }
+
+    private fun isInvalidSubscriptionFailureEvent(event: MqttEvent, topic: String): Boolean {
+        return event is MqttSubscribeFailureEvent &&
+            event.topics.containsKey(topic) &&
+            event.exception.reasonCode == MqttException.REASON_CODE_INVALID_SUBSCRIPTION.toInt()
     }
 }
