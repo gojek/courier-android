@@ -22,7 +22,11 @@ internal class MqttCourierClient(
     }
 
     override fun disconnect(clearState: Boolean) {
-        mqttClient.disconnect(clearState)
+        if (clearState) {
+            mqttClient.destroy()
+        } else {
+            mqttClient.disconnect()
+        }
     }
 
     override fun reconnect() {

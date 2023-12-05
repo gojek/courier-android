@@ -17,7 +17,8 @@ data class ExperimentConfigs(
     val incomingMessagesTTLSecs: Long = 360,
     val incomingMessagesCleanupIntervalSecs: Long = 60,
     val shouldUseNewSSLFlow: Boolean = false,
-    val maxInflightMessagesLimit: Int = MAX_INFLIGHT_MESSAGES_ALLOWED
+    val maxInflightMessagesLimit: Int = MAX_INFLIGHT_MESSAGES_ALLOWED,
+    val cleanMqttClientOnDestroy: Boolean = false
 )
 
 enum class SubscriptionStore {

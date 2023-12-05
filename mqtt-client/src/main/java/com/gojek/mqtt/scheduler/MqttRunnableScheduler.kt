@@ -154,6 +154,10 @@ internal class MqttRunnableScheduler(
         }
     }
 
+    override fun stopThread() {
+        handlerThread.quitSafely()
+    }
+
     private fun sendThreadEventIfNotAlive() {
         if (handlerThread.isAlive.not()) {
             eventHandler.onEvent(
