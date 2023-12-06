@@ -68,6 +68,20 @@ internal class MqttClientInternal(
         }
     }
 
+    init {
+        initialiseAdaptiveMqttClient()
+        androidMqttClient = androidMqttClientFactory.createAndroidMqttClient(
+            context = context,
+            mqttConfiguration = mqttConfiguration,
+            networkStateTracker = networkStateTracker,
+            keepAliveProvider = keepAliveProvider,
+            keepAliveFailureHandler = keepAliveFailureHandler,
+            eventHandler = eventHandler,
+            pingEventHandler = PingEventHandler(eventHandler)
+        )
+        initialisationState = INITIALISED
+    }
+
     @Synchronized
     fun connect(connectOptions: MqttConnectOptions) {
         if (initialisationState == UNINITIALISED) {
@@ -107,7 +121,9 @@ internal class MqttClientInternal(
         }
         androidMqttClient?.destroy()
         adaptiveMqttClient?.destroy()
-        initialisationState = UNINITIALISED
+        if (mqttConfiguration.experimentConfigs.cleanMqttClientOnDestroy) {
+            initialisationState = UNINITIALISED
+        }
     }
 
     @Synchronized
