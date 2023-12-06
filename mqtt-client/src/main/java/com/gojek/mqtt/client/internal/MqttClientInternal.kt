@@ -19,6 +19,7 @@ import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.event.AdaptivePingEventHandler
 import com.gojek.mqtt.event.EventHandler
+import com.gojek.mqtt.event.MqttEvent.OperationDiscardedEvent
 import com.gojek.mqtt.event.MqttEvent.OptimalKeepAliveFoundEvent
 import com.gojek.mqtt.event.PingEventHandler
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
@@ -90,6 +91,7 @@ internal class MqttClientInternal(
     fun disconnect() {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("Disconnect", "State uninitialised"))
             return
         }
         androidMqttClient?.disconnect()
@@ -100,6 +102,7 @@ internal class MqttClientInternal(
     fun destroy() {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("Destroy", "State uninitialised"))
             return
         }
         androidMqttClient?.destroy()
@@ -111,6 +114,7 @@ internal class MqttClientInternal(
     fun reconnect() {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("Reconnect", "State uninitialised"))
             return
         }
         androidMqttClient?.reconnect()
@@ -121,6 +125,7 @@ internal class MqttClientInternal(
     fun subscribe(vararg topics: Pair<String, QoS>) {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("Subscribe", "State uninitialised"))
             return
         }
         androidMqttClient?.subscribe(mapOf(*topics))
@@ -130,6 +135,7 @@ internal class MqttClientInternal(
     fun unsubscribe(vararg topics: String) {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("Unsubscribe", "State uninitialised"))
             return
         }
         androidMqttClient?.unsubscribe(listOf(*topics))
@@ -139,6 +145,7 @@ internal class MqttClientInternal(
     fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("SendMessage", "State uninitialised"))
             return false
         }
         return androidMqttClient?.send(mqttPacket, sendMessageCallback) ?: false
@@ -148,6 +155,7 @@ internal class MqttClientInternal(
     fun addMessageListener(topic: String, listener: MessageListener) {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("AddMessageListener", "State uninitialised"))
             return
         }
         androidMqttClient?.addMessageListener(topic, listener)
@@ -157,6 +165,7 @@ internal class MqttClientInternal(
     fun removeMessageListener(topic: String, listener: MessageListener) {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("RemoveMessageListener", "State uninitialised"))
             return
         }
         androidMqttClient?.removeMessageListener(topic, listener)
@@ -166,6 +175,7 @@ internal class MqttClientInternal(
     fun addGlobalMessageListener(listener: MessageListener) {
         if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
+            eventHandler.onEvent(OperationDiscardedEvent("AddGlobalMessageListener", "State uninitialised"))
             return
         }
         androidMqttClient?.addGlobalMessageListener(listener)

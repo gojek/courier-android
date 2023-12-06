@@ -290,4 +290,10 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         val timeTakenMillis: Long,
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
+
+    data class OperationDiscardedEvent(
+        val name: String,
+        val reason: String,
+        override var connectionInfo: ConnectionInfo? = null
+    ) : MqttEvent(connectionInfo)
 }

@@ -433,6 +433,7 @@ internal class AndroidMqttClient(
                 runnableScheduler.stopThread()
                 networkHandler.destroy()
                 eventHandler.onEvent(MqttClientDestroyedEvent())
+                ConnectionInfoStore.removeConnectionInfo()
             }
         }
     }
