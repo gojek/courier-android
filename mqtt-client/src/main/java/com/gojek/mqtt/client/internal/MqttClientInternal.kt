@@ -12,14 +12,13 @@ import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.event.interceptor.MqttEventHandler
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
+import com.gojek.mqtt.client.internal.State.INITIALISED
+import com.gojek.mqtt.client.internal.State.UNINITIALISED
 import com.gojek.mqtt.client.listener.MessageListener
 import com.gojek.mqtt.client.model.ConnectionState
-import com.gojek.mqtt.client.model.ConnectionState.UNINITIALISED
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.event.AdaptivePingEventHandler
 import com.gojek.mqtt.event.EventHandler
-import com.gojek.mqtt.event.MqttEvent
-import com.gojek.mqtt.event.MqttEvent.MqttClientDestroyedEvent
 import com.gojek.mqtt.event.MqttEvent.OptimalKeepAliveFoundEvent
 import com.gojek.mqtt.event.PingEventHandler
 import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
@@ -48,6 +47,8 @@ internal class MqttClientInternal(
 
     private val eventHandler = MqttEventHandler(MqttUtils())
 
+    private var initialisationState = UNINITIALISED
+
     private val optimalKeepAliveObserver = object : OptimalKeepAliveObserver {
         override fun onOptimalKeepAliveFound(
             timeMinutes: Int,
@@ -66,19 +67,9 @@ internal class MqttClientInternal(
         }
     }
 
-    init {
-        eventHandler.addEventHandler(object : EventHandler {
-            override fun onEvent(mqttEvent: MqttEvent) {
-                if (mqttEvent is MqttClientDestroyedEvent) {
-                    cleanup()
-                }
-            }
-        })
-    }
-
     @Synchronized
     fun connect(connectOptions: MqttConnectOptions) {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             initialiseAdaptiveMqttClient()
             androidMqttClient = androidMqttClientFactory.createAndroidMqttClient(
                 context = context,
@@ -89,6 +80,7 @@ internal class MqttClientInternal(
                 eventHandler = eventHandler,
                 pingEventHandler = PingEventHandler(eventHandler)
             )
+            initialisationState = INITIALISED
         }
         androidMqttClient?.connect(connectOptions)
         adaptiveMqttClient?.connect(connectOptions)
@@ -96,7 +88,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun disconnect() {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -106,17 +98,18 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun destroy() {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
         androidMqttClient?.destroy()
         adaptiveMqttClient?.destroy()
+        initialisationState = UNINITIALISED
     }
 
     @Synchronized
     fun reconnect() {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -126,7 +119,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun subscribe(vararg topics: Pair<String, QoS>) {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -135,7 +128,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun unsubscribe(vararg topics: String) {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -144,7 +137,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return false
         }
@@ -153,7 +146,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun addMessageListener(topic: String, listener: MessageListener) {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -162,7 +155,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun removeMessageListener(topic: String, listener: MessageListener) {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -171,7 +164,7 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun addGlobalMessageListener(listener: MessageListener) {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
             return
         }
@@ -180,11 +173,11 @@ internal class MqttClientInternal(
 
     @Synchronized
     fun getCurrentState(): ConnectionState {
-        if (androidMqttClient == null) {
+        if (initialisationState == UNINITIALISED) {
             mqttConfiguration.logger.d("MqttClient", "MqttClient is not initialised")
-            return UNINITIALISED
+            return ConnectionState.UNINITIALISED
         }
-        return androidMqttClient?.getCurrentState() ?: UNINITIALISED
+        return androidMqttClient?.getCurrentState() ?: ConnectionState.UNINITIALISED
     }
 
     private fun initialiseAdaptiveMqttClient() {
@@ -245,10 +238,8 @@ internal class MqttClientInternal(
     fun removeEventHandler(eventHandler: EventHandler) {
         this.eventHandler.removeEventHandler(eventHandler)
     }
+}
 
-    @Synchronized
-    private fun cleanup() {
-        androidMqttClient = null
-        adaptiveMqttClient = null
-    }
+private enum class State {
+    UNINITIALISED, INITIALISED
 }
