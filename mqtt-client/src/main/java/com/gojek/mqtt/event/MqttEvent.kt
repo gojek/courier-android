@@ -21,6 +21,12 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
 
+    data class OperationDiscardedEvent(
+        val name: String,
+        val reason: String,
+        override var connectionInfo: ConnectionInfo? = null
+    ) : MqttEvent(connectionInfo)
+
     data class MqttConnectSuccessEvent(
         val activeNetInfo: ActiveNetInfo,
         val serverUri: ServerUri?,
