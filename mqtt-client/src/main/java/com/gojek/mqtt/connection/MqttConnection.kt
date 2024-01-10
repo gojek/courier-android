@@ -129,8 +129,9 @@ internal class MqttConnection(
             }
 
             val clientId: String = connectOptions.clientId
+            val username: String = connectOptions.username
             serverUri = getServerUri()
-            logger.d(TAG, "clientId : $clientId  serverUri $serverUri")
+            logger.d(TAG, "clientId : $clientId, username: $username,  serverUri $serverUri")
             if (mqtt == null) {
                 mqtt = getMqttAsyncClient(clientId, serverUri.toString())
                 mqtt!!.setCallback(getMqttCallback(messageReceiveListener))
