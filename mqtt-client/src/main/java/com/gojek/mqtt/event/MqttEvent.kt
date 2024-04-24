@@ -251,6 +251,10 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
 
+    data class MqttClientDestroyedEvent(
+        override var connectionInfo: ConnectionInfo? = null
+    ) : MqttEvent(connectionInfo)
+
     data class OfflineMessageDiscardedEvent(
         val messageId: Int,
         override var connectionInfo: ConnectionInfo? = null
@@ -284,6 +288,12 @@ sealed class MqttEvent(open var connectionInfo: ConnectionInfo?) {
         val nextRetryTimeSecs: Long,
         val activeNetworkInfo: ActiveNetInfo,
         val timeTakenMillis: Long,
+        override var connectionInfo: ConnectionInfo? = null
+    ) : MqttEvent(connectionInfo)
+
+    data class OperationDiscardedEvent(
+        val name: String,
+        val reason: String,
         override var connectionInfo: ConnectionInfo? = null
     ) : MqttEvent(connectionInfo)
 }

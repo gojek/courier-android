@@ -11,6 +11,10 @@ internal object ConnectionInfoStore {
     fun updateConnectionInfo(connectionInfo: ConnectionInfo) {
         state = State.InitialisedState(connectionInfo)
     }
+
+    fun removeConnectionInfo() {
+        state = State.UninitialisedState
+    }
 }
 
 private sealed class State(
