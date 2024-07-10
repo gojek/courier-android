@@ -30,7 +30,7 @@ object versions {
     const val materialVersion = "1.3.0"
     const val annotationVersion = "1.2.0"
     const val coreKtxVersion = "1.3.0"
-    const val apiValidator = "0.6.0"
+    const val apiValidator = "0.14.0"
     const val workManager = "2.7.0"
 }
 
