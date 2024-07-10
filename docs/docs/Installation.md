@@ -3,8 +3,8 @@
 ## Supported SDK versions
 
 - minSdkVersion: 21
-- targetSdkVersion: 31
-- compileSdkVersion: 31
+- targetSdkVersion: 34
+- compileSdkVersion: 34
 
 ## Download
 [![Maven Central](https://img.shields.io/maven-central/v/com.gojek.courier/courier.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.gojek.courier%22%20AND%20a:%courier%22)

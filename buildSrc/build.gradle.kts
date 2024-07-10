@@ -34,8 +34,8 @@ plugins {
 }
 
 dependencies {
-    implementation("com.android.tools.build:gradle:7.0.3")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
+    implementation("com.android.tools.build:gradle:7.4.2")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.18.0")
     implementation("com.diffplug.spotless:spotless-plugin-gradle:6.5.0")
 }

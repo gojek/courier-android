@@ -4,8 +4,8 @@ object versions {
     const val jacoco = "0.8.6"
     const val detekt = "1.18.0"
 
-    const val kotlin = "1.4.30"
-    const val agp = "7.0.3"
+    const val kotlin = "1.6.21"
+    const val agp = "7.4.2"
     const val jetifierProcessor = "1.0.0-beta10"
     const val jfrogBuildInfoExtractor = "4.11.0"
     const val navigation = "2.1.0-rc01"
@@ -30,7 +30,7 @@ object versions {
     const val materialVersion = "1.3.0"
     const val annotationVersion = "1.2.0"
     const val coreKtxVersion = "1.3.0"
-    const val apiValidator = "0.6.0"
+    const val apiValidator = "0.14.0"
     const val workManager = "2.7.0"
 }
 
@@ -45,11 +45,11 @@ object deps {
         const val protobuf = "com.google.protobuf:protobuf-lite:3.0.0"
 
         object build {
-            const val buildToolsVersion = "31.0.0"
-            const val compileSdkVersion = 31
+            const val buildToolsVersion = "33.0.1"
+            const val compileSdkVersion = 34
             const val minSdkVersion = 21
             const val sampleMinSdkVersion = 21
-            const val targetSdkVersion = 31
+            const val targetSdkVersion = 34
         }
 
         object test {
