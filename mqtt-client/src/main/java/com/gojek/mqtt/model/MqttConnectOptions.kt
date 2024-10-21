@@ -41,6 +41,8 @@ class MqttConnectOptions private constructor(
 
     val protocols: List<Protocol> = builder.protocols
 
+    val will: Will? = builder.will
+
     init {
         if (connectionSpec.isTls.not()) {
             this.sslSocketFactory = null
@@ -77,6 +79,7 @@ class MqttConnectOptions private constructor(
         internal var x509TrustManagerOrNull: X509TrustManager? = null
         internal var connectionSpec: ConnectionSpec = DEFAULT_CONNECTION_SPECS
         internal var protocols: List<Protocol> = emptyList()
+        internal var will: Will? = null
 
         internal constructor(mqttConnectOptions: MqttConnectOptions) : this() {
             this.serverUris = mqttConnectOptions.serverUris
@@ -93,6 +96,7 @@ class MqttConnectOptions private constructor(
             this.x509TrustManagerOrNull = mqttConnectOptions.x509TrustManager
             this.connectionSpec = mqttConnectOptions.connectionSpec
             this.protocols = mqttConnectOptions.protocols
+            this.will = mqttConnectOptions.will
         }
 
         fun serverUris(serverUris: List<ServerUri>) = apply {
@@ -202,6 +206,14 @@ class MqttConnectOptions private constructor(
         fun alpnProtocols(protocols: List<Protocol>) = apply {
             require(protocols.isNotEmpty()) { "alpn protocol list cannot be empty" }
             this.protocols = protocols
+        }
+
+        fun will(will: Will) = apply {
+            this.will = will
+        }
+
+        fun clearWill() = apply {
+            this.will = null
         }
 
         fun build(): MqttConnectOptions = MqttConnectOptions(this)
