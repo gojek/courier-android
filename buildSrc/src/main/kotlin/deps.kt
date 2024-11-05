@@ -7,7 +7,7 @@ object versions {
     const val kotlin = "1.6.21"
     const val agp = "7.4.2"
     const val jetifierProcessor = "1.0.0-beta10"
-    const val jfrogBuildInfoExtractor = "4.11.0"
+    const val jfrogBuildInfoExtractor = "4.23.4"
     const val navigation = "2.1.0-rc01"
     const val coroutines = "1.3.2"
     const val broadcast = "1.0.0"
