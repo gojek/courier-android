@@ -522,6 +522,7 @@ internal class AndroidMqttClient(
                 .keepAlive(keepAliveProvider.getKeepAlive(connectOptions))
                 .clientId(connectOptions.clientId + ":adaptive")
                 .cleanSession(true)
+                .clearWill()
                 .build()
         } else {
             connectOptions.newBuilder()
