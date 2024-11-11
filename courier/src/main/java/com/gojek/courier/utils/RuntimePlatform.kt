@@ -1,7 +1,10 @@
 package com.gojek.courier.utils
 
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import java.lang.invoke.MethodHandles.Lookup
 import java.lang.reflect.Method
+import java.util.Optional
 
 internal sealed class RuntimePlatform {
 
@@ -43,8 +46,12 @@ internal sealed class RuntimePlatform {
         fun get(): RuntimePlatform = PLATFORM
 
         private fun findPlatform(): RuntimePlatform = try {
-            Class.forName("java.util.Optional")
-            Java8()
+            if (VERSION.SDK_INT >= VERSION_CODES.N) {
+                Class.forName(Optional::class.java.name)
+                Java8()
+            } else {
+                Default()
+            }
         } catch (ignored: ClassNotFoundException) {
             Default()
         }
