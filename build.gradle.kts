@@ -21,6 +21,7 @@ buildscript {
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}")
         classpath("io.gitlab.arturbosch.detekt" +
             ":detekt-gradle-plugin:${versions.detekt}")
+        classpath(kotlin("serialization", version = versions.kotlin))
     }
 }
 
