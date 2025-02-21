@@ -10,6 +10,7 @@ object versions {
     const val jfrogBuildInfoExtractor = "4.23.4"
     const val navigation = "2.1.0-rc01"
     const val coroutines = "1.3.2"
+    const val serialization = "1.3.3"
     const val broadcast = "1.0.0"
     const val lifecycle = "2.4.1"
     const val room = "2.2.5"
@@ -104,6 +105,8 @@ object deps {
                 "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
             const val test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.coroutines}"
         }
+
+        const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
     }
 
     object logger {

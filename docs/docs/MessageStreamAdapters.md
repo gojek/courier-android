@@ -8,11 +8,13 @@ To serialize and deserialize received and published messages, Courier uses Messa
 
 Courier library provides the following message adapters:
 
-- courier-message-adapter-gson
+- [Gson](https://github.com/google/gson): courier-message-adapter-gson
 
-- courier-message-adapter-moshi
+- [Kotlin Serialization](https://github.com/Kotlin/kotlinx.serialization): courier-message-adapter-kotlin-serialization
 
-- courier-message-adapter-protobuf
+- [Moshi](https://github.com/square/moshi/): courier-message-adapter-moshi
+
+- [Protobuf](https://developers.google.com/protocol-buffers/): courier-message-adapter-protobuf
 
 You can also create your own custom message adapter by implementing the MessageAdapter.Factory interface.
 
