@@ -1,4 +1,4 @@
-package com.gojek.courier.messageadapter.gson
+package com.gojek.courier.messageadapter.text
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

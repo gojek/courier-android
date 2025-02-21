@@ -27,7 +27,7 @@ class MoshiMessageAdapterTest {
         val testClass = TestClass(100, "test100")
         val testString = """{"id":100,"name":"test100"}"""
 
-        val message = moshiMessageAdapter.toMessage(testClass)
+        val message = moshiMessageAdapter.toMessage(topic = "any", data = testClass)
 
         assertEquals(testString, String((message as Message.Bytes).value))
     }
@@ -38,7 +38,8 @@ class MoshiMessageAdapterTest {
         val testString = """{"id":100,"name":"test100"}"""
 
         val message = moshiMessageAdapter.fromMessage(
-            Message.Bytes(testString.toByteArray())
+            topic = "any",
+            message = Message.Bytes(testString.toByteArray())
         )
 
         assertEquals(testClass, message)

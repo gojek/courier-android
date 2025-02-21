@@ -19,7 +19,7 @@ class ProtobufMessageAdapterTest {
     fun serialise() {
         val user = User.newBuilder().setId(123).setName("Test").build()
         val encodedString = "CgRUZXN0EHs="
-        val userMessage = protobufMessageAdapter.toMessage(user)
+        val userMessage = protobufMessageAdapter.toMessage(topic = "any", data = user)
         val userString = String(Base64.getEncoder().encode((userMessage as Message.Bytes).value))
         assertEquals(userString, encodedString)
     }
@@ -28,7 +28,10 @@ class ProtobufMessageAdapterTest {
     fun deserialise() {
         val encodedString = "CgRUZXN0EHs="
         val byteArray = Base64.getDecoder().decode(encodedString)
-        val user = protobufMessageAdapter.fromMessage(Message.Bytes(byteArray))
+        val user = protobufMessageAdapter.fromMessage(
+            topic = "any",
+            message = Message.Bytes(byteArray)
+        )
         assertEquals(user.id, 123)
         assertEquals(user.name, "Test")
     }
@@ -36,6 +39,9 @@ class ProtobufMessageAdapterTest {
     @Test(expected = RuntimeException::class)
     fun deserialiseEmpty() {
         val byteArray = ByteArray(0)
-        protobufMessageAdapter.fromMessage(Message.Bytes(byteArray))
+        protobufMessageAdapter.fromMessage(
+            topic = "any",
+            message = Message.Bytes(byteArray)
+        )
     }
 }
