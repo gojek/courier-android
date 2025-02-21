@@ -198,7 +198,7 @@ This is a non-standard option. As far as the MQTT specification is concerned, us
 
 ## Contribution Guidelines
 
-Read our [contribution guide](./CONTRIBUTION.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Courier Android library.
+Read our [contribution guide](./CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Courier Android library.
 
 ## License
 
