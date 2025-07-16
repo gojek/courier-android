@@ -1,13 +1,6 @@
 package com.gojek.mqtt.client.v3.impl
 
 import android.content.Context
-import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Looper
-import android.os.Message
-import android.os.Messenger
-import android.os.RemoteException
 import androidx.annotation.RequiresApi
 import com.gojek.courier.QoS
 import com.gojek.courier.callback.SendMessageCallback
@@ -38,11 +31,11 @@ import com.gojek.mqtt.client.model.ConnectionState.DISCONNECTING
 import com.gojek.mqtt.client.model.ConnectionState.INITIALISED
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
+import com.gojek.mqtt.client.v3.impl.State.DESTROYED
+import com.gojek.mqtt.client.v3.impl.State.UNINITIALISED
 import com.gojek.mqtt.connection.IMqttConnection
 import com.gojek.mqtt.connection.MqttConnection
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
-import com.gojek.mqtt.constants.MESSAGE
-import com.gojek.mqtt.constants.MSG_APP_PUBLISH
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.AuthenticatorErrorEvent
 import com.gojek.mqtt.event.MqttEvent.MqttClientDestroyedEvent
@@ -55,8 +48,8 @@ import com.gojek.mqtt.event.MqttEvent.MqttMessageSendEvent
 import com.gojek.mqtt.event.MqttEvent.MqttMessageSendFailureEvent
 import com.gojek.mqtt.event.MqttEvent.MqttMessageSendSuccessEvent
 import com.gojek.mqtt.event.MqttEvent.MqttReconnectEvent
+import com.gojek.mqtt.event.MqttEvent.OperationDiscardedEvent
 import com.gojek.mqtt.exception.toCourierException
-import com.gojek.mqtt.handler.IncomingHandler
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 import com.gojek.mqtt.network.NetworkHandler
@@ -79,6 +72,7 @@ import com.gojek.mqtt.wakelock.WakeLockProvider
 import com.gojek.networktracker.NetworkStateTracker
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException
@@ -96,9 +90,6 @@ internal class AndroidMqttClient(
 
     private val runnableScheduler: IRunnableScheduler
     private val mqttConnection: IMqttConnection
-    private val mqttThreadLooper: Looper
-    private val mqttThreadHandler: Handler
-    private var mMessenger: Messenger
     private val networkUtils: NetworkUtils
     private val mqttUtils: MqttUtils
     private val mqttPersistence: PahoPersistence
@@ -115,8 +106,7 @@ internal class AndroidMqttClient(
     @Volatile
     private var globalListener: MessageListener? = null
 
-    @Volatile
-    private var isInitialised = false
+    private var state = AtomicReference(UNINITIALISED)
 
     // Accessed only from mqtt thread
     private var forceRefresh = false
@@ -134,21 +124,12 @@ internal class AndroidMqttClient(
 
     init {
         logger = mqttConfiguration.logger
-        val mqttHandlerThread = HandlerThread("MQTT_Thread")
-        mqttHandlerThread.start()
-        mqttThreadLooper = mqttHandlerThread.looper
-        mqttThreadHandler = Handler(mqttThreadLooper)
-        mMessenger = Messenger(
-            IncomingHandler(mqttThreadLooper, this, logger)
-        )
         @RequiresApi
         runnableScheduler = MqttRunnableScheduler(
-            mqttHandlerThread,
-            mqttThreadHandler,
-            this,
-            logger,
-            eventHandler,
-            experimentConfigs.activityCheckIntervalSeconds
+            clientSchedulerBridge = this,
+            logger = logger,
+            eventHandler = eventHandler,
+            activityCheckIntervalSeconds = experimentConfigs.activityCheckIntervalSeconds
         )
         mqttUtils = MqttUtils()
         networkUtils = NetworkUtils()
@@ -221,11 +202,17 @@ internal class AndroidMqttClient(
             networkHandler.init()
         }
         isInitialised = true
+        runnableScheduler.start()
+        state.set(State.INITIALISED)
         runnableScheduler.connectMqtt()
     }
 
     // This can be invoked on any thread
     override fun reconnect() {
+        if (state.get() != State.INITIALISED) {
+            eventHandler.onEvent(OperationDiscardedEvent("Reconnect", "Client is not initialised"))
+            return
+        }
         eventHandler.onEvent(MqttReconnectEvent())
         runnableScheduler.disconnectMqtt(reconnect = true, clearState = false)
     }
@@ -311,6 +298,10 @@ internal class AndroidMqttClient(
 
     // This can be invoked on any thread
     override fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean {
+        if (state.get() == DESTROYED) {
+            eventHandler.onEvent(OperationDiscardedEvent("SendMessage", "Client is not initialised"))
+            return false
+        }
         val mqttSendPacket = MqttSendPacket(
             message = mqttPacket.message,
             messageId = 0,
@@ -321,25 +312,7 @@ internal class AndroidMqttClient(
             triggerTime = System.nanoTime(),
             sendMessageCallback = sendMessageCallback
         )
-
-        val msg = Message.obtain()
-        msg.what = MSG_APP_PUBLISH
-
-        val bundle = Bundle()
-        bundle.putParcelable(MESSAGE, mqttSendPacket)
-
-        msg.data = bundle
-        msg.replyTo = mMessenger
-
-        try {
-            mMessenger.send(msg)
-        } catch (e: RemoteException) {
-            /* Service is dead. What to do? */
-            logger.e(TAG, "Remote Service dead", e)
-            return false
-        }
-
-        return true
+        return runnableScheduler.sendMessage(mqttSendPacket)
     }
 
     override fun addMessageListener(topic: String, listener: MessageListener) {
@@ -359,7 +332,7 @@ internal class AndroidMqttClient(
         val startTime = clock.nanoTime()
         try {
             logger.d(TAG, "Sending onConnectAttempt event")
-            if (!isInitialised) {
+            if (state.get() != State.INITIALISED) {
                 logger.d(TAG, "Mqtt Client not initialised")
                 eventHandler.onEvent(
                     MqttConnectDiscardedEvent(
@@ -426,6 +399,10 @@ internal class AndroidMqttClient(
         eventHandler.onEvent(MqttDisconnectEvent())
         mqttConnection.disconnect()
         if (clearState) {
+            if (experimentConfigs.stopMqttThreadOnDestroy) {
+                state.set(DESTROYED)
+                runnableScheduler.stop()
+            }
             mqttConnection.shutDown()
             subscriptionStore.clear()
             mqttPersistence.clearAll()
@@ -450,11 +427,19 @@ internal class AndroidMqttClient(
 
     override fun subscribe(topicMap: Map<String, QoS>) {
         val addedTopics = subscriptionStore.subscribeTopics(topicMap)
+        if (state.get() != State.INITIALISED) {
+            eventHandler.onEvent(OperationDiscardedEvent("Subscribe", "Client is not initialised"))
+            return
+        }
         runnableScheduler.scheduleSubscribe(0, addedTopics)
     }
 
     override fun unsubscribe(topics: List<String>) {
         val removedTopics = subscriptionStore.unsubscribeTopics(topics)
+        if (state.get() != State.INITIALISED) {
+            eventHandler.onEvent(OperationDiscardedEvent("Unsubscribe", "Client is not initialised"))
+            return
+        }
         runnableScheduler.scheduleUnsubscribe(0, removedTopics)
     }
 
@@ -540,6 +525,7 @@ internal class AndroidMqttClient(
                 .keepAlive(keepAliveProvider.getKeepAlive(connectOptions))
                 .clientId(connectOptions.clientId + ":adaptive")
                 .cleanSession(true)
+                .clearWill()
                 .build()
         } else {
             connectOptions.newBuilder()
@@ -642,4 +628,8 @@ internal class AndroidMqttClient(
     companion object {
         const val TAG = "AndroidMqttClient"
     }
+}
+
+private enum class State {
+    UNINITIALISED, INITIALISED, DISCONNECTED, DESTROYED
 }

@@ -29,6 +29,7 @@ import com.gojek.mqtt.model.AdaptiveKeepAliveConfig
 import com.gojek.mqtt.model.KeepAlive
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.ServerUri
+import com.gojek.mqtt.model.Will
 import com.gojek.workmanager.pingsender.WorkManagerPingSenderConfig
 import com.gojek.workmanager.pingsender.WorkPingSenderFactory
 import kotlinx.android.synthetic.main.activity_main.brokerIP
@@ -122,12 +123,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun connectMqtt(clientId: String, username: String, password: String, ip: String, port: Int) {
+
+        val will = Will(
+            topic = "last/will/topic",
+            message = "Client disconnected unexpectedly",
+            qos = QoS.ZERO,
+            retained = false
+        )
+
         val connectOptions = MqttConnectOptions.Builder()
             .serverUris(listOf(ServerUri(ip, port, if (port == 443) "ssl" else "tcp")))
             .clientId(clientId)
             .userName(username)
             .password(password)
             .cleanSession(false)
+            .will(will)
             .keepAlive(KeepAlive(timeSeconds = 30))
             .build()
 

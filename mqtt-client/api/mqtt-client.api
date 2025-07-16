@@ -55,6 +55,7 @@ public final class com/gojek/mqtt/client/config/ExperimentConfigs {
 	public final fun getMaxInflightMessagesLimit ()I
 	public final fun getPolicyResetTimeSeconds ()I
 	public final fun getShouldUseNewSSLFlow ()Z
+	public final fun getStopMqttThreadOnDestroy ()Z
 	public final fun getSubscriptionStore ()Lcom/gojek/mqtt/client/config/SubscriptionStore;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -1088,6 +1089,7 @@ public final class com/gojek/mqtt/model/MqttConnectOptions {
 	public final fun getUserPropertiesMap ()Ljava/util/Map;
 	public final fun getUsername ()Ljava/lang/String;
 	public final fun getVersion ()Lcom/gojek/mqtt/model/MqttVersion;
+	public final fun getWill ()Lcom/gojek/mqtt/model/Will;
 	public final fun getX509TrustManager ()Ljavax/net/ssl/X509TrustManager;
 	public final fun isCleanSession ()Z
 	public final fun newBuilder ()Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
@@ -1098,6 +1100,7 @@ public final class com/gojek/mqtt/model/MqttConnectOptions$Builder {
 	public final fun alpnProtocols (Ljava/util/List;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 	public final fun build ()Lcom/gojek/mqtt/model/MqttConnectOptions;
 	public final fun cleanSession (Z)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
+	public final fun clearWill ()Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 	public final fun clientId (Ljava/lang/String;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 	public final fun connectionSpec (Lorg/eclipse/paho/client/mqttv3/ConnectionSpec;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 	public final fun keepAlive (Lcom/gojek/mqtt/model/KeepAlive;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
@@ -1109,6 +1112,7 @@ public final class com/gojek/mqtt/model/MqttConnectOptions$Builder {
 	public final fun sslSocketFactory (Ljavax/net/ssl/SSLSocketFactory;Ljavax/net/ssl/X509TrustManager;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 	public final fun userName (Ljava/lang/String;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 	public final fun userProperties (Ljava/util/Map;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
+	public final fun will (Lcom/gojek/mqtt/model/Will;)Lcom/gojek/mqtt/model/MqttConnectOptions$Builder;
 }
 
 public final class com/gojek/mqtt/model/MqttConnectOptions$Companion {
@@ -1133,6 +1137,23 @@ public final class com/gojek/mqtt/model/ServerUri {
 	public final fun getHost ()Ljava/lang/String;
 	public final fun getPort ()I
 	public final fun getScheme ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/gojek/mqtt/model/Will {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/gojek/courier/QoS;Z)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Lcom/gojek/courier/QoS;
+	public final fun component4 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lcom/gojek/courier/QoS;Z)Lcom/gojek/mqtt/model/Will;
+	public static synthetic fun copy$default (Lcom/gojek/mqtt/model/Will;Ljava/lang/String;Ljava/lang/String;Lcom/gojek/courier/QoS;ZILjava/lang/Object;)Lcom/gojek/mqtt/model/Will;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getQos ()Lcom/gojek/courier/QoS;
+	public final fun getRetained ()Z
+	public final fun getTopic ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

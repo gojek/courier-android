@@ -103,8 +103,8 @@ internal class AdaptiveAlarmPingSender(
                 applicationContext.getSystemService(Service.ALARM_SERVICE) as AlarmManager
 
             // pending intent can be null if we get a security exception in onstart-->defensive check
-            if (pendingIntent != null) {
-                alarmManager.cancel(pendingIntent)
+            pendingIntent?.let {
+                alarmManager.cancel(it)
             }
         } catch (ex: Exception) {
             logger.d(TAG, "Unregister alarmreceiver to MqttService$ex")
@@ -147,21 +147,23 @@ internal class AdaptiveAlarmPingSender(
                 applicationContext.getSystemService(Service.ALARM_SERVICE) as AlarmManager
             val alarmType = getAlarmType()
             val isMqttAllowWhileIdle = pingSenderConfig.isMqttAllowWhileIdle
-            if (isMqttAllowWhileIdle && buildInfoProvider.isMarshmallowOrHigher) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    alarmType,
-                    nextAlarmInMilliseconds,
-                    pendingIntent
-                )
-            } else if (buildInfoProvider.isKitkatOrHigher) {
-                alarmManager.setExact(
-                    alarmType,
-                    nextAlarmInMilliseconds,
-                    pendingIntent
-                )
-            } else {
-                alarmManager[alarmType, nextAlarmInMilliseconds] =
-                    pendingIntent
+            pendingIntent?.let { pendingIntent ->
+                if (isMqttAllowWhileIdle && buildInfoProvider.isMarshmallowOrHigher) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        alarmType,
+                        nextAlarmInMilliseconds,
+                        pendingIntent
+                    )
+                } else if (buildInfoProvider.isKitkatOrHigher) {
+                    alarmManager.setExact(
+                        alarmType,
+                        nextAlarmInMilliseconds,
+                        pendingIntent
+                    )
+                } else {
+                    alarmManager[alarmType, nextAlarmInMilliseconds] =
+                        pendingIntent
+                }
             }
         } catch (ex: Exception) {
             logger.d(

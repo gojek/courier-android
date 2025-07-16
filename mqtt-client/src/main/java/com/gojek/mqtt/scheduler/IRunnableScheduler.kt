@@ -1,6 +1,7 @@
 package com.gojek.mqtt.scheduler
 
 import com.gojek.courier.QoS
+import com.gojek.mqtt.client.model.MqttSendPacket
 
 internal interface IRunnableScheduler {
     fun connectMqtt()
@@ -26,4 +27,8 @@ internal interface IRunnableScheduler {
     fun scheduleAuthFailureRunnable(delayMillis: Long)
 
     fun stopThread()
+    fun sendMessage(mqttSendPacket: MqttSendPacket): Boolean
+
+    fun start()
+    fun stop()
 }
