@@ -173,6 +173,7 @@ internal class MqttRunnableScheduler(
         }
     }
 
+    override fun stopThread() {
     override fun sendMessage(mqttSendPacket: MqttSendPacket): Boolean {
         val msg = Message.obtain()
         msg.what = MSG_APP_PUBLISH

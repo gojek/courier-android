@@ -4,6 +4,11 @@ import com.gojek.mqtt.client.MqttClient
 
 enum class ConnectionState {
     /**
+     * Represents state when [MqttClient] is not created/initialised
+     */
+    UNINITIALISED,
+
+    /**
      * Represents state when [MqttClient] is created/initialised
      */
     INITIALISED,

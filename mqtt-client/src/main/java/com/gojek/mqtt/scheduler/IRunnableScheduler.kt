@@ -8,7 +8,7 @@ internal interface IRunnableScheduler {
 
     fun connectMqtt(timeMillis: Long)
 
-    fun disconnectMqtt(reconnect: Boolean, clearState: Boolean = false)
+    fun disconnectMqtt(reconnect: Boolean, clearState: Boolean)
 
     fun scheduleNextActivityCheck()
 
@@ -26,6 +26,7 @@ internal interface IRunnableScheduler {
 
     fun scheduleAuthFailureRunnable(delayMillis: Long)
 
+    fun stopThread()
     fun sendMessage(mqttSendPacket: MqttSendPacket): Boolean
 
     fun start()

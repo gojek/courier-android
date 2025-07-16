@@ -614,7 +614,7 @@ internal class MqttConnection(
                         throwable = throwable,
                         timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis()
                     )
-                    runnableScheduler.disconnectMqtt(true)
+                    runnableScheduler.disconnectMqtt(reconnect = true, clearState = false)
                 }
             }
         }
@@ -649,7 +649,7 @@ internal class MqttConnection(
                         throwable = throwable,
                         timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis()
                     )
-                    runnableScheduler.disconnectMqtt(true)
+                    runnableScheduler.disconnectMqtt(reconnect = true, clearState = false)
                 }
             }
         }

@@ -160,6 +160,7 @@ class MainActivity : AppCompatActivity() {
             mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = Period.ONE_HOUR))),
             persistenceOptions = PahoPersistenceOptions(100, false),
             experimentConfigs = ExperimentConfigs(
+                cleanMqttClientOnDestroy = true,
                 adaptiveKeepAliveConfig = AdaptiveKeepAliveConfig(
                     lowerBoundMinutes = 1,
                     upperBoundMinutes = 9,

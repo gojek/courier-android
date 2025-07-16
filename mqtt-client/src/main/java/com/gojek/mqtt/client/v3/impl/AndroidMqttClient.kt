@@ -38,6 +38,7 @@ import com.gojek.mqtt.connection.MqttConnection
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.AuthenticatorErrorEvent
+import com.gojek.mqtt.event.MqttEvent.MqttClientDestroyedEvent
 import com.gojek.mqtt.event.MqttEvent.MqttConnectDiscardedEvent
 import com.gojek.mqtt.event.MqttEvent.MqttConnectFailureEvent
 import com.gojek.mqtt.event.MqttEvent.MqttDisconnectEvent
@@ -187,7 +188,9 @@ internal class AndroidMqttClient(
             experimentConfigs.incomingMessagesCleanupIntervalSecs,
             clock
         )
-        networkHandler.init()
+        if (experimentConfigs.cleanMqttClientOnDestroy.not()) {
+            networkHandler.init()
+        }
     }
 
     // This can be invoked on any thread
@@ -195,6 +198,10 @@ internal class AndroidMqttClient(
         connectOptions: MqttConnectOptions
     ) {
         this.connectOptions = connectOptions
+        if (experimentConfigs.cleanMqttClientOnDestroy) {
+            networkHandler.init()
+        }
+        isInitialised = true
         runnableScheduler.start()
         state.set(State.INITIALISED)
         runnableScheduler.connectMqtt()
@@ -207,13 +214,19 @@ internal class AndroidMqttClient(
             return
         }
         eventHandler.onEvent(MqttReconnectEvent())
-        runnableScheduler.disconnectMqtt(true)
+        runnableScheduler.disconnectMqtt(reconnect = true, clearState = false)
     }
 
     // This can be invoked on any thread
-    override fun disconnect(clearState: Boolean) {
-        state.set(State.DISCONNECTED)
-        runnableScheduler.disconnectMqtt(false, clearState)
+    override fun disconnect() {
+        isInitialised = false
+        runnableScheduler.disconnectMqtt(reconnect = false, clearState = false)
+    }
+
+    // This can be invoked on any thread
+    override fun destroy() {
+        isInitialised = false
+        runnableScheduler.disconnectMqtt(reconnect = false, clearState = true)
     }
 
     // This can be invoked on any thread
@@ -393,6 +406,12 @@ internal class AndroidMqttClient(
             mqttConnection.shutDown()
             subscriptionStore.clear()
             mqttPersistence.clearAll()
+            if (experimentConfigs.cleanMqttClientOnDestroy) {
+                runnableScheduler.stopThread()
+                networkHandler.destroy()
+                eventHandler.onEvent(MqttClientDestroyedEvent())
+                ConnectionInfoStore.removeConnectionInfo()
+            }
         }
     }
 
@@ -557,7 +576,7 @@ internal class AndroidMqttClient(
                     MqttMessageReceiveErrorEvent(topic, byteArray.size, e.toCourierException())
                 )
                 logger.e(TAG, "Exception when msg arrived : ", e)
-                runnableScheduler.disconnectMqtt(true)
+                runnableScheduler.disconnectMqtt(reconnect = true, clearState = false)
                 return false
             } catch (e: Throwable) {
                 eventHandler.onEvent(

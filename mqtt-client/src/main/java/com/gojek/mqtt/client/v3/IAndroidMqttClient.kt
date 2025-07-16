@@ -12,7 +12,8 @@ internal interface IAndroidMqttClient {
     fun connect(connectOptions: MqttConnectOptions)
     fun connect(timeMillis: Long = MQTT_WAIT_BEFORE_RECONNECT_TIME_MS)
     fun reconnect()
-    fun disconnect(clearState: Boolean = false)
+    fun disconnect()
+    fun destroy()
     fun send(mqttPacket: MqttPacket, sendMessageCallback: SendMessageCallback): Boolean
     fun addMessageListener(topic: String, listener: MessageListener)
     fun removeMessageListener(topic: String, listener: MessageListener)
