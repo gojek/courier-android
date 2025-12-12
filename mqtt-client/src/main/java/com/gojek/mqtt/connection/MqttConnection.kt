@@ -48,6 +48,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttSuback
 import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags
 import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 
 internal class MqttConnection(
     private val context: Context,
@@ -395,11 +396,16 @@ internal class MqttConnection(
     }
 
     private fun getMqttAsyncClient(clientId: String, serverUri: String): MqttAsyncClient {
+        val persistence = if (connectionConfig.shouldUseMemoryPersistence) {
+            MemoryPersistence()
+        } else {
+            pahoPersistence
+        }
         val mqttAsyncClient = MqttAsyncClient(
             serverUri,
             clientId,
             null,
-            pahoPersistence,
+            persistence,
             connectionConfig.maxInflightMessages,
             this.mqttPingSender.toPahoPingSender(),
             PahoLogger(connectionConfig.logger),
