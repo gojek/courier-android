@@ -1,5 +1,6 @@
 package com.gojek.mqtt.client.event.interceptor
 
+import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent
 import com.gojek.mqtt.utils.MqttUtils
@@ -9,7 +10,8 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit.SECONDS
 
 internal class MqttEventHandler(
-    mqttUtils: MqttUtils
+    mqttUtils: MqttUtils,
+    connectionInfoStore: ConnectionInfoStore
 ) : EventHandler {
 
     private val eventScheduler = ThreadPoolExecutor(
@@ -24,7 +26,7 @@ internal class MqttEventHandler(
     private val eventHandlers = CopyOnWriteArrayList<EventHandler>()
 
     init {
-        interceptorList.add(ConnectionInfoInterceptor())
+        interceptorList.add(ConnectionInfoInterceptor(connectionInfoStore))
     }
 
     override fun onEvent(mqttEvent: MqttEvent) {

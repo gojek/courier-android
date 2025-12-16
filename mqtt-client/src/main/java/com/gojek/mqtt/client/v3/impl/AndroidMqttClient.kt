@@ -84,7 +84,8 @@ internal class AndroidMqttClient(
     private val isAdaptiveKAConnection: Boolean = false,
     private val keepAliveProvider: KeepAliveProvider,
     private val eventHandler: EventHandler,
-    keepAliveFailureHandler: KeepAliveFailureHandler
+    keepAliveFailureHandler: KeepAliveFailureHandler,
+    private val connectionInfoStore: ConnectionInfoStore
 ) : IAndroidMqttClient, IClientSchedulerBridge {
 
     private val runnableScheduler: IRunnableScheduler
@@ -516,7 +517,7 @@ internal class AndroidMqttClient(
         }
 
         if (isAdaptiveKAConnection.not()) {
-            ConnectionInfoStore.updateConnectionInfo(
+            connectionInfoStore.updateConnectionInfo(
                 ConnectionInfo(
                     clientId = mqttConnectOptions.clientId,
                     username = mqttConnectOptions.username,

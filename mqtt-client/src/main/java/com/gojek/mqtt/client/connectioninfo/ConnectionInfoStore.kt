@@ -1,6 +1,6 @@
 package com.gojek.mqtt.client.connectioninfo
 
-internal object ConnectionInfoStore {
+internal class ConnectionInfoStore {
     @Volatile
     private var state: State = State.UninitialisedState
 
