@@ -4,6 +4,7 @@ import android.content.Context
 import com.gojek.courier.logging.NoOpLogger
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
+import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
 import com.gojek.mqtt.client.internal.KeepAliveProvider
 import com.gojek.mqtt.client.v3.IAndroidMqttClient
 import com.gojek.mqtt.client.v3.impl.AndroidMqttClient
@@ -21,7 +22,8 @@ internal interface IAndroidMqttClientFactory {
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
         eventHandler: EventHandler,
-        pingEventHandler: IPingSenderEvents
+        pingEventHandler: IPingSenderEvents,
+        connectionInfoStore: ConnectionInfoStore
     ): IAndroidMqttClient
     fun createAdaptiveAndroidMqttClient(
         pingSender: MqttPingSender,
@@ -30,7 +32,8 @@ internal interface IAndroidMqttClientFactory {
         networkStateTracker: NetworkStateTracker,
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
-        pingEventHandler: IPingSenderEvents
+        pingEventHandler: IPingSenderEvents,
+        connectionInfoStore: ConnectionInfoStore
     ): IAndroidMqttClient
 }
 
@@ -42,7 +45,8 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
         eventHandler: EventHandler,
-        pingEventHandler: IPingSenderEvents
+        pingEventHandler: IPingSenderEvents,
+        connectionInfoStore: ConnectionInfoStore
     ): IAndroidMqttClient {
         val pingSender = mqttConfiguration.pingSender
         pingSender.setPingEventHandler(pingEventHandler)
@@ -53,7 +57,8 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
             mqttPingSender = pingSender,
             keepAliveProvider = keepAliveProvider,
             keepAliveFailureHandler = keepAliveFailureHandler,
-            eventHandler = eventHandler
+            eventHandler = eventHandler,
+            connectionInfoStore = connectionInfoStore
         )
     }
 
@@ -64,7 +69,8 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
         networkStateTracker: NetworkStateTracker,
         keepAliveProvider: KeepAliveProvider,
         keepAliveFailureHandler: KeepAliveFailureHandler,
-        pingEventHandler: IPingSenderEvents
+        pingEventHandler: IPingSenderEvents,
+        connectionInfoStore: ConnectionInfoStore
     ): IAndroidMqttClient {
         pingSender.setPingEventHandler(pingEventHandler)
         return AndroidMqttClient(
@@ -77,7 +83,8 @@ internal class AndroidMqttClientFactory : IAndroidMqttClientFactory {
             isAdaptiveKAConnection = true,
             keepAliveProvider = keepAliveProvider,
             keepAliveFailureHandler = keepAliveFailureHandler,
-            eventHandler = NoOpEventHandler()
+            eventHandler = NoOpEventHandler(),
+            connectionInfoStore = connectionInfoStore
         )
     }
 }

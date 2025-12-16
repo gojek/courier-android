@@ -10,6 +10,7 @@ import com.gojek.keepalive.OptimalKeepAliveObserver
 import com.gojek.keepalive.OptimalKeepAliveProvider
 import com.gojek.keepalive.config.AdaptiveKeepAliveConfig as AdaptiveKAConfig
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
+import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
 import com.gojek.mqtt.client.event.interceptor.MqttEventHandler
 import com.gojek.mqtt.client.factory.getAndroidMqttClientFactory
 import com.gojek.mqtt.client.listener.MessageListener
@@ -43,7 +44,9 @@ internal class MqttClientInternal(
     private var keepAliveProvider: KeepAliveProvider = NonAdaptiveKeepAliveProvider()
     private var keepAliveFailureHandler: KeepAliveFailureHandler = NoOpKeepAliveFailureHandler()
 
-    private val eventHandler = MqttEventHandler(MqttUtils())
+    private val connectionInfoStore = ConnectionInfoStore()
+
+    private val eventHandler = MqttEventHandler(MqttUtils(), connectionInfoStore)
 
     private val optimalKeepAliveObserver = object : OptimalKeepAliveObserver {
         override fun onOptimalKeepAliveFound(
@@ -72,7 +75,8 @@ internal class MqttClientInternal(
             keepAliveProvider = keepAliveProvider,
             keepAliveFailureHandler = keepAliveFailureHandler,
             eventHandler = eventHandler,
-            pingEventHandler = PingEventHandler(eventHandler)
+            pingEventHandler = PingEventHandler(eventHandler),
+            connectionInfoStore = connectionInfoStore
         )
     }
 
@@ -145,7 +149,8 @@ internal class MqttClientInternal(
                                     adaptiveKeepAliveConfig.upperBoundMinutes * 60
                                 ),
                                 keepAliveFailureHandler = NoOpKeepAliveFailureHandler(),
-                                pingEventHandler = AdaptivePingEventHandler(eventHandler)
+                                pingEventHandler = AdaptivePingEventHandler(eventHandler),
+                                connectionInfoStore = connectionInfoStore
                             )
                     }
                 }
