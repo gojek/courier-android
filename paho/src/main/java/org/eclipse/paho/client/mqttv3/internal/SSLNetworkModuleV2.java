@@ -80,6 +80,7 @@ public class SSLNetworkModuleV2 extends TCPNetworkModule {
     public void start() throws IOException, MqttException {
         super.start();
         long socketStartTime = System.nanoTime();
+        int soTimeout = 0;
         try {
             pahoEvents.onSSLSocketAttempt(port, host, socket.getSoTimeout());
 
@@ -93,7 +94,7 @@ public class SSLNetworkModuleV2 extends TCPNetworkModule {
             pahoEvents.onSSLSocketSuccess(port, host, socket.getSoTimeout(),
                     TimeUnit.NANOSECONDS.toMillis(socketEndTime - socketStartTime));
 
-            int soTimeout = socket.getSoTimeout();
+            soTimeout = socket.getSoTimeout();
             // RTC 765: Set a timeout to avoid the SSL handshake being blocked indefinitely
             socket.setSoTimeout(this.handshakeTimeoutSecs * 1000);
             long handshakeStartTime = System.nanoTime();
@@ -107,7 +108,7 @@ public class SSLNetworkModuleV2 extends TCPNetworkModule {
             socket.setSoTimeout(soTimeout);
         } catch (IOException ex) {
             long socketEndTime = System.nanoTime();
-            pahoEvents.onSSLSocketFailure(port, host, socket.getSoTimeout(), ex,
+            pahoEvents.onSSLSocketFailure(port, host, soTimeout, ex,
                     TimeUnit.NANOSECONDS.toMillis(socketEndTime - socketStartTime));
             throw ex;
         }
