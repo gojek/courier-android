@@ -15,8 +15,8 @@ internal fun Throwable?.toCourierException(): CourierException {
     } else if (this is MqttException) {
         CourierException(
             reasonCode = reasonCode,
-            message = message,
-            cause = cause
+            message = cause?.message ?: message,
+            cause = cause?.cause ?: cause
         )
     } else if (this is AuthApiException) {
         CourierException(
