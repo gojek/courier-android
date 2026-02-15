@@ -38,7 +38,7 @@ internal class MqttCourierClient(
     }
 
     override fun send(message: Message, topic: String, qos: QoS, sendMessageCallback: SendMessageCallback): Boolean {
-        return mqttClient.send(MqttPacket((message as Message.Bytes).value, topic, qos), sendMessageCallback)
+        return mqttClient.send(MqttPacket(message.toByteArray(), topic, qos), sendMessageCallback)
     }
 
     override fun addMessageListener(topic: String, listener: MessageListener) {
