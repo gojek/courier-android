@@ -9,4 +9,8 @@ sealed class Message {
     class Bytes(val value: ByteArray) : Message() {
         operator fun component1(): ByteArray = value
     }
+
+    fun toByteArray(): ByteArray = when (this) {
+        is Bytes -> value
+    }
 }
