@@ -129,7 +129,7 @@ internal class AndroidMqttClient(
             clientSchedulerBridge = this,
             logger = logger,
             eventHandler = eventHandler,
-            activityCheckIntervalSeconds = experimentConfigs.activityCheckIntervalSeconds
+            experimentConfigs = experimentConfigs
         )
         mqttUtils = MqttUtils()
         networkUtils = NetworkUtils()

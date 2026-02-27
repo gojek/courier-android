@@ -9,6 +9,7 @@ import android.os.RemoteException
 import com.gojek.courier.QoS
 import com.gojek.courier.logging.ILogger
 import com.gojek.mqtt.client.IClientSchedulerBridge
+import com.gojek.mqtt.client.config.ExperimentConfigs
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.client.v3.impl.AndroidMqttClient
 import com.gojek.mqtt.constants.MESSAGE
@@ -31,7 +32,7 @@ internal class MqttRunnableScheduler(
     private val clientSchedulerBridge: IClientSchedulerBridge,
     private val logger: ILogger,
     private val eventHandler: EventHandler,
-    private val activityCheckIntervalSeconds: Int
+    private val experimentConfigs: ExperimentConfigs
 ) : IRunnableScheduler {
     private var handlerThread: HandlerThread
     private var mqttThreadHandler: Handler
@@ -93,7 +94,7 @@ internal class MqttRunnableScheduler(
             mqttThreadHandler.removeCallbacks(activityCheckRunnable)
             mqttThreadHandler.postDelayed(
                 activityCheckRunnable,
-                activityCheckIntervalSeconds * 1000.toLong()
+                experimentConfigs.activityCheckIntervalSeconds * 1000.toLong()
             )
         } catch (e: Exception) {
             logger.e(TAG, "Exception scheduleNextActivityCheck", e)
@@ -174,6 +175,10 @@ internal class MqttRunnableScheduler(
     }
 
     override fun sendMessage(mqttSendPacket: MqttSendPacket): Boolean {
+        if (experimentConfigs.shouldSendMessageViaHandler) {
+            return sendMessageViaHandler(mqttSendPacket)
+        }
+
         val msg = Message.obtain()
         msg.what = MSG_APP_PUBLISH
 
@@ -188,6 +193,17 @@ internal class MqttRunnableScheduler(
         } catch (e: RemoteException) {
             /* Service is dead. What to do? */
             logger.e(AndroidMqttClient.TAG, "Remote Service dead", e)
+            return false
+        }
+        return true
+    }
+
+    private fun sendMessageViaHandler(mqttSendPacket: MqttSendPacket): Boolean {
+        try {
+            sendThreadEventIfNotAlive()
+            mqttThreadHandler.post { clientSchedulerBridge.sendMessage(mqttSendPacket) }
+        } catch (e: Exception) {
+            logger.e(TAG, "Exception in sending message to MQTT thread", e)
             return false
         }
         return true
