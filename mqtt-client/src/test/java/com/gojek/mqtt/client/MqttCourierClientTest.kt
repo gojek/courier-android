@@ -78,7 +78,7 @@ class MqttCourierClientTest {
         whenever(message.value).thenReturn(byteArray)
         val topic = "test/topic"
         val qos = QoS.ZERO
-        mqttCourierClient.send(message, topic, qos, callback)
+        mqttCourierClient.send(message, topic, qos, Unit, callback)
         val argumentCaptor = argumentCaptor<MqttPacket>()
         verify(mqttClientInternal).send(argumentCaptor.capture(), eq(callback))
         assertEquals(argumentCaptor.lastValue.message, byteArray)
