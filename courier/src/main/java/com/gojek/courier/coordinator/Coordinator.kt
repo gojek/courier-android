@@ -53,7 +53,7 @@ internal class Coordinator(
         val callback = stubMethod.argumentProcessor.getCallbackArgument(args)
         val message = stubMethod.messageAdapter.toMessage(topic, data)
         val qos = stubMethod.qos
-        val sent = client.send(message, topic, qos, callback)
+        val sent = client.send(message, topic, qos, data, callback)
         logger.d("Coordinator", "Sending message on topic: $topic, qos: $qos, message: $data")
         return sent
     }

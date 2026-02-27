@@ -13,6 +13,7 @@ internal data class MqttSendPacket(
     var topic: String,
     var type: Int,
     var triggerTime: Long,
+    var context: Any,
     var sendMessageCallback: SendMessageCallback
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
@@ -23,6 +24,7 @@ internal data class MqttSendPacket(
         parcel.readString()!!,
         parcel.readInt(),
         parcel.readLong(),
+        Unit,
         NoOpSendMessageCallback
     )
 

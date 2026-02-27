@@ -236,7 +236,7 @@ internal class AndroidMqttClient(
             )
             with(mqttPacket) {
                 eventHandler.onEvent(
-                    MqttMessageSendEvent(topic, qos, message.size)
+                    MqttMessageSendEvent(topic, qos, message.size, mqttPacket.context)
                 )
             }
             mqttPacket.sendMessageCallback.onMessageSendTrigger()
@@ -250,7 +250,8 @@ internal class AndroidMqttClient(
                         qos = qos,
                         sizeBytes = message.size,
                         timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
-                        exception = e.toCourierException()
+                        exception = e.toCourierException(),
+                        context = mqttPacket.context
                     )
                 )
             }
@@ -263,7 +264,8 @@ internal class AndroidMqttClient(
                         qos = qos,
                         sizeBytes = message.size,
                         timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
-                        exception = e.toCourierException()
+                        exception = e.toCourierException(),
+                        context = mqttPacket.context
                     )
                 )
             }
@@ -278,7 +280,8 @@ internal class AndroidMqttClient(
                         qos = qos,
                         sizeBytes = message.size,
                         timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
-                        exception = e.toCourierException()
+                        exception = e.toCourierException(),
+                        context = mqttPacket.context
                     )
                 )
             }
@@ -299,6 +302,7 @@ internal class AndroidMqttClient(
             topic = mqttPacket.topic,
             type = mqttPacket.qos.type,
             triggerTime = System.nanoTime(),
+            context = mqttPacket.context,
             sendMessageCallback = sendMessageCallback
         )
         return runnableScheduler.sendMessage(mqttSendPacket)
@@ -581,7 +585,8 @@ internal class AndroidMqttClient(
                         topic = topic,
                         qos = qos,
                         sizeBytes = message.size,
-                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis()
+                        timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
+                        context = packet.context
                     )
                 )
             }
@@ -596,7 +601,8 @@ internal class AndroidMqttClient(
                         qos = qos,
                         sizeBytes = message.size,
                         timeTakenMillis = (System.nanoTime() - triggerTime).fromNanosToMillis(),
-                        exception = exception.toCourierException()
+                        exception = exception.toCourierException(),
+                        context = packet.context
                     )
                 )
             }

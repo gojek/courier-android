@@ -20,6 +20,7 @@ interface MqttClient {
         message: Message,
         topic: String,
         qos: QoS,
+        context: Any = Unit,
         sendMessageCallback: SendMessageCallback = NoOpSendMessageCallback
     ): Boolean
     fun addMessageListener(topic: String, listener: MessageListener)
