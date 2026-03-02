@@ -19,7 +19,8 @@ data class ExperimentConfigs(
     val shouldUseNewSSLFlow: Boolean = false,
     val maxInflightMessagesLimit: Int = MAX_INFLIGHT_MESSAGES_ALLOWED,
     val stopMqttThreadOnDestroy: Boolean = false,
-    val shouldUseMemoryPersistence: Boolean = false
+    val shouldUseMemoryPersistence: Boolean = false,
+    val shouldSendMessageViaHandler: Boolean = true
 )
 
 enum class SubscriptionStore {

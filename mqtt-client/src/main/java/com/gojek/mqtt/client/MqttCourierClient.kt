@@ -37,8 +37,8 @@ internal class MqttCourierClient(
         mqttClient.unsubscribe(topic, *topics)
     }
 
-    override fun send(message: Message, topic: String, qos: QoS, sendMessageCallback: SendMessageCallback): Boolean {
-        return mqttClient.send(MqttPacket((message as Message.Bytes).value, topic, qos), sendMessageCallback)
+    override fun send(message: Message, topic: String, qos: QoS, context: Any, sendMessageCallback: SendMessageCallback): Boolean {
+        return mqttClient.send(MqttPacket((message as Message.Bytes).value, topic, qos, context), sendMessageCallback)
     }
 
     override fun addMessageListener(topic: String, listener: MessageListener) {

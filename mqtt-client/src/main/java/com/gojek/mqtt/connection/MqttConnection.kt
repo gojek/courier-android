@@ -224,7 +224,7 @@ internal class MqttConnection(
             )
             runnableScheduler.scheduleMqttHandleExceptionRunnable(e, true)
             wakeLockProvider.releaseWakeLock()
-        } catch (e: java.lang.Exception) // this exception cannot be thrown on connect
+        } catch (e: Exception) // this exception cannot be thrown on connect
         {
             logger.e(TAG, "Connect exception : ${e.message}")
             connectionConfig.connectionEventHandler.onMqttConnectFailure(
