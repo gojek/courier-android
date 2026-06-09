@@ -13,3 +13,6 @@
 .cxx
 *.exec
 report/
+.vscode/*
+*/build/*
+*/bin/*
