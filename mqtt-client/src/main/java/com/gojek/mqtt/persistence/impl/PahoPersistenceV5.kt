@@ -10,17 +10,17 @@ import com.gojek.mqtt.persistence.model.MqttPahoPacket
 import com.gojek.mqtt.persistence.model.MqttReceivePacket
 import java.util.Collections
 import java.util.Enumeration
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence
-import org.eclipse.paho.client.mqttv3.MqttPersistable
-import org.eclipse.paho.client.mqttv3.internal.MqttPersistentData
+import org.eclipse.paho.mqttv5.client.MqttClientPersistence
+import org.eclipse.paho.mqttv5.client.internal.MqttPersistentData
+import org.eclipse.paho.mqttv5.common.MqttPersistable
 
-internal class PahoPersistence(private val context: Context) :
+internal class PahoPersistenceV5(private val context: Context) :
     MqttClientPersistence, IMqttReceivePersistence {
     private lateinit var database: MqttDatabase
     private lateinit var incomingMessagesDao: IncomingMessagesDao
     private lateinit var pahoMessagesDao: PahoMessagesDao
 
-    override fun open(clientId: String, serverURI: String) {
+    override fun open(clientId: String) {
         this.database = Room.databaseBuilder(
             context.applicationContext,
             MqttDatabase::class.java,
@@ -64,7 +64,7 @@ internal class PahoPersistence(private val context: Context) :
         pahoMessagesDao.deleteMessageByKey(key)
     }
 
-    override fun keys(): Enumeration<*> {
+    override fun keys(): Enumeration<String> {
         return Collections.enumeration(pahoMessagesDao.getAllKeys())
     }
 

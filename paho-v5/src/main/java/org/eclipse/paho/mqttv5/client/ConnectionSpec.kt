@@ -363,6 +363,20 @@ class ConnectionSpec internal constructor(
         /** Unencrypted, unauthenticated connections for `http:` URLs. */
         @JvmField
         val CLEARTEXT = Builder(false).build()
+
+        /**
+         * Courier: builds a [ConnectionSpec] from its raw component values. This is
+         * used to convert a connection spec defined against another (e.g. MQTT v3)
+         * paho package into this package's type without exposing the internal
+         * builder constructor.
+         */
+        @JvmStatic
+        fun create(
+            isTls: Boolean,
+            supportsTlsExtensions: Boolean,
+            cipherSuites: Array<String>?,
+            tlsVersions: Array<String>?
+        ): ConnectionSpec = ConnectionSpec(isTls, supportsTlsExtensions, cipherSuites, tlsVersions)
     }
 
     private fun ConnectionSpec.effectiveCipherSuites(socketEnabledCipherSuites: Array<String>): Array<String> {

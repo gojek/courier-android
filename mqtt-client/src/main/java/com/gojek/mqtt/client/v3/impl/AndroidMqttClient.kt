@@ -22,7 +22,6 @@ import com.gojek.mqtt.client.connectioninfo.ConnectionInfoStore
 import com.gojek.mqtt.client.event.adapter.MqttClientEventAdapter
 import com.gojek.mqtt.client.internal.KeepAliveProvider
 import com.gojek.mqtt.client.listener.MessageListener
-import com.gojek.mqtt.client.mapToPahoInterceptor
 import com.gojek.mqtt.client.model.ConnectionState
 import com.gojek.mqtt.client.model.ConnectionState.CONNECTED
 import com.gojek.mqtt.client.model.ConnectionState.CONNECTING
@@ -35,6 +34,7 @@ import com.gojek.mqtt.client.v3.impl.State.DESTROYED
 import com.gojek.mqtt.client.v3.impl.State.UNINITIALISED
 import com.gojek.mqtt.connection.IMqttConnection
 import com.gojek.mqtt.connection.MqttConnection
+import com.gojek.mqtt.connection.MqttConnectionV5
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
 import com.gojek.mqtt.event.EventHandler
 import com.gojek.mqtt.event.MqttEvent.AuthenticatorErrorEvent
@@ -52,7 +52,9 @@ import com.gojek.mqtt.exception.toCourierException
 import com.gojek.mqtt.model.MqttConnectOptions
 import com.gojek.mqtt.model.MqttPacket
 import com.gojek.mqtt.network.NetworkHandler
+import com.gojek.mqtt.persistence.IMqttReceivePersistence
 import com.gojek.mqtt.persistence.impl.PahoPersistence
+import com.gojek.mqtt.persistence.impl.PahoPersistenceV5
 import com.gojek.mqtt.persistence.model.MqttReceivePacket
 import com.gojek.mqtt.persistence.model.toMqttMessage
 import com.gojek.mqtt.pingsender.MqttPingSender
@@ -92,7 +94,7 @@ internal class AndroidMqttClient(
     private val mqttConnection: IMqttConnection
     private val networkUtils: NetworkUtils
     private val mqttUtils: MqttUtils
-    private val mqttPersistence: PahoPersistence
+    private val mqttPersistence: IMqttReceivePersistence
     private val messageSendListener: IMessageSendListener
     private val networkHandler: NetworkHandler
     private val mqttClientEventAdapter: MqttClientEventAdapter
@@ -133,7 +135,6 @@ internal class AndroidMqttClient(
         )
         mqttUtils = MqttUtils()
         networkUtils = NetworkUtils()
-        mqttPersistence = PahoPersistence(context)
         messageSendListener = MqttMessageSendListener()
         networkHandler = NetworkHandler(
             logger = mqttConfiguration.logger,
@@ -155,9 +156,7 @@ internal class AndroidMqttClient(
                 maxInflightMessages = experimentConfigs.maxInflightMessagesLimit,
                 logger = mqttConfiguration.logger,
                 connectionEventHandler = mqttClientEventAdapter.adapt(),
-                mqttInterceptorList = mqttConfiguration.mqttInterceptorList.map {
-                    mapToPahoInterceptor(it)
-                },
+                mqttInterceptorList = mqttConfiguration.mqttInterceptorList,
                 persistenceOptions = mqttConfiguration.persistenceOptions,
                 inactivityTimeoutSeconds = experimentConfigs.inactivityTimeoutSeconds,
                 policyResetTimeSeconds = experimentConfigs.policyResetTimeSeconds,
@@ -166,20 +165,40 @@ internal class AndroidMqttClient(
                 shouldUseMemoryPersistence = experimentConfigs.shouldUseMemoryPersistence
             )
 
-        mqttConnection = MqttConnection(
-            context = context,
-            connectionConfig = connectionConfig,
-            runnableScheduler = runnableScheduler,
-            networkUtils = networkUtils,
-            wakeLockProvider = WakeLockProvider(context, logger),
-            messageSendListener = messageSendListener,
-            pahoPersistence = mqttPersistence,
-            networkHandler = networkHandler,
-            mqttPingSender = getMqttPingSender(),
-            keepAliveFailureHandler = keepAliveFailureHandler,
-            clock = clock,
-            subscriptionStore = subscriptionStore
-        )
+        if (experimentConfigs.isMqttVersion5Enabled) {
+            val pahoPersistenceV5 = PahoPersistenceV5(context)
+            mqttPersistence = pahoPersistenceV5
+            mqttConnection = MqttConnectionV5(
+                context = context,
+                connectionConfig = connectionConfig,
+                runnableScheduler = runnableScheduler,
+                networkUtils = networkUtils,
+                wakeLockProvider = WakeLockProvider(context, logger),
+                messageSendListener = messageSendListener,
+                pahoPersistence = pahoPersistenceV5,
+                networkHandler = networkHandler,
+                keepAliveFailureHandler = keepAliveFailureHandler,
+                clock = clock,
+                subscriptionStore = subscriptionStore
+            )
+        } else {
+            val pahoPersistence = PahoPersistence(context)
+            mqttPersistence = pahoPersistence
+            mqttConnection = MqttConnection(
+                context = context,
+                connectionConfig = connectionConfig,
+                runnableScheduler = runnableScheduler,
+                networkUtils = networkUtils,
+                wakeLockProvider = WakeLockProvider(context, logger),
+                messageSendListener = messageSendListener,
+                pahoPersistence = pahoPersistence,
+                networkHandler = networkHandler,
+                mqttPingSender = getMqttPingSender(),
+                keepAliveFailureHandler = keepAliveFailureHandler,
+                clock = clock,
+                subscriptionStore = subscriptionStore
+            )
+        }
         incomingMsgController = IncomingMsgControllerImpl(
             mqttUtils,
             mqttPersistence,

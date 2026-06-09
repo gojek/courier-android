@@ -161,4 +161,13 @@ public class MqttClientException {
 	/** Error from subscribe - returned from the server. */
 	public static final short REASON_CODE_SUBSCRIBE_FAILED = 0x80;
 
+	// Courier customizations - codes mirrored from the MQTT v3 client so the
+	// Courier exception handling logic can be shared across versions.
+	/** A generic client side exception, typically wrapping a network error. */
+	public static final short REASON_CODE_CLIENT_EXCEPTION = 0x00;
+	/** A subscribe/unsubscribe request was made with invalid topics. */
+	public static final short REASON_CODE_INVALID_SUBSCRIPTION = 32206;
+	/** The supplied connect options were invalid. */
+	public static final short REASON_CODE_INVALID_CONNECT_OPTIONS = 32205;
+
 }

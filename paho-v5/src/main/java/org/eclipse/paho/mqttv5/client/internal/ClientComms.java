@@ -159,9 +159,19 @@ public class ClientComms {
 	/**
 	 * Trigger an inactivity check on the client state (Courier fast-reconnect support).
 	 */
-	public void checkActivity() throws MqttException {
-		if (clientState != null) {
+	public void checkActivity() {
+		if (clientState == null) {
+			return;
+		}
+		try {
 			clientState.checkActivity();
+		} catch (MqttException e) {
+			// Courier fast-reconnect: notify the callback then tear down the
+			// connection so that a reconnect is scheduled.
+			callback.fastReconnect();
+			handleRunException(e);
+		} catch (Exception e) {
+			handleRunException(e);
 		}
 	}
 
@@ -347,7 +357,7 @@ public class ClientComms {
 				conOptions = options;
 
 				MqttConnect connect = new MqttConnect(client.getClientId(), conOptions.getMqttVersion(),
-						conOptions.isCleanStart(), conOptions.getKeepAliveInterval(),
+						conOptions.isCleanStart(), conOptions.getKeepAliveIntervalServer(),
 						conOptions.getConnectionProperties(), conOptions.getWillMessageProperties());
 
 				if (conOptions.getWillDestination() != null) {

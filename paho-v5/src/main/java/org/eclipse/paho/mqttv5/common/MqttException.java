@@ -125,9 +125,12 @@ public class MqttException extends Exception {
 	 */
 	@Override
 	public String getMessage() {
-		ResourceBundle bundle = ResourceBundle.getBundle("org.eclipse.paho.mqttv5.common.nls.messages");
 		String message;
 		try {
+			// Courier: the NLS message bundle is not shipped with this vendored copy,
+			// so guard the lookup so that a missing bundle/key degrades gracefully
+			// instead of throwing a MissingResourceException to callers.
+			ResourceBundle bundle = ResourceBundle.getBundle("org.eclipse.paho.mqttv5.common.nls.messages");
 			message =  bundle.getString(Integer.toString(reasonCode));
 		} catch (MissingResourceException mre) {
 			message =  "Untranslated MqttException - RC: " + reasonCode;

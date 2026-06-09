@@ -350,6 +350,16 @@ public class CommsCallback implements Runnable {
 	}
 
 	/**
+	 * Courier customization: notify the registered callback that a fast-reconnect
+	 * has been triggered because the connection was deemed inactive.
+	 */
+	public void fastReconnect() {
+		if (mqttCallback != null) {
+			mqttCallback.fastReconnect();
+		}
+	}
+
+	/**
 	 * An action has completed - if a completion listener has been set on the token
 	 * then invoke it with the outcome of the action.
 	 * 
@@ -488,10 +498,11 @@ public class CommsCallback implements Runnable {
 
 		// @TRACE 713=call messageArrived key={0} topic={1}
 		log.fine(CLASS_NAME, methodName, "713", new Object[] { Integer.valueOf(publishMessage.getMessageId()), destName });
-		deliverMessage(destName, publishMessage.getMessageId(), publishMessage.getMessage());
+		boolean sendAck = deliverMessage(destName, publishMessage.getMessageId(), publishMessage.getMessage());
 
-		// If we are not in manual ACK mode:
-		if (!this.manualAcks && publishMessage.getMessage().getQos() == 1) {
+		// Courier: only acknowledge the message if the application handler signalled
+		// that it should be acked (e.g. it was successfully persisted).
+		if (!this.manualAcks && publishMessage.getMessage().getQos() == 1 && sendAck) {
 			this.clientComms.internalSend(new MqttPubAck(MqttReturnCode.RETURN_CODE_SUCCESS,
 					publishMessage.getMessageId(), new MqttProperties()),
 					new MqttToken(clientComms.getClient().getClientId()));
@@ -611,8 +622,16 @@ public class CommsCallback implements Runnable {
 		this.callbackTopicMap.clear();
 	}
 
+	/**
+	 * Delivers a message to the registered handlers.
+	 *
+	 * @return Courier customization: {@code true} if the message should be
+	 *         acknowledged to the server. Per-subscription listeners always ack;
+	 *         the default handler controls the ack via its boolean return value.
+	 */
 	protected boolean deliverMessage(String topicName, int messageId, MqttMessage aMessage) throws Exception {
 		boolean delivered = false;
+		boolean sendAck = true;
 		String methodName = "deliverMessage";
 
 		if (aMessage.getProperties().getSubscriptionIdentifiers().isEmpty()) {
@@ -644,7 +663,7 @@ public class CommsCallback implements Runnable {
 		if (mqttCallback != null && !delivered) {
 			aMessage.setId(messageId);
 			try {
-				mqttCallback.messageArrived(topicName, aMessage);
+				sendAck = mqttCallback.messageArrived(topicName, aMessage);
 			} catch (Exception ex) {
 				// Just log the fact that an exception was thrown
 				// @TRACE 725=Ignoring Exception thrown from messageArrived: {0}
@@ -653,7 +672,7 @@ public class CommsCallback implements Runnable {
 			delivered = true;
 		}
 
-		return delivered;
+		return sendAck;
 	}
 
 	public boolean doesSubscriptionIdentifierExist(int subscriptionIdentifier) {

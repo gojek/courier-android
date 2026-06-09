@@ -33,6 +33,12 @@ public class MqttMessage {
 	private int messageId;
 	private MqttProperties properties;
 
+	// Courier customization: a non-standard message "type" marker used to support
+	// QoS1-without-persistence semantics. A value greater than 2 signals that the
+	// message must be sent over the wire as QoS 1 (so a PUBACK is expected) while
+	// being treated as non-persistent / fire-once on the client side.
+	private int type = 0;
+
 	/**
 	 * Utility method to validate the supplied QoS value.
 	 * 
@@ -277,6 +283,30 @@ public class MqttMessage {
 
 	public void setProperties(MqttProperties properties) {
 		this.properties = properties;
+	}
+
+	/**
+	 * Returns the Courier message type marker.
+	 *
+	 * @return the message type. A value greater than 2 indicates a
+	 *         QoS1-without-persistence message.
+	 */
+	public int getType() {
+		return type;
+	}
+
+	/**
+	 * Sets the Courier message type marker used for QoS1-without-persistence
+	 * semantics.
+	 *
+	 * @param type
+	 *            the message type to set.
+	 * @throws IllegalStateException
+	 *             if this message cannot be edited.
+	 */
+	public void setType(int type) {
+		checkMutable();
+		this.type = type;
 	}
 
 	/**

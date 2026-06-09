@@ -42,6 +42,7 @@ dependencies {
     api(project(":mqtt-pingsender"))
     api(project(":courier-core"))
     implementation(project(":paho"))
+    implementation(project(":paho-v5"))
     implementation(project(":adaptive-keep-alive"))
     implementation(project(":network-tracker"))
     implementation(project(":timer-pingsender"))

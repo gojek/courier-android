@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.mqttv5.client.IExperimentsConfig;
 import org.eclipse.paho.mqttv5.client.ILogger;
+import org.eclipse.paho.mqttv5.client.IMqttActionListenerNew;
 import org.eclipse.paho.mqttv5.client.IPahoEvents;
 import org.eclipse.paho.mqttv5.client.MqttActionListener;
 import org.eclipse.paho.mqttv5.client.MqttClientException;
@@ -59,6 +60,8 @@ import org.eclipse.paho.mqttv5.common.packet.MqttPubRec;
 import org.eclipse.paho.mqttv5.common.packet.MqttPubRel;
 import org.eclipse.paho.mqttv5.common.packet.MqttPublish;
 import org.eclipse.paho.mqttv5.common.packet.MqttReturnCode;
+import org.eclipse.paho.mqttv5.common.packet.MqttSubscribe;
+import org.eclipse.paho.mqttv5.common.packet.MqttUnsubscribe;
 import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
 
 /**
@@ -116,6 +119,9 @@ public class ClientState implements MqttState {
 	private static final int MAX_MSG_ID = 65535; // Highest possible MQTT message ID to use
 	private int nextMsgId = MIN_MSG_ID - 1; // The next available message ID to use
 	private ConcurrentHashMap<Integer, Integer> inUseMsgIds; // Used to store a set of in-use message IDs
+	// Courier: tracks the subset of in-use message IDs that belong to
+	// QoS1-without-persistence publishes so they can be reclaimed on disconnect.
+	private ConcurrentHashMap<Integer, Integer> inUseMsdIdsQos1WithoutPersistence;
 
 	volatile private Vector<MqttWireMessage> pendingMessages;
 	volatile private Vector<MqttWireMessage> pendingFlows;
@@ -176,6 +182,7 @@ public class ClientState implements MqttState {
 		log.finer(CLASS_NAME, "<Init>", "");
 
 		inUseMsgIds = new ConcurrentHashMap<>();
+		inUseMsdIdsQos1WithoutPersistence = new ConcurrentHashMap<>();
 		pendingFlows = new Vector<MqttWireMessage>();
 		pendingMessages = new Vector<MqttWireMessage>(mqttConnection.getReceiveMaximum());
 		outboundQoS2 = new ConcurrentHashMap<>();
@@ -573,7 +580,9 @@ public class ClientState implements MqttState {
 		final String methodName = "send";
 		// Set Message ID if required
 		if (message.isMessageIdRequired() && (message.getMessageId() == 0)) {
-			message.setMessageId(getNextMessageId());
+			boolean isQos1NonPersistenceMessage = (message instanceof MqttPublish)
+					&& (((MqttPublish) message).getMessage().getType() > 2);
+			message.setMessageId(getNextMessageId(isQos1NonPersistenceMessage));
 		}
 		// Set Topic Alias if required
 		if (message instanceof MqttPublish && ((MqttPublish) message).getTopicName() != null 
@@ -1000,7 +1009,8 @@ public class ClientState implements MqttState {
 				log.fine(CLASS_NAME, methodName, "635", new Object[] { Integer.valueOf(pingOutstanding) });
 			}
 		} else if (message instanceof MqttPublish) {
-			if (((MqttPublish) message).getMessage().getQos() == 0) {
+			if (((MqttPublish) message).getMessage().getQos() == 0
+					&& ((MqttPublish) message).getMessage().getType() == 0) {
 				// once a QoS 0 message is sent we can clean up its records straight away as
 				// we won't be hearing about it again
 				token.internalTok.markComplete(null, null);
@@ -1009,6 +1019,38 @@ public class ClientState implements MqttState {
 				releaseMessageId(message.getMessageId());
 				tokenStore.removeToken(message);
 				checkQuiesceLock();
+			} else {
+				// QoS 1 or 2 (including QoS1-without-persistence): an ack is expected so
+				// arm the fast-reconnect activity check and notify the written-on-socket
+				// callback if registered.
+				checkAndSetFastReconnectCheckStartTime();
+				notifySentCallback(token);
+			}
+		} else if (message instanceof MqttConnect || message instanceof MqttSubscribe
+				|| message instanceof MqttUnsubscribe) {
+			checkAndSetFastReconnectCheckStartTime();
+		}
+	}
+
+	/**
+	 * Courier: arm the fast-reconnect activity check timer if it is not already
+	 * running for the current inbound-activity window.
+	 */
+	private void checkAndSetFastReconnectCheckStartTime() {
+		if (fastReconnectCheckStartTime <= lastInboundActivityMillis) {
+			fastReconnectCheckStartTime = System.currentTimeMillis();
+		}
+	}
+
+	/**
+	 * Courier: notifies the {@link IMqttActionListenerNew} (if any) attached to the
+	 * supplied token that the associated message has been written to the socket.
+	 */
+	public void notifySentCallback(MqttToken token) {
+		if (token != null) {
+			MqttActionListener actionCallback = token.getActionCallback();
+			if (actionCallback instanceof IMqttActionListenerNew) {
+				((IMqttActionListenerNew) actionCallback).notifyWrittenOnSocket(token);
 			}
 		}
 	}
@@ -1477,6 +1519,13 @@ public class ClientState implements MqttState {
 				clearState();
 			}
 
+			// Courier: QoS1-without-persistence message IDs are not retried across
+			// reconnects, so reclaim them from the in-use pool on disconnect.
+			for (Integer key : inUseMsdIdsQos1WithoutPersistence.keySet()) {
+				inUseMsgIds.remove(key);
+			}
+			inUseMsdIdsQos1WithoutPersistence.clear();
+
 			clearConnectionState();
 
 			pendingMessages.clear();
@@ -1499,6 +1548,7 @@ public class ClientState implements MqttState {
 	 */
 	private synchronized void releaseMessageId(int msgId) {
 		inUseMsgIds.remove(Integer.valueOf(msgId));
+		inUseMsdIdsQos1WithoutPersistence.remove(Integer.valueOf(msgId));
 	}
 
 	/**
@@ -1508,6 +1558,10 @@ public class ClientState implements MqttState {
 	 * @return the next MQTT message ID to use
 	 */
 	private synchronized int getNextMessageId() throws MqttException {
+		return getNextMessageId(false);
+	}
+
+	private synchronized int getNextMessageId(boolean isQos1NonPersistenceMessage) throws MqttException {
 		int startingMessageId = nextMsgId;
 		// Allow two complete passes of the message ID range. This gives
 		// any asynchronous releases a chance to occur
@@ -1526,6 +1580,9 @@ public class ClientState implements MqttState {
 		} while (inUseMsgIds.containsKey(Integer.valueOf(nextMsgId)));
 		Integer id = Integer.valueOf(nextMsgId);
 		inUseMsgIds.put(id, id);
+		if (isQos1NonPersistenceMessage) {
+			inUseMsdIdsQos1WithoutPersistence.put(id, id);
+		}
 		return nextMsgId;
 	}
 
@@ -1642,6 +1699,9 @@ public class ClientState implements MqttState {
 	 */
 	protected void close() {
 		inUseMsgIds.clear();
+		if (inUseMsdIdsQos1WithoutPersistence != null) {
+			inUseMsdIdsQos1WithoutPersistence.clear();
+		}
 		if (pendingMessages != null) {
 			pendingMessages.clear();
 		}

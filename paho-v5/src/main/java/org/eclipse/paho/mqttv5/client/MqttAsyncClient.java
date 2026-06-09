@@ -62,6 +62,7 @@ import org.eclipse.paho.mqttv5.common.packet.MqttPublish;
 import org.eclipse.paho.mqttv5.common.packet.MqttReturnCode;
 import org.eclipse.paho.mqttv5.common.packet.MqttSubscribe;
 import org.eclipse.paho.mqttv5.common.packet.MqttUnsubscribe;
+import org.eclipse.paho.mqttv5.common.packet.SubscribeFlags;
 import org.eclipse.paho.mqttv5.common.util.MqttTopicValidator;
 
 /**
@@ -1160,6 +1161,51 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		return comms.isConnected();
 	}
 
+	/**
+	 * Courier: whether the client is in the process of connecting.
+	 *
+	 * @return {@code true} if connecting.
+	 */
+	public boolean isConnecting() {
+		return comms.isConnecting();
+	}
+
+	/**
+	 * Courier: whether the client is in the process of disconnecting.
+	 *
+	 * @return {@code true} if disconnecting.
+	 */
+	public boolean isDisconnecting() {
+		return comms.isDisconnecting();
+	}
+
+	/**
+	 * Courier: whether the client is currently disconnected.
+	 *
+	 * @return {@code true} if disconnected.
+	 */
+	public boolean isDisconnected() {
+		return comms.isDisconnected();
+	}
+
+	/**
+	 * Courier: updates the server URI used for the next connection attempt.
+	 *
+	 * @param serverURI the new server URI.
+	 */
+	public void setServerURI(String serverURI) {
+		this.serverURI = serverURI;
+	}
+
+	/**
+	 * Courier: the number of messages currently in flight.
+	 *
+	 * @return the in-flight message count.
+	 */
+	public int getInflightMessages() {
+		return comms.getActualInFlight();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1409,6 +1455,55 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
                 token.setRequestMessage(register);
 		comms.sendNoWait(register, token);
 		// @TRACE 109=<
+		log.fine(CLASS_NAME, methodName, "109");
+
+		return token;
+	}
+
+	/**
+	 * Courier extension: subscribe to a set of topics carrying per-topic
+	 * persistable/retryable flags. Mirrors the MQTT v3
+	 * {@code subscribeWithPersistableRetryableFlags} API.
+	 *
+	 * @param topicFilters
+	 *            the topics to subscribe to.
+	 * @param qos
+	 *            the maximum QoS for each topic.
+	 * @param subscribeFlagsList
+	 *            per-topic {@link SubscribeFlags}.
+	 * @param userContext
+	 *            optional context passed to the callback.
+	 * @param callback
+	 *            optional listener notified on completion.
+	 * @return the {@link IMqttToken} for the subscribe action.
+	 * @throws MqttException
+	 *             if an error occurs while subscribing.
+	 */
+	public IMqttToken subscribeWithPersistableRetryableFlags(String[] topicFilters, int[] qos,
+			List<SubscribeFlags> subscribeFlagsList, Object userContext, MqttActionListener callback)
+			throws MqttException {
+		final String methodName = "subscribe";
+
+		if (topicFilters.length != qos.length) {
+			throw new IllegalArgumentException();
+		}
+
+		MqttSubscription[] subscriptions = new MqttSubscription[topicFilters.length];
+		for (int i = 0; i < topicFilters.length; i++) {
+			this.comms.removeMessageListener(topicFilters[i]);
+			MqttTopicValidator.validate(topicFilters[i], this.mqttConnection.isWildcardSubscriptionsAvailable(),
+					this.mqttConnection.isSharedSubscriptionsAvailable());
+			subscriptions[i] = new MqttSubscription(topicFilters[i], qos[i]);
+		}
+
+		MqttToken token = new MqttToken(getClientId());
+		token.setActionCallback(callback);
+		token.setUserContext(userContext);
+		token.internalTok.setTopics(topicFilters);
+
+		MqttSubscribe register = new MqttSubscribe(subscriptions, subscribeFlagsList, new MqttProperties());
+		token.setRequestMessage(register);
+		comms.sendNoWait(register, token);
 		log.fine(CLASS_NAME, methodName, "109");
 
 		return token;
@@ -1780,6 +1875,41 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 		return token;
 	}
 
+	/**
+	 * Courier extension: publish a message stamping a non-standard message type
+	 * marker used to drive QoS1-without-persistence semantics. Mirrors the MQTT v3
+	 * {@code publishWithNewType} API.
+	 *
+	 * @param topic
+	 *            the topic to publish to.
+	 * @param payload
+	 *            the payload bytes.
+	 * @param qos
+	 *            the QoS of the {@link MqttMessage}.
+	 * @param type
+	 *            the Courier message type marker (a value greater than 2 enables
+	 *            QoS1-without-persistence).
+	 * @param retained
+	 *            whether the message should be retained.
+	 * @param userContext
+	 *            optional context passed to the callback.
+	 * @param callback
+	 *            optional listener notified on completion.
+	 * @return the delivery {@link IMqttToken}.
+	 * @throws MqttException
+	 *             if an error occurs while publishing.
+	 * @throws MqttPersistenceException
+	 *             if an error occurs persisting the message.
+	 */
+	public IMqttToken publishWithNewType(String topic, byte[] payload, int qos, int type, boolean retained,
+			Object userContext, MqttActionListener callback) throws MqttException, MqttPersistenceException {
+		MqttMessage message = new MqttMessage(payload);
+		message.setQos(qos);
+		message.setType(type);
+		message.setRetained(retained);
+		return this.publish(topic, message, userContext, callback);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1877,13 +2007,17 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 			automaticReconnect = isAutomaticReconnect;
 		}
 
-		public void messageArrived(String topic, MqttMessage message) throws Exception {
+		public boolean messageArrived(String topic, MqttMessage message) throws Exception {
+			return true;
 		}
 
 		public void deliveryComplete(IMqttToken token) {
 		}
 
 		public void connectComplete(boolean reconnect, String serverURI) {
+		}
+
+		public void fastReconnect() {
 		}
 
 		public void disconnected(MqttDisconnectResponse disconnectResponse) {

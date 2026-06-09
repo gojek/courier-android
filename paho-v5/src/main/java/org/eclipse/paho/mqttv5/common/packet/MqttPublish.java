@@ -47,6 +47,10 @@ public class MqttPublish extends MqttPersistableWireMessage {
 	private boolean dup = false;
 	private String topicName;
 
+	// Courier customization: QoS1-without-persistence marker copied from
+	// MqttMessage. When greater than 2 the packet is sent on the wire as QoS 1.
+	private int type = 0;
+
 	/**
 	 * Constructs a new MqttPublish message
 	 *
@@ -62,6 +66,7 @@ public class MqttPublish extends MqttPersistableWireMessage {
 		this.topicName = topic;
 		this.payload = message.getPayload();
 		this.qos = message.getQos();
+		this.type = message.getType();
 		this.dup = message.isDuplicate();
 		this.retained = message.isRetained();
 		if (properties != null) {
@@ -123,7 +128,7 @@ public class MqttPublish extends MqttPersistableWireMessage {
 				MqttDataTypes.encodeUTF8(dos, "");
 			}
 
-			if (this.qos > 0) {
+			if (this.qos > 0 || this.type > 2) {
 				dos.writeShort(msgId);
 			}
 			// Write Identifier / Value Fields
@@ -138,7 +143,10 @@ public class MqttPublish extends MqttPersistableWireMessage {
 
 	@Override
 	protected byte getMessageInfo() {
-		byte info = (byte) (this.qos << 1);
+		// Courier: QoS1-without-persistence messages (type > 2) are sent on the wire
+		// as QoS 1 even though their MqttMessage QoS is 0.
+		int wireQos = this.type > 2 ? 1 : this.qos;
+		byte info = (byte) (wireQos << 1);
 		if (this.retained) {
 			info |= 0x01;
 		}
@@ -171,12 +179,14 @@ public class MqttPublish extends MqttPersistableWireMessage {
 
 	public MqttMessage getMessage() {
 		MqttMessage message = new MqttMessage(payload, qos, retained, properties);
+		message.setType(type);
 		return message;
 	}
 
 	public void setMessage(MqttMessage message) {
 		this.payload = message.getPayload();
 		this.qos = message.getQos();
+		this.type = message.getType();
 		this.dup = message.isDuplicate();
 		this.retained = message.isRetained();
 	}

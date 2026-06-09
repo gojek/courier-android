@@ -78,6 +78,10 @@ public class MqttConnectionOptions {
 	private int automaticReconnectMaxDelay = 120; // Max time to wait for automatic reconnection attempts in seconds.
 	private boolean useSubscriptionIdentifiers = true; // Whether to automatically assign subscription identifiers.
 	private int keepAliveInterval = 60; // Keep Alive Interval
+	// Courier: the keep-alive value advertised to the server in the CONNECT packet.
+	// This is decoupled from keepAliveInterval (which drives client-side pings) so
+	// the client can ping more aggressively than the server's timeout.
+	private int keepAliveIntervalServer = 60;
 	private int connectionTimeout = 30; // Connection timeout in seconds
 	private boolean httpsHostnameVerificationEnabled = true;
 	private int maxReconnectDelay = 128000;
@@ -331,6 +335,33 @@ public class MqttConnectionOptions {
 			throw new IllegalArgumentException();
 		}
 		this.keepAliveInterval = keepAliveInterval;
+	}
+
+	/**
+	 * Returns the "keep alive" interval advertised to the server in the CONNECT
+	 * packet.
+	 *
+	 * @return the server keep alive interval, in seconds.
+	 */
+	public int getKeepAliveIntervalServer() {
+		return keepAliveIntervalServer;
+	}
+
+	/**
+	 * Sets the "keep alive" interval advertised to the server in the CONNECT
+	 * packet. This is independent of {@link #setKeepAliveInterval(int)} which drives
+	 * client-side pings.
+	 *
+	 * @param keepAliveIntervalServer
+	 *            the interval, measured in seconds, must be &gt;= 0.
+	 * @throws IllegalArgumentException
+	 *             if the value was invalid.
+	 */
+	public void setKeepAliveIntervalServer(int keepAliveIntervalServer) {
+		if (keepAliveIntervalServer < 0) {
+			throw new IllegalArgumentException();
+		}
+		this.keepAliveIntervalServer = keepAliveIntervalServer;
 	}
 
 	/**

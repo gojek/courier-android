@@ -1,7 +1,6 @@
 package com.gojek.mqtt.connection
 
 import android.content.Context
-import android.os.SystemClock
 import com.gojek.courier.QoS
 import com.gojek.courier.QoS.ONE_WITHOUT_PERSISTENCE_AND_NO_RETRY
 import com.gojek.courier.QoS.ONE_WITHOUT_PERSISTENCE_AND_RETRY
@@ -11,18 +10,17 @@ import com.gojek.courier.utils.Clock
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.mqtt.client.IMessageReceiveListener
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
-import com.gojek.mqtt.client.mapToPahoInterceptor
+import com.gojek.mqtt.client.mapToPahoV5Interceptor
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
-import com.gojek.mqtt.event.PahoEventHandler
-import com.gojek.mqtt.exception.handler.v3.MqttExceptionHandler
-import com.gojek.mqtt.exception.handler.v3.impl.MqttExceptionHandlerImpl
-import com.gojek.mqtt.logging.PahoLogger
+import com.gojek.mqtt.event.PahoEventHandlerV5
+import com.gojek.mqtt.exception.handler.v5.MqttExceptionHandler
+import com.gojek.mqtt.exception.handler.v5.impl.MqttExceptionHandlerImpl
+import com.gojek.mqtt.logging.PahoLoggerV5
 import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.network.NetworkHandler
-import com.gojek.mqtt.persistence.impl.PahoPersistence
-import com.gojek.mqtt.pingsender.MqttPingSender
-import com.gojek.mqtt.pingsender.toPahoPingSender
+import com.gojek.mqtt.persistence.impl.PahoPersistenceV5
+import com.gojek.mqtt.pingsender.PahoV5TimerPingSender
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.hostfallback.IHostFallbackPolicy
@@ -32,35 +30,34 @@ import com.gojek.mqtt.send.listener.IMessageSendListener
 import com.gojek.mqtt.subscription.SubscriptionStore
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
-import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions
-import org.eclipse.paho.client.mqttv3.IExperimentsConfig
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttActionListenerNew
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient
-import org.eclipse.paho.client.mqttv3.MqttCallback
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions
-import org.eclipse.paho.client.mqttv3.MqttException
-import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_INVALID_SUBSCRIPTION
-import org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_UNEXPECTED_ERROR
-import org.eclipse.paho.client.mqttv3.MqttMessage
-import org.eclipse.paho.client.mqttv3.MqttSecurityException
-import org.eclipse.paho.client.mqttv3.internal.wire.MqttSuback
-import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags
-import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
+import org.eclipse.paho.mqttv5.client.DisconnectedBufferOptions
+import org.eclipse.paho.mqttv5.client.IExperimentsConfig
+import org.eclipse.paho.mqttv5.client.IMqttActionListenerNew
+import org.eclipse.paho.mqttv5.client.IMqttToken
+import org.eclipse.paho.mqttv5.client.MqttActionListener
+import org.eclipse.paho.mqttv5.client.MqttAsyncClient
+import org.eclipse.paho.mqttv5.client.MqttCallback
+import org.eclipse.paho.mqttv5.client.MqttClientException.REASON_CODE_INVALID_SUBSCRIPTION
+import org.eclipse.paho.mqttv5.client.MqttClientException.REASON_CODE_UNEXPECTED_ERROR
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions
+import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse
+import org.eclipse.paho.mqttv5.client.persist.MemoryPersistence
+import org.eclipse.paho.mqttv5.common.MqttException
+import org.eclipse.paho.mqttv5.common.MqttMessage
+import org.eclipse.paho.mqttv5.common.MqttSecurityException
+import org.eclipse.paho.mqttv5.common.packet.MqttProperties
+import org.eclipse.paho.mqttv5.common.packet.SubscribeFlags
+import org.eclipse.paho.mqttv5.common.packet.UserProperty
 
-internal class MqttConnection(
+internal class MqttConnectionV5(
     private val context: Context,
     private val connectionConfig: ConnectionConfig,
     private val runnableScheduler: IRunnableScheduler,
     private val networkUtils: NetworkUtils,
     private val wakeLockProvider: WakeLockProvider,
     private val messageSendListener: IMessageSendListener,
-    private val pahoPersistence: PahoPersistence,
+    private val pahoPersistence: PahoPersistenceV5,
     private val networkHandler: NetworkHandler,
-    private val mqttPingSender: MqttPingSender,
     private val keepAliveFailureHandler: KeepAliveFailureHandler,
     private val clock: Clock,
     private val subscriptionStore: SubscriptionStore
@@ -73,7 +70,7 @@ internal class MqttConnection(
     @Volatile
     private var fastReconnect: Short = 0
 
-    private var options: MqttConnectOptions? = null
+    private var options: MqttConnectionOptions? = null
 
     private var mqtt: MqttAsyncClient? = null
 
@@ -81,16 +78,11 @@ internal class MqttConnection(
     private var updatePolicyParams = false
 
     private val connectRetryTimePolicy: IConnectRetryTimePolicy
-
     private val connectTimeoutPolicy: IConnectTimeoutPolicy
-
     private lateinit var hostFallbackPolicy: IHostFallbackPolicy
-
     private val subscriptionPolicy: ISubscriptionRetryPolicy
     private val unsubscriptionPolicy: ISubscriptionRetryPolicy
-
     private val logger: ILogger
-
     private val mqttExceptionHandler: MqttExceptionHandler
 
     private var serverUri: ServerUri? = null
@@ -115,9 +107,8 @@ internal class MqttConnection(
         subscriptionTopicMap: Map<String, QoS>
     ) {
         try {
-            var connectOptions = mqttConnectOptions
+            val connectOptions = mqttConnectOptions
             this.hostFallbackPolicy = hostFallbackPolicy
-            // if force disconnect is in progress don't connect
             if (forceDisconnect) {
                 logger.d(TAG, "Force disconnect is in progress")
                 connectionConfig.connectionEventHandler.onMqttConnectDiscarded(
@@ -137,7 +128,6 @@ internal class MqttConnection(
             if (mqtt == null) {
                 mqtt = getMqttAsyncClient(clientId, serverUri.toString())
                 mqtt!!.setCallback(getMqttCallback(messageReceiveListener))
-                logger.d(TAG, "Number of max inflight msgs allowed : " + mqtt!!.maxflightMessages)
             }
             if (isConnected()) {
                 logger.d(TAG, "Client already connected!!!")
@@ -163,40 +153,37 @@ internal class MqttConnection(
 
             wakeLockProvider.acquireWakeLock(connectionConfig.wakeLockTimeout)
             mqtt!!.clientId = clientId
-            mqtt!!.serverURI = serverUri.toString()
+            mqtt!!.setServerURI(serverUri.toString())
 
             if (options == null) {
-                options = MqttConnectOptions()
+                options = MqttConnectionOptions()
             }
             options!!.apply {
-                userName = connectOptions.username
-                password = connectOptions.password.toCharArray()
-                isCleanSession = connectOptions.isCleanSession
-                keepAliveInterval = connectOptions.keepAlive.timeSeconds
-                keepAliveIntervalServer = connectOptions.keepAlive.timeSeconds
-                readTimeout = connectOptions.readTimeoutSecs
-                connectionTimeout = connectTimeoutPolicy.getConnectTimeOut()
-                handshakeTimeout = connectTimeoutPolicy.getHandshakeTimeOut()
-                protocolName = mqttConnectOptions.version.protocolName
-                protocolLevel = mqttConnectOptions.version.protocolLevel
-                userPropertyList = getUserPropertyList(connectOptions.userPropertiesMap)
-                socketFactory = mqttConnectOptions.socketFactory
-                sslSocketFactory = mqttConnectOptions.sslSocketFactory
-                x509TrustManager = mqttConnectOptions.x509TrustManager
-                connectionSpec = mqttConnectOptions.connectionSpec
-                alpnProtocolList = mqttConnectOptions.protocols
+                setUserName(connectOptions.username)
+                setPassword(connectOptions.password.toByteArray())
+                setCleanStart(connectOptions.isCleanSession)
+                setKeepAliveInterval(connectOptions.keepAlive.timeSeconds)
+                setKeepAliveIntervalServer(connectOptions.keepAlive.timeSeconds)
+                setReadTimeout(connectOptions.readTimeoutSecs)
+                setConnectionTimeout(connectTimeoutPolicy.getConnectTimeOut())
+                setHandshakeTimeout(connectTimeoutPolicy.getHandshakeTimeOut())
+                setUserProperties(getUserPropertyList(connectOptions.userPropertiesMap))
+                setSocketFactory(mqttConnectOptions.socketFactory)
+                setSslSocketFactory(mqttConnectOptions.sslSocketFactory)
+                setX509TrustManager(mqttConnectOptions.x509TrustManager)
+                setConnectionSpec(mqttConnectOptions.connectionSpec.toV5ConnectionSpec())
+                setAlpnProtocolList(mqttConnectOptions.protocols.map { it.toV5Protocol() })
             }
 
             mqttConnectOptions.will?.apply {
-                options!!.setWill(
-                    topic,
+                val willMessage = MqttMessage(
                     message.toByteArray(),
                     qos.value,
-                    retained
+                    retained,
+                    MqttProperties()
                 )
+                options!!.setWill(topic, willMessage)
             }
-
-            // Setting some connection options which we need to reset on every connect
 
             logger.d(TAG, "MQTT connecting on : " + mqtt!!.serverURI)
             updatePolicyParams = true
@@ -225,8 +212,7 @@ internal class MqttConnection(
             )
             runnableScheduler.scheduleMqttHandleExceptionRunnable(e, true)
             wakeLockProvider.releaseWakeLock()
-        } catch (e: Exception) // this exception cannot be thrown on connect
-        {
+        } catch (e: Exception) {
             logger.e(TAG, "Connect exception : ${e.message}")
             connectionConfig.connectionEventHandler.onMqttConnectFailure(
                 e,
@@ -239,9 +225,7 @@ internal class MqttConnection(
         }
     }
 
-    override fun publish(
-        mqttPacket: MqttSendPacket
-    ) {
+    override fun publish(mqttPacket: MqttSendPacket) {
         logger.d(TAG, "Current inflight msg count : " + mqtt!!.inflightMessages)
 
         mqtt!!.publishWithNewType(
@@ -258,10 +242,7 @@ internal class MqttConnection(
                     messageSendListener.onSuccess(packet)
                 }
 
-                override fun onFailure(
-                    arg0: IMqttToken,
-                    arg1: Throwable
-                ) {
+                override fun onFailure(arg0: IMqttToken, arg1: Throwable) {
                     logger.e(
                         TAG,
                         "Message delivery failed for : " + arg0.messageId +
@@ -279,7 +260,6 @@ internal class MqttConnection(
     }
 
     override fun handleException(exception: Exception?, reconnect: Boolean) {
-        // defensive check
         if (exception == null || exception !is MqttException) {
             return
         }
@@ -309,27 +289,16 @@ internal class MqttConnection(
     override fun disconnect() {
         try {
             if (mqtt != null) {
-                /*
-                 * If already disconnecting or disconnected no need to disconnect
-                 */
                 if (mqtt!!.isDisconnecting || mqtt!!.isDisconnected) {
                     logger.d(TAG, "not connected but disconnecting")
-                    if (mqtt!!.isDisconnecting) {
-                        logger.d(TAG, "already disconnecting")
-                    } else if (mqtt!!.isDisconnected) {
-                        logger.d(TAG, "already disconnected")
-                    }
                     return
                 }
                 forceDisconnect = true
-                /*
-                 * blocking the mqtt thread, so that no other operation takes place
-                 * till disconnects completes or timeout This will wait for max 1 secs
-                 */
                 connectionConfig.connectionEventHandler.onMqttDisconnectStart()
                 mqtt!!.disconnectForcibly(
                     connectionConfig.quiesceTimeout.toLong(),
-                    connectionConfig.disconnectTimeout.toLong()
+                    connectionConfig.disconnectTimeout.toLong(),
+                    false
                 )
             }
         } catch (e: java.lang.Exception) {
@@ -346,14 +315,6 @@ internal class MqttConnection(
             userProperties.add(UserProperty(entry.key, entry.value))
         }
         return userProperties
-    }
-
-    private fun isPasswordExpired(passwordExpiry: Long): Boolean {
-        return if (passwordExpiry == -1L) {
-            return false
-        } else {
-            SystemClock.elapsedRealtime() >= passwordExpiry
-        }
     }
 
     private fun handleDisconnect() {
@@ -405,14 +366,14 @@ internal class MqttConnection(
         val mqttAsyncClient = MqttAsyncClient(
             serverUri,
             clientId,
-            null,
+            com.gojek.mqtt.model.MqttVersion.VERSION_5.protocolLevel.toString(),
             persistence,
             connectionConfig.maxInflightMessages,
-            this.mqttPingSender.toPahoPingSender(),
-            PahoLogger(connectionConfig.logger),
-            PahoEventHandler(connectionConfig.connectionEventHandler),
+            PahoV5TimerPingSender(connectionConfig.logger),
+            PahoLoggerV5(connectionConfig.logger),
+            PahoEventHandlerV5(connectionConfig.connectionEventHandler),
             getPahoExperimentsConfig(),
-            connectionConfig.mqttInterceptorList.map { mapToPahoInterceptor(it) }
+            connectionConfig.mqttInterceptorList.map { mapToPahoV5Interceptor(it) }
         )
         val bufferOptions = DisconnectedBufferOptions()
         with(connectionConfig.persistenceOptions as PahoPersistenceOptions) {
@@ -425,14 +386,13 @@ internal class MqttConnection(
         return mqttAsyncClient
     }
 
-    private fun getConnectListener(): IMqttActionListener {
-        return object : IMqttActionListener {
+    private fun getConnectListener(): MqttActionListener {
+        return object : MqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
                 try {
                     pushReConnect = false
                     fastReconnect = 0
                     connectSuccessTime = clock.nanoTime()
-                    // resetting the reconnect timer to 0 as it would have been changed in failure
                     runnableScheduler.scheduleResetParams(
                         connectionConfig.policyResetTimeSeconds * 1000L
                     )
@@ -448,17 +408,14 @@ internal class MqttConnection(
                     )
                     runnableScheduler.scheduleUnsubscribe(
                         0,
-                        subscriptionStore.getUnsubscribeTopics(options!!.isCleanSession)
+                        subscriptionStore.getUnsubscribeTopics(options!!.isCleanStart)
                     )
                 } finally {
                     wakeLockProvider.releaseWakeLock()
                 }
             }
 
-            override fun onFailure(
-                iMqttToken: IMqttToken,
-                throwable: Throwable
-            ) {
+            override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
                 try {
                     if (throwable is MqttException) {
                         runnableScheduler.scheduleMqttHandleExceptionRunnable(
@@ -514,7 +471,7 @@ internal class MqttConnection(
                     topicArray,
                     qosArray,
                     subscribeFlagList,
-                    MqttContext(subscribeStartTime),
+                    MqttV5Context(subscribeStartTime),
                     getSubscribeListener(topicMap)
                 )
             } catch (mqttException: MqttException) {
@@ -546,8 +503,9 @@ internal class MqttConnection(
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeAttempt(topics)
                 mqtt!!.unsubscribe(
                     topics.toTypedArray(),
-                    MqttContext(unsubscribeStartTime),
-                    getUnsubscribeListener(topics)
+                    MqttV5Context(unsubscribeStartTime),
+                    getUnsubscribeListener(topics),
+                    MqttProperties()
                 )
             } catch (mqttException: MqttException) {
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeFailure(
@@ -570,15 +528,16 @@ internal class MqttConnection(
         }
     }
 
-    private fun getSubscribeListener(topicMap: Map<String, QoS>): IMqttActionListener {
-        return object : IMqttActionListener {
+    private fun getSubscribeListener(topicMap: Map<String, QoS>): MqttActionListener {
+        return object : MqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
                 logger.d(TAG, "Subscribe successful. Connect Complete")
-                val context = iMqttToken.userContext as MqttContext
+                val context = iMqttToken.userContext as MqttV5Context
                 val successTopicMap = mutableMapOf<String, QoS>()
                 val failTopicMap = mutableMapOf<String, QoS>()
+                val reasonCodes = iMqttToken.reasonCodes
                 iMqttToken.topics.forEachIndexed { index, topic ->
-                    if (128 == (iMqttToken.response as? MqttSuback)?.grantedQos?.getOrNull(index)) {
+                    if ((reasonCodes?.getOrNull(index) ?: 0) >= 128) {
                         failTopicMap[topic] = topicMap[topic]!!
                     } else {
                         successTopicMap[topic] = topicMap[topic]!!
@@ -605,17 +564,13 @@ internal class MqttConnection(
                 subscriptionPolicy.resetParams()
             }
 
-            override fun onFailure(
-                iMqttToken: IMqttToken,
-                throwable: Throwable
-            ) {
+            override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
                 if (subscriptionPolicy.shouldRetry()) {
                     logger.e(TAG, "Subscribe unsuccessful. Will retry again")
                     runnableScheduler.scheduleSubscribe(10, topicMap)
                 } else {
-                    // Reconnect
                     logger.e(TAG, "Subscribe unsuccessful. Will reconnect again")
-                    val context = iMqttToken.userContext as MqttContext
+                    val context = iMqttToken.userContext as MqttV5Context
                     connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
                         topics = topicMap,
                         throwable = throwable,
@@ -627,11 +582,11 @@ internal class MqttConnection(
         }
     }
 
-    private fun getUnsubscribeListener(topics: Set<String>): IMqttActionListener {
-        return object : IMqttActionListener {
+    private fun getUnsubscribeListener(topics: Set<String>): MqttActionListener {
+        return object : MqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
                 logger.d(TAG, "Unsubscribe successful")
-                val context = iMqttToken.userContext as MqttContext
+                val context = iMqttToken.userContext as MqttV5Context
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeSuccess(
                     topics = topics,
                     timeTakenMillis = (clock.nanoTime() - context.startTime).fromNanosToMillis()
@@ -640,17 +595,13 @@ internal class MqttConnection(
                 subscriptionStore.getListener().onTopicsUnsubscribed(topics)
             }
 
-            override fun onFailure(
-                iMqttToken: IMqttToken,
-                throwable: Throwable
-            ) {
+            override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
                 if (unsubscriptionPolicy.shouldRetry()) {
                     logger.e(TAG, "Unsubscribe unsuccessful. Will retry again")
                     runnableScheduler.scheduleUnsubscribe(10, topics)
                 } else {
-                    // Reconnect
                     logger.e(TAG, "Unsubscribe unsuccessful. Will reconnect again")
-                    val context = iMqttToken.userContext as MqttContext
+                    val context = iMqttToken.userContext as MqttV5Context
                     connectionConfig.connectionEventHandler.onMqttUnsubscribeFailure(
                         topics = topics,
                         throwable = throwable,
@@ -664,37 +615,52 @@ internal class MqttConnection(
 
     private fun getMqttCallback(messageReceiveListener: IMessageReceiveListener): MqttCallback {
         return object : MqttCallback {
-            override fun connectionLost(throwable: Throwable) {
-                logger.w(TAG, "Connection Lost : ${throwable.message}")
-                if (networkUtils.isConnected(context)) {
-                    keepAliveFailureHandler.handleKeepAliveFailure()
-                }
-                val connRetryTimeSecs = connectRetryTimePolicy.getConnRetryTimeSecs()
-                runnableScheduler.connectMqtt(connRetryTimeSecs * 1000L)
-                connectionConfig.connectionEventHandler.onMqttConnectionLost(
-                    throwable = throwable,
-                    serverUri = serverUri,
-                    nextRetryTimeSecs = connRetryTimeSecs,
-                    sessionTimeMillis = (clock.nanoTime() - connectSuccessTime).fromNanosToMillis()
-                )
+            override fun disconnected(disconnectResponse: MqttDisconnectResponse) {
+                val throwable: Throwable = disconnectResponse.exception
+                    ?: MqttException(org.eclipse.paho.mqttv5.client.MqttClientException.REASON_CODE_CONNECTION_LOST.toInt())
+                handleConnectionLost(throwable)
+            }
+
+            override fun mqttErrorOccurred(exception: MqttException) {
+                logger.w(TAG, "Mqtt error occurred : ${exception.message}")
             }
 
             @Throws(java.lang.Exception::class)
-            override fun messageArrived(
-                topic: String,
-                mqttMessage: MqttMessage
-            ): Boolean {
-                return messageReceiveListener.messageArrived(topic, mqttMessage.payload)
+            override fun messageArrived(topic: String, message: MqttMessage): Boolean {
+                return messageReceiveListener.messageArrived(topic, message.payload)
             }
 
-            override fun deliveryComplete(iMqttDeliveryToken: IMqttDeliveryToken) {
+            override fun deliveryComplete(token: IMqttToken) {
                 // nothing needs to be done here as success will get called eventually
+            }
+
+            override fun connectComplete(reconnect: Boolean, serverURI: String?) {
+                // nothing needs to be done here
+            }
+
+            override fun authPacketArrived(reasonCode: Int, properties: MqttProperties?) {
+                // nothing needs to be done here
             }
 
             override fun fastReconnect() {
                 // nothing needs to be done here
             }
         }
+    }
+
+    private fun handleConnectionLost(throwable: Throwable) {
+        logger.w(TAG, "Connection Lost : ${throwable.message}")
+        if (networkUtils.isConnected(context)) {
+            keepAliveFailureHandler.handleKeepAliveFailure()
+        }
+        val connRetryTimeSecs = connectRetryTimePolicy.getConnRetryTimeSecs()
+        runnableScheduler.connectMqtt(connRetryTimeSecs * 1000L)
+        connectionConfig.connectionEventHandler.onMqttConnectionLost(
+            throwable = throwable,
+            serverUri = serverUri,
+            nextRetryTimeSecs = connRetryTimeSecs,
+            sessionTimeMillis = (clock.nanoTime() - connectSuccessTime).fromNanosToMillis()
+        )
     }
 
     private fun getPahoExperimentsConfig(): IExperimentsConfig {
@@ -713,17 +679,9 @@ internal class MqttConnection(
         }
     }
 
-    private fun isSSL(): Boolean {
-        if (mqtt != null) {
-            val uri = mqtt!!.serverURI
-            return uri != null && uri.startsWith("ssl")
-        }
-        return false
-    }
-
     companion object {
-        const val TAG = "MqttConnectionV2"
+        const val TAG = "MqttConnectionV5"
     }
 }
 
-private data class MqttContext(val startTime: Long)
+private data class MqttV5Context(val startTime: Long)

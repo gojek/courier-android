@@ -88,11 +88,15 @@ public interface MqttCallback {
 	 *            name of the topic on the message was published to
 	 * @param message
 	 *            the actual message.
+	 * @return Courier customization: {@code true} if the message was handled and
+	 *         an acknowledgement (PUBACK / PUBCOMP) should be sent to the server,
+	 *         {@code false} to suppress the acknowledgement (for example when the
+	 *         application failed to persist the message).
 	 * @throws Exception
 	 *             if a terminal error has occurred, and the client should be shut
 	 *             down.
 	 */
-    void messageArrived(String topic, MqttMessage message) throws Exception;
+    boolean messageArrived(String topic, MqttMessage message) throws Exception;
 
 	/**
 	 * Called when delivery for a message has been completed, and all
@@ -128,5 +132,11 @@ public interface MqttCallback {
 	 *            Defined Properties.
 	 */
     void authPacketArrived(int reasonCode, MqttProperties properties);
+
+	/**
+	 * Courier customization: called when the fast-reconnect activity check has
+	 * determined that the connection is inactive and is about to be torn down.
+	 */
+    void fastReconnect();
 
 }

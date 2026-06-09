@@ -8,6 +8,8 @@
 !/.idea/codeStyles/codeStyleConfig.xml
 .DS_Store
 /build
+build/
+bin/
 /captures
 .externalNativeBuild
 .cxx

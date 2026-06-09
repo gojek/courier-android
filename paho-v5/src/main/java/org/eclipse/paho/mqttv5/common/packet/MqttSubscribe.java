@@ -23,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
@@ -37,6 +38,12 @@ public class MqttSubscribe extends MqttPersistableWireMessage {
 	// Fields
 	private MqttProperties properties;
 	private MqttSubscription[] subscriptions;
+	// Courier: optional per-subscription persistable/retryable flags. When present
+	// these are encoded into the subscription options byte (bits 0x04 / 0x08),
+	// mirroring the MQTT v3 Courier wire format used by the broker. Note that this
+	// overloads the standard v5 No Local / Retain As Published option bits, which
+	// the Courier client does not otherwise use.
+	private List<SubscribeFlags> subscribeFlagsList;
 
 	/**
 	 * Constructor for an on the Wire MQTT Subscribe message
@@ -78,8 +85,25 @@ public class MqttSubscribe extends MqttPersistableWireMessage {
 	 *            - The {@link MqttProperties} for the packet.
 	 */
 	public MqttSubscribe(MqttSubscription[] subscriptions, MqttProperties properties) {
+		this(subscriptions, null, properties);
+	}
+
+	/**
+	 * Constructor for an on the Wire MQTT Subscribe message carrying Courier
+	 * persistable/retryable flags.
+	 *
+	 * @param subscriptions
+	 *            - An Array of {@link MqttSubscription} subscriptions.
+	 * @param subscribeFlagsList
+	 *            - per-subscription {@link SubscribeFlags}, or {@code null}.
+	 * @param properties
+	 *            - The {@link MqttProperties} for the packet.
+	 */
+	public MqttSubscribe(MqttSubscription[] subscriptions, List<SubscribeFlags> subscribeFlagsList,
+			MqttProperties properties) {
 		super(MqttWireMessage.MESSAGE_TYPE_SUBSCRIBE);
 		this.subscriptions = subscriptions;
+		this.subscribeFlagsList = subscribeFlagsList;
 		if (properties != null) {
 			this.properties = properties;
 		} else {
@@ -129,8 +153,11 @@ public class MqttSubscribe extends MqttPersistableWireMessage {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream outputStream = new DataOutputStream(baos);
 
-			for (MqttSubscription subscription : subscriptions) {
-				outputStream.write(encodeSubscription(subscription));
+			for (int i = 0; i < subscriptions.length; i++) {
+				SubscribeFlags flags = (subscribeFlagsList != null && i < subscribeFlagsList.size())
+						? subscribeFlagsList.get(i)
+						: null;
+				outputStream.write(encodeSubscription(subscriptions[i], flags));
 			}
 
 			outputStream.flush();
@@ -154,7 +181,7 @@ public class MqttSubscribe extends MqttPersistableWireMessage {
 	 * @return A byte array containing the encoded subscription.
 	 * @throws MqttException
 	 */
-	private byte[] encodeSubscription(MqttSubscription subscription) throws MqttException {
+	private byte[] encodeSubscription(MqttSubscription subscription, SubscribeFlags flags) throws MqttException {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream outputStream = new DataOutputStream(baos);
@@ -164,18 +191,29 @@ public class MqttSubscribe extends MqttPersistableWireMessage {
 			// Encode Subscription QoS
 			byte subscriptionOptions = (byte) subscription.getQos();
 
-			// Encode NoLocal Option
-			if (subscription.isNoLocal()) {
-				subscriptionOptions |= 0x04;
-			}
+			if (flags != null) {
+				// Courier wire format: bits 0x04 / 0x08 carry the (inverted)
+				// persistable / retryable flags instead of the standard v5 options.
+				if (!flags.isPersistableFlagEnabled()) {
+					subscriptionOptions |= 0x04;
+				}
+				if (!flags.isRetryableFlagEnabled()) {
+					subscriptionOptions |= 0x08;
+				}
+			} else {
+				// Encode NoLocal Option
+				if (subscription.isNoLocal()) {
+					subscriptionOptions |= 0x04;
+				}
 
-			// Encode Retain As Published Option
-			if (subscription.isRetainAsPublished()) {
-				subscriptionOptions |= 0x08;
-			}
+				// Encode Retain As Published Option
+				if (subscription.isRetainAsPublished()) {
+					subscriptionOptions |= 0x08;
+				}
 
-			// Encode Retain Handling Level
-			subscriptionOptions |= (subscription.getRetainHandling() << 4);
+				// Encode Retain Handling Level
+				subscriptionOptions |= (subscription.getRetainHandling() << 4);
+			}
 
 			outputStream.write(subscriptionOptions);
 
