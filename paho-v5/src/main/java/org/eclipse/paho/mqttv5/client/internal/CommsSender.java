@@ -22,8 +22,6 @@ import java.util.concurrent.Future;
 
 import org.eclipse.paho.mqttv5.client.MqttClientException;
 import org.eclipse.paho.mqttv5.client.MqttToken;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.client.wire.MqttOutputStream;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttAck;
@@ -33,7 +31,7 @@ import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
 
 public class CommsSender implements Runnable {
 	private static final String CLASS_NAME = CommsSender.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
+	private final String TAG = "COMMSSENDER";
 
 	//Sends MQTT packets to the server on its own thread
 	private enum State {STOPPED, RUNNING, STARTING}
@@ -61,7 +59,6 @@ public class CommsSender implements Runnable {
 		this.clientComms = clientComms;
 		this.clientState = clientState;
 		this.tokenStore = tokenStore;
-		log.setResourceName(clientComms.getClient().getClientId());
 	}
 
 	public CommsSender(ClientComms clientComms, ClientState clientState, CommsTokenStore tokenStore, OutputStream out,
@@ -112,7 +109,7 @@ public class CommsSender implements Runnable {
 				senderFuture.cancel(true);
 			}
 			//@TRACE 800=stopping sender
-			log.fine(CLASS_NAME,methodName,"800");
+			logger.d(TAG, "sender stop started");
 			if (isRunning()) {
 				target_state = State.STOPPED;
 				clientState.notifyQueueLock();
@@ -123,7 +120,7 @@ public class CommsSender implements Runnable {
 			clientState.notifyQueueLock();
 		}
 		//@TRACE 801=stopped
-		log.fine(CLASS_NAME,methodName,"801");
+		logger.d(TAG, "sender stop completed");
 	}
 
 	public void run() {
@@ -146,7 +143,7 @@ public class CommsSender implements Runnable {
 					message = clientState.get();
 					if (message != null) {
 						//@TRACE 802=network send key={0} msg={1}
-						log.fine(CLASS_NAME,methodName,"802", new Object[] {message.getKey(),message});
+						logger.d(TAG, "network send key=" + message.getKey() + " msg=" + message);
 
 						if (mqttInterceptorCallback != null) {
 							try {
@@ -183,7 +180,7 @@ public class CommsSender implements Runnable {
 						}
 					} else { // null message
 						//@TRACE 803=get message returned null, stopping}
-						log.fine(CLASS_NAME,methodName,"803");
+						logger.e(TAG, "get message returned null, stopping");
 						synchronized (lifecycle) {
 							target_state = State.STOPPED;
 						}
@@ -205,14 +202,14 @@ public class CommsSender implements Runnable {
 		}
 
 		//@TRACE 805=<
-		log.fine(CLASS_NAME, methodName,"805");
+		logger.d(TAG, "sender run loop exited");
 
 	}
 
 	private void handleRunException(MqttWireMessage message, Exception ex) {
 		final String methodName = "handleRunException";
 		//@TRACE 804=exception
-		log.severe(CLASS_NAME,methodName,"804",null, ex);
+		logger.e(TAG, "Exception occured, cause : ", ex);
 		MqttException mex;
 		if ( !(ex instanceof MqttException)) {
 			mex = new MqttException(MqttClientException.REASON_CODE_CONNECTION_LOST, ex);

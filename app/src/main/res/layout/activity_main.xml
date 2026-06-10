@@ -7,73 +7,74 @@
     tools:context=".ui.MainActivity">
 
     <EditText
+        android:id="@+id/brokerIP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:id="@+id/brokerIP"
-        android:hint="Broker IP"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:hint="Broker IP" />
 
     <EditText
-        android:gravity="center"
         android:id="@+id/brokerPort"
-        android:hint="Broker Port"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="Broker Port" />
 
     <EditText
-        android:gravity="center"
         android:id="@+id/clientId"
-        android:hint="ClientId"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="ClientId" />
 
     <EditText
-        android:gravity="center"
         android:id="@+id/username"
-        android:hint="Username"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="Username" />
 
     <EditText
-        android:gravity="center"
         android:id="@+id/password"
-        android:hint="Password"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="Password" />
 
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
         android:id="@+id/connect"
-        android:text="Connect"/>
-    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:text="Connect" />
+
+    <Button
         android:id="@+id/disconnect"
-        android:text="Disconnect"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Disconnect" />
 
     <EditText
+        android:id="@+id/topic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:id="@+id/topic"
-        android:hint="Topic"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:hint="Topic" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <Button
+            android:id="@+id/subscribe"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:id="@+id/subscribe"
-            android:text="Subscribe"/>
+            android:text="Subscribe" />
 
         <Button
             android:id="@+id/unsubscribe"
@@ -86,17 +87,17 @@
     </LinearLayout>
 
     <EditText
+        android:id="@+id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:id="@+id/message"
-        android:hint="Message"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:hint="Message" />
 
     <Button
+        android:id="@+id/send"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:id="@+id/send"
-        android:text="Send message"/>
+        android:text="Send message" />
 </LinearLayout>

@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
+
     compileSdk 34
 
     namespace = "com.gojek.courier.app"
@@ -34,9 +35,15 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    buildFeatures {
+        viewBinding true
+    }
+
     lintOptions {
         abortOnError false
     }
+
+
 }
 
 dependencies {

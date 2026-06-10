@@ -24,8 +24,6 @@ import java.net.SocketTimeoutException;
 
 import org.eclipse.paho.mqttv5.client.MqttClientException;
 import org.eclipse.paho.mqttv5.client.internal.MqttState;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.common.ExceptionHelper;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttDataTypes;
@@ -38,7 +36,6 @@ import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
  */
 public class MqttInputStream extends InputStream {
 	private static final String CLASS_NAME = MqttInputStream.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	private MqttState clientState = null;
 	private DataInputStream in;	
@@ -52,7 +49,6 @@ public class MqttInputStream extends InputStream {
 		this.in = new DataInputStream(in);		
 		this.bais = new ByteArrayOutputStream();
 		this.remLen = -1;
-		log.setResourceName(clientId);
 	}
 	
 	public int read() throws IOException {
@@ -77,8 +73,6 @@ public class MqttInputStream extends InputStream {
 	 * @throws MqttException if the message is invalid 
 	 */
 	public MqttWireMessage readMqttWireMessage() throws IOException, MqttException {
-		final String methodName ="readMqttWireMessage";
-		
 		MqttWireMessage message = null;
 		try {
 			// read header
@@ -129,8 +123,6 @@ public class MqttInputStream extends InputStream {
 				byte[] header = bais.toByteArray();
 				System.arraycopy(header,0,packet,0, header.length);
 				message = MqttWireMessage.createWireMessage(packet);
-				// @TRACE 530= Received {0} 
-				log.fine(CLASS_NAME, methodName, "530",new Object[] {message});
 			}
 		} catch (SocketTimeoutException e) {
 			// ignore socket read timeout

@@ -22,8 +22,6 @@ import java.util.concurrent.Future;
 
 import org.eclipse.paho.mqttv5.client.MqttClientException;
 import org.eclipse.paho.mqttv5.client.MqttToken;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.client.wire.MqttInputStream;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttAck;
@@ -35,7 +33,7 @@ import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
  */
 public class CommsReceiver implements Runnable {
 	private static final String CLASS_NAME = CommsReceiver.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
+	private final String TAG = "CommsReceiver";
 
 	private enum State {STOPPED, RUNNING, STARTING, RECEIVING}
 
@@ -61,7 +59,6 @@ public class CommsReceiver implements Runnable {
 		this.clientComms = clientComms;
 		this.clientState = clientState;
 		this.tokenStore = tokenStore;
-		log.setResourceName(clientComms.getClient().getClientId());
 	}
 
 	public CommsReceiver(ClientComms clientComms, ClientState clientState, CommsTokenStore tokenStore, InputStream in,
@@ -85,9 +82,7 @@ public class CommsReceiver implements Runnable {
 	 */
 	public void start(String threadName, ExecutorService executorService) {
 		this.threadName = threadName;
-		final String methodName = "start";
-		// @TRACE 855=starting
-		log.fine(CLASS_NAME, methodName, "855");
+		logger.d(TAG, "receiver starting");
 		synchronized (lifecycle) {
 			if (current_state == State.STOPPED && target_state == State.STOPPED) {
 				target_state = State.RUNNING;
@@ -107,13 +102,11 @@ public class CommsReceiver implements Runnable {
 	 * Stops the Receiver's thread. This call will block.
 	 */
 	public void stop() {
-		final String methodName = "stop";
 		synchronized (lifecycle) {
 			if (receiverFuture != null) {
 				receiverFuture.cancel(true);
 			}
-			//@TRACE 850=stopping
-			log.fine(CLASS_NAME,methodName, "850");
+			logger.d(TAG, "receiver stopping started");
 			if (isRunning()) {
 				target_state = State.STOPPED;
 			}
@@ -121,8 +114,7 @@ public class CommsReceiver implements Runnable {
 		while (isRunning()) {
 			try { Thread.sleep(100); } catch (Exception e) { }
 		}
-		//@TRACE 851=stopped
-		log.fine(CLASS_NAME,methodName,"851");
+		logger.d(TAG, "receiver stopping completed");
 	}
 
 	/**
@@ -131,7 +123,6 @@ public class CommsReceiver implements Runnable {
 	public void run() {
 		recThread = Thread.currentThread();
 		recThread.setName(threadName);
-		final String methodName = "run";
 		MqttToken token = null;
 
 		synchronized (lifecycle) {
@@ -145,8 +136,7 @@ public class CommsReceiver implements Runnable {
 			}
 			while (my_target == State.RUNNING && (in != null)) {
 				try {
-					//@TRACE 852=network read message
-					log.fine(CLASS_NAME,methodName,"852");
+					logger.d(TAG, "network read message");
 					if (in.available() > 0) {
 						synchronized (lifecycle) {
 							current_state = State.RECEIVING;
@@ -181,7 +171,7 @@ public class CommsReceiver implements Runnable {
 							}
 						} else {
 							// This is an ack for a message we no longer have a ticket for.
-							log.fine(CLASS_NAME, methodName, "857");
+							logger.d(TAG, "received ack for unknown message id");
 							clientState.handleOrphanedAcks((MqttAck) message);
 						} 
 					} else if (message != null && message instanceof MqttDisconnect) {
@@ -200,8 +190,7 @@ public class CommsReceiver implements Runnable {
 					}
 				} 
 				catch (MqttException ex) {
-					// @TRACE 856=Stopping, MQttException
-					log.fine(CLASS_NAME, methodName, "856", null, ex);
+					logger.e(TAG, "exception occured, cause : ", ex);
 					synchronized (lifecycle) {
 						target_state = State.STOPPED;
 					}
@@ -209,8 +198,7 @@ public class CommsReceiver implements Runnable {
 					clientComms.shutdownConnection(token, ex, null);
 				} 
 				catch (IOException ioe) {
-					// @TRACE 853=Stopping due to IOException
-					log.fine(CLASS_NAME, methodName, "853");
+					logger.e(TAG, "IO exception occured, cause : ", ioe);
                                         if (target_state != State.STOPPED) {
 					    synchronized (lifecycle) {
 						target_state = State.STOPPED;
@@ -240,8 +228,7 @@ public class CommsReceiver implements Runnable {
 		} // end try
 
 		recThread = null;
-		//@TRACE 854=<
-		log.fine(CLASS_NAME,methodName,"854");
+		logger.d(TAG, "receiver run loop exited");
 	}
 
 	public boolean isRunning() {

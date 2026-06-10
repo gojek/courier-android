@@ -19,8 +19,6 @@ package org.eclipse.paho.mqttv5.client.internal;
 import org.eclipse.paho.mqttv5.client.MqttActionListener;
 import org.eclipse.paho.mqttv5.client.MqttClientException;
 import org.eclipse.paho.mqttv5.client.MqttClientInterface;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttAck;
@@ -35,7 +33,6 @@ import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
 
 public class Token {
 	private static final String CLASS_NAME = Token.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	private volatile boolean completed = false;
 	private boolean pendingComplete = false;
@@ -65,7 +62,6 @@ public class Token {
         private boolean deliveryToken = false;
 
 	public Token(String logContext) {
-		log.setResourceName(logContext);
 	}
 
 	public int getMessageID() {
@@ -121,10 +117,6 @@ public class Token {
 	}
 
 	public void waitForCompletion(long timeout) throws MqttException {
-		final String methodName = "waitForCompletion";
-		// @TRACE 407=key={0} wait max={1} token={2}
-		log.fine(CLASS_NAME, methodName, "407", new Object[] { getKey(), Long.valueOf(timeout), this });
-
 		MqttWireMessage resp = null;
 		try {
 			resp = waitForResponse(timeout);
@@ -135,8 +127,6 @@ public class Token {
 			}
 		}
 		if (resp == null && !completed) {
-			// @TRACE 406=key={0} timed out token={1}
-			log.fine(CLASS_NAME, methodName, "406", new Object[] { getKey(), this });
 			exception = new MqttException(MqttClientException.REASON_CODE_CLIENT_TIMEOUT);
 			throw exception;
 		}
@@ -158,21 +148,10 @@ public class Token {
 	}
 
 	protected MqttWireMessage waitForResponse(long timeout) throws MqttException {
-		final String methodName = "waitForResponse";
 		synchronized (responseLock) {
-			// @TRACE 400=>key={0} timeout={1} sent={2} completed={3} hasException={4}
-			// response={5} token={6}
-			log.fine(
-					CLASS_NAME, methodName, "400", new Object[] { getKey(), Long.valueOf(timeout), Boolean.valueOf(sent),
-							Boolean.valueOf(completed), (exception == null) ? "false" : "true", response, this },
-					exception);
-
 			while (!this.completed) {
 				if (this.exception == null) {
 					try {
-						// @TRACE 408=key={0} wait max={1}
-						log.fine(CLASS_NAME, methodName, "408", new Object[] { getKey(), Long.valueOf(timeout) });
-
 						if (timeout <= 0) {
 							responseLock.wait();
 						} else {
@@ -184,8 +163,6 @@ public class Token {
 				}
 				if (!this.completed) {
 					if (this.exception != null) {
-						// @TRACE 401=failed with exception
-						log.fine(CLASS_NAME, methodName, "401", null, exception);
 						throw exception;
 					}
 
@@ -196,8 +173,6 @@ public class Token {
 				}
 			}
 		}
-		// @TRACE 402=key={0} response={1}
-		log.fine(CLASS_NAME, methodName, "402", new Object[] { getKey(), this.response });
 		return this.response;
 	}
 	
@@ -210,10 +185,6 @@ public class Token {
 	 *            if there was a problem store the exception in the token.
 	 */
 	protected void update(MqttWireMessage msg, MqttException ex) {
-		final String methodName = "markComplete";
-		// @TRACE 411=>key={0} response={1} excep={2}
-		log.fine(CLASS_NAME, methodName, "411", new Object[] { getKey(), msg, ex });
-		
 		synchronized (responseLock){
 			if(msg instanceof MqttPubRec) {
 				if(msg.getReasonCodes() != null) {
@@ -250,10 +221,6 @@ public class Token {
 	 *            if there was a problem store the exception in the token.
 	 */
 	protected void markComplete(MqttWireMessage msg, MqttException ex) {
-		final String methodName = "markComplete";
-		// @TRACE 404=>key={0} response={1} excep={2}
-		log.fine(CLASS_NAME, methodName, "404", new Object[] { getKey(), msg, ex });
-
 		synchronized (responseLock) {
 			// If reason codes are available, store them here.
 			if (msg instanceof MqttPubAck || msg instanceof MqttPubComp || msg instanceof MqttPubRec
@@ -279,10 +246,6 @@ public class Token {
 	 * received.
 	 */
 	protected void notifyComplete() {
-		final String methodName = "notifyComplete";
-		// @TRACE 411=>key={0} response={1} excep={2}
-		log.fine(CLASS_NAME, methodName, "404", new Object[] { getKey(), this.response, this.exception });
-
 		synchronized (responseLock) {
 			// If pending complete is set then normally the token can be marked
 			// as complete and users notified. An abnormal error may have
@@ -320,7 +283,6 @@ public class Token {
 	// }
 
 	public void waitUntilSent() throws MqttException {
-		final String methodName = "waitUntilSent";
 		synchronized (sentLock) {
 			synchronized (responseLock) {
 				if (this.exception != null) {
@@ -329,9 +291,6 @@ public class Token {
 			}
 			while (!sent) {
 				try {
-					// @TRACE 409=wait key={0}
-					log.fine(CLASS_NAME, methodName, "409", new Object[] { getKey() });
-
 					sentLock.wait();
 				} catch (InterruptedException e) {
 				}
@@ -351,9 +310,6 @@ public class Token {
 	 * to the TCP/IP socket).
 	 */
 	protected void notifySent() {
-		final String methodName = "notifySent";
-		// @TRACE 403=> key={0}
-		log.fine(CLASS_NAME, methodName, "403", new Object[] { getKey() });
 		synchronized (responseLock) {
 			this.response = null;
 			this.completed = false;
@@ -373,14 +329,10 @@ public class Token {
 	}
 
 	public void reset() throws MqttException {
-		final String methodName = "reset";
 		if (isInUse()) {
 			// Token is already in use - cannot reset
 			throw new MqttException(MqttClientException.REASON_CODE_TOKEN_INUSE);
 		}
-		// @TRACE 410=> key={0}
-		log.fine(CLASS_NAME, methodName, "410", new Object[] { getKey() });
-
 		client = null;
 		completed = false;
 		response = null;

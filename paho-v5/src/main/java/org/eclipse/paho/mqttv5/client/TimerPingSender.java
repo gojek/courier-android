@@ -22,8 +22,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.mqttv5.client.internal.ClientComms;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 
 /**
  * Default ping sender implementation
@@ -36,7 +34,6 @@ import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
  */
 public class TimerPingSender implements MqttPingSender{
 	private static final String CLASS_NAME = TimerPingSender.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	private ClientComms comms;
 	private Timer timer;
@@ -54,14 +51,9 @@ public class TimerPingSender implements MqttPingSender{
 		}
 		this.comms = comms;
 		clientid = comms.getClient().getClientId();
-		log.setResourceName(clientid);
 	}
 
 	public void start() {
-		final String methodName = "start";
-
-		//@Trace 659=start timer for client:{0}
-		log.fine(CLASS_NAME, methodName, "659", new Object[]{ clientid });
 		if (executorService == null) {
 			timer = new Timer("MQTT Ping: " + clientid);
 			//Check ping after first keep alive interval.
@@ -73,9 +65,6 @@ public class TimerPingSender implements MqttPingSender{
 	}
 
 	public void stop() {
-		final String methodName = "stop";
-		//@Trace 661=stop
-		log.fine(CLASS_NAME, methodName, "661", null);
 		if (executorService == null) {
 			if (timer != null){
 				timer.cancel();
@@ -96,24 +85,16 @@ public class TimerPingSender implements MqttPingSender{
 	}
 	
 	private class PingTask extends TimerTask {
-		private static final String methodName = "PingTask.run";
-
 		public void run() {
 			Thread.currentThread().setName("MQTT Ping: " + clientid);
-			//@Trace 660=Check schedule at {0}
-			log.fine(CLASS_NAME, methodName, "660", new Object[]{ Long.valueOf(System.nanoTime()) });
 			comms.checkForActivity();
 		}
 	}
 
 	private class PingRunnable implements Runnable {
-		private static final String methodName = "PingTask.run";
-
 		public void run() {
 			String originalThreadName = Thread.currentThread().getName();
 			Thread.currentThread().setName("MQTT Ping: " + clientid);
-			//@Trace 660=Check schedule at {0}
-			log.fine(CLASS_NAME, methodName, "660", new Object[]{ Long.valueOf(System.nanoTime()) });
 			comms.checkForActivity();
 			Thread.currentThread().setName(originalThreadName);
 		}

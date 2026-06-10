@@ -19,8 +19,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import org.eclipse.paho.mqttv5.client.internal.ClientComms;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 
 /**
  * Utility to help debug problems with the Paho MQTT client
@@ -34,7 +32,6 @@ import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 public class Debug {
 	
 	private static final String CLASS_NAME = ClientComms.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT,CLASS_NAME);
 	private static final String separator = "==============";
 	private static final String lineSep = System.getProperty("line.separator","\n");
 	
@@ -49,7 +46,6 @@ public class Debug {
 	public Debug(String clientID, ClientComms comms) {
 		this.clientID = clientID;
 		this.comms = comms;
-		log.setResourceName(clientID);
 	}
 
 	/**
@@ -81,7 +77,6 @@ public class Debug {
 	 * to the target handler.
 	 */
 	protected void dumpMemoryTrace() {
-		log.dumpTrace();
 	}
 	
 	/**
@@ -93,7 +88,6 @@ public class Debug {
     	vInfo.append(left("Version",20,' ') + ":  "+ ClientComms.VERSION + lineSep);
     	vInfo.append(left("Build Level",20,' ') + ":  "+ ClientComms.BUILD_LEVEL + lineSep);
     	vInfo.append(separator+separator+separator+lineSep);
-    	log.fine(CLASS_NAME,"dumpVersion", vInfo.toString());
 	}
 
 	/**
@@ -102,7 +96,7 @@ public class Debug {
 	public void dumpSystemProperties() {
 		
 	    Properties sysProps = System.getProperties();
-    	log.fine(CLASS_NAME,"dumpSystemProperties", dumpProperties(sysProps, "SystemProperties").toString());
+    	dumpProperties(sysProps, "SystemProperties");
 	}
 
 	/**
@@ -112,7 +106,7 @@ public class Debug {
 		Properties props = null;
 	    if (comms != null && comms.getClientState() != null ) {
 	    	props = comms.getClientState().getDebug();
-	    	log.fine(CLASS_NAME,"dumpClientState", dumpProperties(props, clientID + " : ClientState").toString());
+	    	dumpProperties(props, clientID + " : ClientState");
 	    }
 	}
 
@@ -123,7 +117,7 @@ public class Debug {
 		Properties props = null;
 	    if (comms != null) {
 	    	props = comms.getDebug();
-	    	log.fine(CLASS_NAME,"dumpClientComms", dumpProperties(props, clientID + " : ClientComms").toString());
+	    	dumpProperties(props, clientID + " : ClientComms");
 	    }
 	}
 	
@@ -134,7 +128,7 @@ public class Debug {
 		Properties props = null;
 	    if (comms != null) {
 	    	props = comms.getConOptions().getDebug();
-	    	log.fine(CLASS_NAME,"dumpConOptions", dumpProperties(props, clientID + " : Connect Options").toString());
+	    	dumpProperties(props, clientID + " : Connect Options");
 	    }
 	}
 

@@ -21,8 +21,6 @@ import java.io.OutputStream;
 
 import org.eclipse.paho.mqttv5.client.MqttClientException;
 import org.eclipse.paho.mqttv5.client.internal.MqttState;
-import org.eclipse.paho.mqttv5.client.logging.Logger;
-import org.eclipse.paho.mqttv5.client.logging.LoggerFactory;
 import org.eclipse.paho.mqttv5.common.ExceptionHelper;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
@@ -34,7 +32,6 @@ import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
  */
 public class MqttOutputStream extends OutputStream {
 	private static final String CLASS_NAME = MqttOutputStream.class.getName();
-	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	private MqttState clientState = null;
 	private BufferedOutputStream out;
@@ -42,7 +39,6 @@ public class MqttOutputStream extends OutputStream {
 	public MqttOutputStream(MqttState clientState, OutputStream out, String clientId) {
 		this.clientState = clientState;
 		this.out = new BufferedOutputStream(out);
-		log.setResourceName(clientId);
 	}
 	
 	public void close() throws IOException {
@@ -74,7 +70,6 @@ public class MqttOutputStream extends OutputStream {
 	 * @throws MqttException if an exception is thrown when getting the header or payload
 	 */
 	public void write(MqttWireMessage message) throws IOException, MqttException {
-		final String methodName = "write";
 		byte[] bytes = message.getHeader();
 		byte[] pl = message.getPayload();
 		if(this.clientState.getOutgoingMaximumPacketSize() != null && 
@@ -93,9 +88,6 @@ public class MqttOutputStream extends OutputStream {
         	offset += chunckSize;
         	clientState.notifySentBytes(length);
         }		
-		
-		// @TRACE 529= sent {0}
-    	log.fine(CLASS_NAME, methodName, "529", new Object[]{message});
 	}
 }
 

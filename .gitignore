@@ -18,3 +18,4 @@ report/
 .vscode/*
 */build/*
 */bin/*
+.claude/
