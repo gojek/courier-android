@@ -399,12 +399,12 @@ public class ClientState
 						{
 							confirmMessage.setDuplicate(true);
 							// @TRACE 605=outbound QoS 2 pubrel key={0} message={1}
+                            logger.d(TAG, "outbound QoS 2 pubrel key=" + key + " message=" + message);
 
 							outboundQoS2.put(Integer.valueOf(confirmMessage.getMessageId()), confirmMessage);
 						}
-						else
-						{
-							// @TRACE 606=outbound QoS 2 completed key={0} message={1}
+						else {
+                            logger.d(TAG, "outbound QoS 2 completed key=" + key + " message=" + message);
 						}
 					}
 					else
@@ -415,12 +415,14 @@ public class ClientState
 						if (sendMessage.getMessage().getQos() == 2)
 						{
 							// @TRACE 607=outbound QoS 2 publish key={0} message={1}
+                            logger.d(TAG, "outbound QoS 2 publish key=" + key + " message=" + message);
 
 							outboundQoS2.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
 						}
 						else
 						{
 							// @TRACE 608=outbound QoS 1 publish key={0} message={1}
+                            logger.d(TAG, "outbound QoS 1 publish key=" + key + " message=" + message);
 
 							outboundQoS1.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
 						}

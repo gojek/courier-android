@@ -18,6 +18,7 @@ import android.os.PowerManager.WakeLock
 import android.os.SystemClock
 import com.gojek.courier.extensions.fromMillisToSeconds
 import com.gojek.courier.extensions.fromNanosToMillis
+import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.BuildInfoProvider
 import com.gojek.courier.utils.Clock
 import com.gojek.courier.utils.extensions.addImmutableFlag
@@ -25,13 +26,11 @@ import com.gojek.mqtt.pingsender.AdaptiveMqttPingSender
 import com.gojek.mqtt.pingsender.IPingSenderEvents
 import com.gojek.mqtt.pingsender.KeepAlive
 import com.gojek.mqtt.pingsender.KeepAliveCalculator
+import com.gojek.mqtt.pingsender.MqttPingSender
 import com.gojek.mqtt.pingsender.NoOpPingSenderEvents
+import com.gojek.mqtt.pingsender.PingActionCallback
+import com.gojek.mqtt.pingsender.PingSenderComms
 import com.gojek.mqtt.pingsender.keepAliveMillis
-import org.eclipse.paho.client.mqttv3.ILogger
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.MqttPingSender
-import org.eclipse.paho.client.mqttv3.internal.ClientComms
 
 /**
  * Default ping sender implementation on Android. It is based on AlarmManager.
@@ -50,7 +49,7 @@ internal class AdaptiveAlarmPingSender(
     private val clock: Clock = Clock(),
     private val buildInfoProvider: BuildInfoProvider = BuildInfoProvider()
 ) : AdaptiveMqttPingSender {
-    private lateinit var comms: ClientComms
+    private lateinit var comms: PingSenderComms
     private lateinit var logger: ILogger
     private val alarmReceiver = AlarmReceiver()
     private var pendingIntent: PendingIntent? = null
@@ -67,7 +66,7 @@ internal class AdaptiveAlarmPingSender(
         this.keepAliveCalculator = keepAliveCalculator
     }
 
-    override fun init(comms: ClientComms, logger: ILogger) {
+    override fun init(comms: PingSenderComms, logger: ILogger) {
         this.comms = comms
         this.logger = logger
     }
@@ -111,7 +110,7 @@ internal class AdaptiveAlarmPingSender(
         }
         logger.d(
             TAG,
-            "Unregister alarmreceiver to MqttService" + comms.client.clientId
+            "Unregister alarmreceiver to MqttService" + comms.clientId
         )
         if (hasStarted) {
             hasStarted = false
@@ -210,18 +209,49 @@ internal class AdaptiveAlarmPingSender(
                 TAG,
                 "Check time :" + System.currentTimeMillis()
             )
-            logger.setAppKillTime(System.currentTimeMillis())
-            var serverUri = ""
-            if (comms.client != null) {
-                serverUri = comms.client.serverURI
-            }
-            pingSenderEvents.mqttPingInitiated(serverUri, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
-            val token: IMqttToken? = comms.sendPingRequest()
-            token?.userContext = adaptiveKeepAlive
+            comms.setAppKillTime(System.currentTimeMillis())
+            val serverUri = comms.serverURI ?: ""
+            val keepAlive = adaptiveKeepAlive
+            pingSenderEvents.mqttPingInitiated(serverUri, keepAlive.keepAliveMillis().fromMillisToSeconds())
+            val sTime = clock.nanoTime()
+            val initiated = comms.sendPingRequest(
+                object : PingActionCallback {
+                    override fun onSuccess() {
+                        logger.d(
+                            TAG,
+                            "Success. Release lock(" + wakeLockTag + "):" +
+                                System.currentTimeMillis()
+                        )
+                        // Release wakelock when it is done.
+                        if (wakelock != null && wakelock!!.isHeld) {
+                            wakelock!!.release()
+                        }
+                        val timeTaken = (clock.nanoTime() - sTime).fromNanosToMillis()
+                        pingSenderEvents.pingEventSuccess(serverUri, timeTaken, keepAlive.keepAliveMillis().fromMillisToSeconds())
+                        keepAliveCalculator.onKeepAliveSuccess(keepAlive)
+                        schedule(0)
+                    }
+
+                    override fun onFailure(exception: Throwable) {
+                        logger.w(
+                            TAG,
+                            "Failure. Release lock(" + wakeLockTag + "):" +
+                                System.currentTimeMillis()
+                        )
+                        // Release wakelock when it is done.
+                        if (wakelock != null && wakelock!!.isHeld) {
+                            wakelock!!.release()
+                        }
+                        val timeTaken = (clock.nanoTime() - sTime).fromNanosToMillis()
+                        pingSenderEvents.pingEventFailure(serverUri, timeTaken, exception, keepAlive.keepAliveMillis().fromMillisToSeconds())
+                        keepAliveCalculator.onKeepAliveFailure(keepAlive)
+                    }
+                }
+            )
 
             // No ping has been sent.
-            if (token == null) {
-                pingSenderEvents.pingMqttTokenNull(serverUri, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
+            if (!initiated) {
+                pingSenderEvents.pingMqttTokenNull(serverUri, keepAlive.keepAliveMillis().fromMillisToSeconds())
                 return
             }
             try {
@@ -248,43 +278,6 @@ internal class AdaptiveAlarmPingSender(
                     TAG,
                     "Exception while AlaramBroadcast receive$ex"
                 )
-            }
-            val sTime = clock.nanoTime()
-            token.actionCallback = object : IMqttActionListener {
-                override fun onSuccess(asyncActionToken: IMqttToken) {
-                    logger.d(
-                        TAG,
-                        "Success. Release lock(" + wakeLockTag + "):" +
-                            System.currentTimeMillis()
-                    )
-                    // Release wakelock when it is done.
-                    if (wakelock != null && wakelock!!.isHeld) {
-                        wakelock!!.release()
-                    }
-                    val timeTaken = (clock.nanoTime() - sTime).fromNanosToMillis()
-                    pingSenderEvents.pingEventSuccess(serverUri, timeTaken, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
-                    val keepAlive = asyncActionToken.userContext as KeepAlive
-                    keepAliveCalculator.onKeepAliveSuccess(keepAlive)
-                    schedule(0)
-                }
-
-                override fun onFailure(
-                    asyncActionToken: IMqttToken,
-                    exception: Throwable
-                ) {
-                    logger.w(
-                        TAG,
-                        "Failure. Release lock(" + wakeLockTag + "):" +
-                            System.currentTimeMillis()
-                    )
-                    // Release wakelock when it is done.
-                    if (wakelock != null && wakelock!!.isHeld) {
-                        wakelock!!.release()
-                    }
-                    val timeTaken = (clock.nanoTime() - sTime).fromNanosToMillis()
-                    pingSenderEvents.pingEventFailure(serverUri, timeTaken, exception, adaptiveKeepAlive.keepAliveMillis().fromMillisToSeconds())
-                    keepAliveCalculator.onKeepAliveFailure(asyncActionToken.userContext as KeepAlive)
-                }
             }
         }
     }

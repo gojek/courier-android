@@ -228,5 +228,5 @@ class MqttConnectOptions private constructor(
 }
 
 enum class MqttVersion(internal val protocolName: String, internal val protocolLevel: Int) {
-    VERSION_3_1("MQIsdp", 3), VERSION_3_1_1("MQTT", 4)
+    VERSION_3_1("MQIsdp", 3), VERSION_3_1_1("MQTT", 4), VERSION_5("MQTT", 5)
 }

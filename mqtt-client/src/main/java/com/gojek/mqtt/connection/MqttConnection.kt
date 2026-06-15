@@ -11,6 +11,7 @@ import com.gojek.courier.utils.Clock
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.mqtt.client.IMessageReceiveListener
 import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
+import com.gojek.mqtt.client.mapToPahoInterceptor
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
 import com.gojek.mqtt.event.PahoEventHandler
@@ -21,7 +22,7 @@ import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.network.NetworkHandler
 import com.gojek.mqtt.persistence.impl.PahoPersistence
 import com.gojek.mqtt.pingsender.MqttPingSender
-import com.gojek.mqtt.pingsender.toPahoPingSender
+import com.gojek.mqtt.pingsender.PahoV3PingSenderAdapter
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.hostfallback.IHostFallbackPolicy
@@ -407,11 +408,11 @@ internal class MqttConnection(
             null,
             persistence,
             connectionConfig.maxInflightMessages,
-            this.mqttPingSender.toPahoPingSender(),
+            PahoV3PingSenderAdapter(this.mqttPingSender, connectionConfig.logger),
             PahoLogger(connectionConfig.logger),
             PahoEventHandler(connectionConfig.connectionEventHandler),
             getPahoExperimentsConfig(),
-            connectionConfig.mqttInterceptorList
+            connectionConfig.mqttInterceptorList.map { mapToPahoInterceptor(it) }
         )
         val bufferOptions = DisconnectedBufferOptions()
         with(connectionConfig.persistenceOptions as PahoPersistenceOptions) {

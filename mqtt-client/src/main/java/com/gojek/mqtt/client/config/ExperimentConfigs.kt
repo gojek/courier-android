@@ -20,7 +20,8 @@ data class ExperimentConfigs(
     val maxInflightMessagesLimit: Int = MAX_INFLIGHT_MESSAGES_ALLOWED,
     val stopMqttThreadOnDestroy: Boolean = false,
     val shouldUseMemoryPersistence: Boolean = false,
-    val shouldSendMessageViaHandler: Boolean = true
+    val shouldSendMessageViaHandler: Boolean = true,
+    val isMqttVersion5Enabled: Boolean = false
 )
 
 enum class SubscriptionStore {

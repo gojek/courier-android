@@ -98,7 +98,7 @@ internal class PahoPersistence(private val context: Context) :
         return incomingMessagesDao.removeMessagesWithOlderTimestamp(timestampNanos)
     }
 
-    fun clearAll() {
+    override fun clearAll() {
         if (::pahoMessagesDao.isInitialized) {
             pahoMessagesDao.clearAllMessages()
         }

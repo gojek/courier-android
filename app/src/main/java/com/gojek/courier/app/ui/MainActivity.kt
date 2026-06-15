@@ -9,9 +9,9 @@ import com.gojek.chuckmqtt.external.Period
 import com.gojek.courier.Courier
 import com.gojek.courier.QoS
 import com.gojek.courier.QoS.ZERO
-import com.gojek.courier.app.R
 import com.gojek.courier.app.data.network.CourierService
 import com.gojek.courier.app.data.network.model.Message
+import com.gojek.courier.app.databinding.ActivityMainBinding
 import com.gojek.courier.callback.SendMessageCallback
 import com.gojek.courier.logging.ILogger
 import com.gojek.courier.messageadapter.gson.GsonMessageAdapterFactory
@@ -32,18 +32,6 @@ import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.model.Will
 import com.gojek.workmanager.pingsender.WorkManagerPingSenderConfig
 import com.gojek.workmanager.pingsender.WorkPingSenderFactory
-import kotlinx.android.synthetic.main.activity_main.brokerIP
-import kotlinx.android.synthetic.main.activity_main.brokerPort
-import kotlinx.android.synthetic.main.activity_main.clientId
-import kotlinx.android.synthetic.main.activity_main.connect
-import kotlinx.android.synthetic.main.activity_main.disconnect
-import kotlinx.android.synthetic.main.activity_main.message
-import kotlinx.android.synthetic.main.activity_main.password
-import kotlinx.android.synthetic.main.activity_main.send
-import kotlinx.android.synthetic.main.activity_main.subscribe
-import kotlinx.android.synthetic.main.activity_main.topic
-import kotlinx.android.synthetic.main.activity_main.unsubscribe
-import kotlinx.android.synthetic.main.activity_main.username
 import timber.log.Timber
 import java.util.*
 
@@ -52,39 +40,43 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mqttClient: MqttClient
     private lateinit var courierService: CourierService
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         initialiseCourier()
-        connect.setOnClickListener {
-            var clientId = clientId.text.toString()
+        binding.connect.setOnClickListener {
+            var clientId = binding.clientId.text.toString()
             if(clientId.isEmpty()) {
                 clientId = UUID.randomUUID().toString()
             }
-            var username = username.text.toString()
+            var username = binding.username.text.toString()
             if(username.isEmpty()) {
                 username = UUID.randomUUID().toString()
             }
-            val password = password.text.toString()
-            var brokerIP = brokerIP.text.toString()
+            val password = binding.password.text.toString()
+            var brokerIP = binding.brokerIP.text.toString()
             if(brokerIP.isEmpty()) {
-                brokerIP = "broker.mqttdashboard.com"
+                brokerIP = "broker.hivemq.com"
             }
-            var port = 1883
-            if(brokerPort.text.toString().isNotEmpty()) {
-                port = Integer.parseInt(brokerPort.text.toString())
+            var port = 8883
+            if(binding.brokerPort.text.toString().isNotEmpty()) {
+                port = Integer.parseInt(binding.brokerPort.text.toString())
             }
             connectMqtt(clientId, username, password, brokerIP, port)
         }
 
-        disconnect.setOnClickListener {
+        binding.disconnect.setOnClickListener {
             mqttClient.disconnect()
         }
 
-        send.setOnClickListener {
+        binding.send.setOnClickListener {
             courierService.publish(
-                topic = topic.text.toString(),
-                message = Message(123, message.text.toString()),
+                topic = binding.topic.text.toString(),
+                message = Message(123, binding.message.text.toString()),
                 callback = object : SendMessageCallback {
                     override fun onMessageSendTrigger() {
                         Log.d("Courier", "onMessageSendTrigger")
@@ -105,8 +97,8 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        subscribe.setOnClickListener {
-            val topics = topic.text.toString().split(",")
+        binding.subscribe.setOnClickListener {
+            val topics = binding.topic.text.toString().split(",")
             val stream = if (topics.size == 1) {
                 courierService.subscribe(topic = topics[0])
             } else {
@@ -117,8 +109,8 @@ class MainActivity : AppCompatActivity() {
             stream.subscribe { Log.d("Courier", "Message received: $it") }
         }
 
-        unsubscribe.setOnClickListener {
-            courierService.unsubscribe(topic = topic.text.toString())
+        binding.unsubscribe.setOnClickListener {
+            courierService.unsubscribe(topic = binding.topic.text.toString())
         }
     }
 
@@ -132,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         val connectOptions = MqttConnectOptions.Builder()
-            .serverUris(listOf(ServerUri(ip, port, if (port == 443) "ssl" else "tcp")))
+            .serverUris(listOf(ServerUri(ip, port, if (port == 443 || port == 8883) "ssl" else "tcp")))
             .clientId(clientId)
             .userName(username)
             .password(password)
@@ -153,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                     forceRefresh: Boolean
                 ): MqttConnectOptions {
                     return connectOptions.newBuilder()
-                        .password(password.text.toString())
+                        .password(binding.password.text.toString())
                         .build()
                 }
             },
@@ -173,6 +165,7 @@ class MainActivity : AppCompatActivity() {
                 incomingMessagesTTLSecs = 60,
                 incomingMessagesCleanupIntervalSecs = 10,
                 maxInflightMessagesLimit = 1000,
+                isMqttVersion5Enabled = true
             ),
             pingSender = WorkPingSenderFactory.createMqttPingSender(applicationContext, WorkManagerPingSenderConfig(sendForcePing = true))
         )
