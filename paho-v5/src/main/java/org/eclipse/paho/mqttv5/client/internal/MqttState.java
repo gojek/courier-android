@@ -42,7 +42,7 @@ public interface MqttState {
 	 * 
 	 * @param message The {@link MqttWireMessage} to persist
 	 */
-	void persistBufferedMessage(MqttWireMessage message);
+	void persistBufferedMessage(MqttWireMessage message) throws MqttException;
 
 	/**
 	 * @param message The {@link MqttWireMessage} to un-persist

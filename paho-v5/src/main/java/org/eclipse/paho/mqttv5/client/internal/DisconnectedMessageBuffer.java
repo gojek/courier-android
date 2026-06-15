@@ -31,7 +31,8 @@ public class DisconnectedMessageBuffer implements Runnable {
 	private ArrayList<BufferedMessage> buffer;
 	private final Object	bufLock = new Object();  	// Used to synchronise the buffer
 	private IDisconnectedBufferCallback callback;
-	
+    private IDiscardedBufferMessageCallback messageDiscardedCallBack;
+
 	public DisconnectedMessageBuffer(DisconnectedBufferOptions options){
 		this.bufferOpts = options;
 		buffer = new ArrayList<BufferedMessage>();
@@ -124,4 +125,7 @@ public class DisconnectedMessageBuffer implements Runnable {
 		return bufferOpts.isPersistBuffer();
 	}
 
+    public void setMessageDiscardedCallBack(IDiscardedBufferMessageCallback callback) {
+        this.messageDiscardedCallBack = callback;
+    }
 }

@@ -41,7 +41,7 @@ public class TimerPingSender implements MqttPingSender{
 	private ScheduledFuture<?> scheduledFuture;
 	private String clientid;
 
-	public TimerPingSender(ScheduledExecutorService executorService) {
+	public TimerPingSender() {
 		this.executorService = executorService;
 	}
 

@@ -44,7 +44,8 @@ public class MqttConnect extends MqttWireMessage {
 	private byte[] password;
 	private int keepAliveInterval;
 	private String willDestination;
-	private int mqttVersion = DEFAULT_PROTOCOL_VERSION;
+    private String protocolName;
+    private int protocolLevel;
 
 	private static final Byte[] validProperties = { MqttProperties.SESSION_EXPIRY_INTERVAL_IDENTIFIER,
 			MqttProperties.WILL_DELAY_INTERVAL_IDENTIFIER, MqttProperties.RECEIVE_MAXIMUM_IDENTIFIER,
@@ -79,12 +80,12 @@ public class MqttConnect extends MqttWireMessage {
 		DataInputStream dis = new DataInputStream(bais);
 
 		// Verify the Protocol name and version
-		String protocolName = MqttDataTypes.decodeUTF8(dis);
+        protocolName = MqttDataTypes.decodeUTF8(dis);
 		if (!protocolName.equalsIgnoreCase(DEFAULT_PROTOCOL_NAME)) {
 			throw new MqttPacketException(MqttPacketException.PACKET_CONNECT_ERROR_UNSUPPORTED_PROTOCOL_NAME);
 		}
-		mqttVersion = dis.readByte();
-		if (mqttVersion != DEFAULT_PROTOCOL_VERSION) {
+        protocolLevel = dis.readByte();
+		if (protocolLevel != DEFAULT_PROTOCOL_VERSION) {
 			throw new MqttPacketException(MqttPacketException.PACKET_CONNECT_ERROR_UNSUPPORTED_PROTOCOL_VERSION);
 		}
 
@@ -147,11 +148,19 @@ public class MqttConnect extends MqttWireMessage {
 	 *            - The {@link MqttProperties} for the will message.
 	 *
 	 */
-	public MqttConnect(String clientId, int mqttVersion, boolean cleanStart, int keepAliveInterval,
-			MqttProperties properties, MqttProperties willProperties) {
+	public MqttConnect(
+            String clientId,
+            int protocolLevel,
+            String protocolName,
+            boolean cleanStart,
+            int keepAliveInterval,
+			MqttProperties properties,
+            MqttProperties willProperties
+    ) {
 		super(MqttWireMessage.MESSAGE_TYPE_CONNECT);
 		this.clientId = clientId;
-		this.mqttVersion = mqttVersion;
+		this.protocolLevel = protocolLevel;
+        this.protocolName = protocolName;
 		this.cleanStart = cleanStart;
 		this.keepAliveInterval = keepAliveInterval;
 		if (properties != null) {
@@ -162,7 +171,6 @@ public class MqttConnect extends MqttWireMessage {
 		this.properties.setValidProperties(validProperties);
 		this.willProperties = willProperties;
 		this.willProperties.setValidProperties(validWillProperties);
-
 	}
 
 	@Override
@@ -181,10 +189,10 @@ public class MqttConnect extends MqttWireMessage {
 			DataOutputStream dos = new DataOutputStream(baos);
 
 			// Encode the Protocol Name
-			MqttDataTypes.encodeUTF8(dos, "MQTT");
+			MqttDataTypes.encodeUTF8(dos, protocolName);
 
 			// Encode the MQTT Version
-			dos.write(mqttVersion);
+			dos.write(protocolLevel);
 
 			byte connectFlags = 0;
 
@@ -314,7 +322,7 @@ public class MqttConnect extends MqttWireMessage {
 	}
 
 	public int getMqttVersion() {
-		return mqttVersion;
+		return protocolLevel;
 	}
 
 	@Override
@@ -332,6 +340,6 @@ public class MqttConnect extends MqttWireMessage {
 				+ ", clientId=" + clientId + ", reservedByte=" + reservedByte + ", cleanStart=" + cleanStart
 				+ ", willMessage=" + willMessage + ", userName=" + userName + ", password=" + Arrays.toString(password)
 				+ ", keepAliveInterval=" + keepAliveInterval + ", willDestination=" + willDestination + ", mqttVersion="
-				+ mqttVersion + "]";
+				+ protocolLevel + ", protocolName=" + protocolName + "]";
 	}
 }

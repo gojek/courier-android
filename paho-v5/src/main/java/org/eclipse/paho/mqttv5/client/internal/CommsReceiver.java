@@ -17,11 +17,14 @@ package org.eclipse.paho.mqttv5.client.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.eclipse.paho.mqttv5.client.ILogger;
 import org.eclipse.paho.mqttv5.client.MqttClientException;
 import org.eclipse.paho.mqttv5.client.MqttToken;
+import org.eclipse.paho.mqttv5.client.NoOpLogger;
 import org.eclipse.paho.mqttv5.client.wire.MqttInputStream;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.packet.MqttAck;
@@ -32,224 +35,216 @@ import org.eclipse.paho.mqttv5.common.packet.MqttWireMessage;
  * Receives MQTT packets from the server.
  */
 public class CommsReceiver implements Runnable {
-	private static final String CLASS_NAME = CommsReceiver.class.getName();
-	private final String TAG = "CommsReceiver";
+    private static final String CLASS_NAME = CommsReceiver.class.getName();
+    private final String TAG = "CommsReceiver";
 
-	private enum State {STOPPED, RUNNING, STARTING, RECEIVING}
+    private enum State {STOPPED, RUNNING, STARTING, RECEIVING}
 
-	private State current_state = State.STOPPED;
-	private State target_state = State.STOPPED;
-	private final Object lifecycle = new Object();
-	private String threadName;
-	private Future<?> receiverFuture;
-	
-	private ClientState clientState = null;
-	private ClientComms clientComms = null;
-	private MqttInputStream in;
-	private CommsTokenStore tokenStore = null;
-	private Thread recThread = null;
+    private State current_state = State.STOPPED;
+    private State target_state = State.STOPPED;
+    private final Object lifecycle = new Object();
+    private String threadName;
+    private Future<?> receiverFuture;
 
-	// Courier customizations
-	private java.net.Socket socket = null;
-	private org.eclipse.paho.mqttv5.client.ILogger logger = new org.eclipse.paho.mqttv5.client.NoOpLogger();
-	private MqttInterceptorCallback mqttInterceptorCallback;
+    private ClientState clientState = null;
+    private ClientComms clientComms = null;
+    private MqttInputStream in;
+    private CommsTokenStore tokenStore = null;
+    private Thread recThread = null;
 
-	public CommsReceiver(ClientComms clientComms, ClientState clientState, CommsTokenStore tokenStore, InputStream in) {
-		this.in = new MqttInputStream(clientState, in, clientComms.getClient().getClientId());
-		this.clientComms = clientComms;
-		this.clientState = clientState;
-		this.tokenStore = tokenStore;
-	}
+    // Courier customizations
+    private Socket socket = null;
+    private ILogger logger = new NoOpLogger();
+    private MqttInterceptorCallback mqttInterceptorCallback;
 
-	public CommsReceiver(ClientComms clientComms, ClientState clientState, CommsTokenStore tokenStore, InputStream in,
-			java.net.Socket socket, org.eclipse.paho.mqttv5.client.ILogger logger,
-			MqttInterceptorCallback mqttInterceptorCallback) {
-		this(clientComms, clientState, tokenStore, in);
-		this.socket = socket;
-		if (logger != null) {
-			this.logger = logger;
-		}
-		this.mqttInterceptorCallback = mqttInterceptorCallback;
-	}
+    public CommsReceiver(
+            ClientComms clientComms,
+            ClientState clientState,
+            CommsTokenStore tokenStore,
+            InputStream in,
+            Socket socket,
+            ILogger logger,
+            MqttInterceptorCallback mqttInterceptorCallback
+    ) {
+        this.in = new MqttInputStream(clientState, in, clientComms.getClient().getClientId());
+        this.clientComms = clientComms;
+        this.clientState = clientState;
+        this.tokenStore = tokenStore;
+        this.socket = socket;
+        this.logger = logger;
+        this.mqttInterceptorCallback = mqttInterceptorCallback;
+    }
 
-	/**
-	 * Starts up the Receiver's thread.
-	 * 
-	 * @param threadName
-	 *            the thread name.
-	 * @param executorService
-	 *            used to execute the thread
-	 */
-	public void start(String threadName, ExecutorService executorService) {
-		this.threadName = threadName;
-		logger.d(TAG, "receiver starting");
-		synchronized (lifecycle) {
-			if (current_state == State.STOPPED && target_state == State.STOPPED) {
-				target_state = State.RUNNING;
-				if (executorService == null) {
-					new Thread(this).start();
-				} else {
-					receiverFuture = executorService.submit(this);
-				}
-			}
-		}
-		while (!isRunning()) {
-			try { Thread.sleep(100); } catch (Exception e) { }
-		}
-	}
+    /**
+     * Starts up the Receiver's thread.
+     *
+     * @param threadName      the thread name.
+     * @param executorService used to execute the thread
+     */
+    public void start(String threadName) {
+        this.threadName = threadName;
+        logger.d(TAG, "receiver starting");
+        synchronized (lifecycle) {
+            if (current_state == State.STOPPED && target_state == State.STOPPED) {
+                target_state = State.RUNNING;
+                if (executorService == null) {
+                    new Thread(this, threadName).start();
+                } else {
+                    receiverFuture = executorService.submit(this);
+                }
+            }
+        }
+        while (!isRunning()) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            }
+        }
+    }
 
-	/**
-	 * Stops the Receiver's thread. This call will block.
-	 */
-	public void stop() {
-		synchronized (lifecycle) {
-			if (receiverFuture != null) {
-				receiverFuture.cancel(true);
-			}
-			logger.d(TAG, "receiver stopping started");
-			if (isRunning()) {
-				target_state = State.STOPPED;
-			}
-		}
-		while (isRunning()) {
-			try { Thread.sleep(100); } catch (Exception e) { }
-		}
-		logger.d(TAG, "receiver stopping completed");
-	}
+    /**
+     * Stops the Receiver's thread. This call will block.
+     */
+    public void stop() {
+        synchronized (lifecycle) {
+            if (receiverFuture != null) {
+                receiverFuture.cancel(true);
+            }
+            logger.d(TAG, "receiver stopping started");
+            if (isRunning()) {
+                target_state = State.STOPPED;
+            }
+        }
+        while (isRunning()) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            }
+        }
+        logger.d(TAG, "receiver stopping completed");
+    }
 
-	/**
-	 * Run loop to receive messages from the server.
-	 */
-	public void run() {
-		recThread = Thread.currentThread();
-		recThread.setName(threadName);
-		MqttToken token = null;
+    /**
+     * Run loop to receive messages from the server.
+     */
+    public void run() {
+        recThread = Thread.currentThread();
+        recThread.setName(threadName);
+        MqttToken token = null;
 
-		synchronized (lifecycle) {
-			current_state = State.RUNNING;
-		}
-		
-		try {
-			State my_target;
-			synchronized (lifecycle) {
-				my_target = target_state;
-			}
-			while (my_target == State.RUNNING && (in != null)) {
-				try {
-					logger.d(TAG, "network read message");
-					if (in.available() > 0) {
-						synchronized (lifecycle) {
-							current_state = State.RECEIVING;
-						}
-					}
-					MqttWireMessage message = in.readMqttWireMessage();
-					synchronized (lifecycle) {
-						current_state = State.RUNNING;
-					}
+        synchronized (lifecycle) {
+            current_state = State.RUNNING;
+        }
 
-					if (message != null) {
-						if (mqttInterceptorCallback != null) {
-							try {
-								mqttInterceptorCallback.mqttMessageIntercepted(message.serialize(), false);
-							} catch (Exception interceptEx) {
-								// interception is best-effort
-							}
-						}
-						logger.logMessageReceivedData(message);
-					}
+        try {
+            State my_target;
+            synchronized (lifecycle) {
+                my_target = target_state;
+            }
+            while (my_target == State.RUNNING && (in != null)) {
+                try {
+                    logger.d(TAG, "network read message");
+                    if (in.available() > 0) {
+                        synchronized (lifecycle) {
+                            current_state = State.RECEIVING;
+                        }
+                    }
+                    MqttWireMessage message = in.readMqttWireMessage();
+                    synchronized (lifecycle) {
+                        current_state = State.RUNNING;
+                    }
 
-					// instanceof checks if message is null
-					if (message instanceof MqttAck) {
-						token = tokenStore.getToken(message);
-						if (token != null) {
-							synchronized (token) {
-								// Ensure the notify processing is done under a lock on the token
-								// This ensures that the send processing can complete before the
-								// receive processing starts! ( request and ack and ack processing
-								// can occur before request processing is complete if not!
-								clientState.notifyReceivedAck((MqttAck) message);
-							}
-						} else {
-							// This is an ack for a message we no longer have a ticket for.
-							logger.d(TAG, "received ack for unknown message id");
-							clientState.handleOrphanedAcks((MqttAck) message);
-						} 
-					} else if (message != null && message instanceof MqttDisconnect) {
-						// This is a Disconnect Message
-						clientComms.shutdownConnection(null, new MqttException(MqttClientException.REASON_CODE_SERVER_DISCONNECTED, (MqttDisconnect) message), (MqttDisconnect) message);
-					} else {
-						if (message != null) {
-							// A new message has arrived
-							clientState.notifyReceivedMsg(message);
-						}
-                                                else {
-                                                    if (!clientComms.isConnected() && !clientComms.isConnecting()) {
-                                                         throw new IOException("Connection is lost.");
-                                                    }
-                                                }
-					}
-				} 
-				catch (MqttException ex) {
-					logger.e(TAG, "exception occured, cause : ", ex);
-					synchronized (lifecycle) {
-						target_state = State.STOPPED;
-					}
-					// Token maybe null but that is handled in shutdown
-					clientComms.shutdownConnection(token, ex, null);
-				} 
-				catch (IOException ioe) {
-					logger.e(TAG, "IO exception occured, cause : ", ioe);
-                                        if (target_state != State.STOPPED) {
-					    synchronized (lifecycle) {
-						target_state = State.STOPPED;
-					    }
-					    // An EOFException could be raised if the broker processes the
-					    // DISCONNECT and ends the socket before we complete. As such,
-					    // only shutdown the connection if we're not already shutting down.
-					    if (!clientComms.isDisconnecting()) {
-						clientComms.shutdownConnection(token,
-							new MqttException(MqttClientException.REASON_CODE_CONNECTION_LOST, ioe), null);
-					    }
-                                        }
-				}
-				finally {
-					synchronized (lifecycle) {
-						current_state = State.RUNNING;
-					}
-				}
-				synchronized (lifecycle) {
-					my_target = target_state;
-				}
-			} // end while
-		} finally {
-			synchronized (lifecycle) {
-				current_state = State.STOPPED;
-			}
-		} // end try
+                    if (message != null) {
+                        if (mqttInterceptorCallback != null) {
+                            try {
+                                mqttInterceptorCallback.mqttMessageIntercepted(message.serialize(),
+                                        false);
+                            } catch (Exception interceptEx) {
+                                // interception is best-effort
+                            }
+                        }
+                        logger.logMessageReceivedData(message);
+                    }
 
-		recThread = null;
-		logger.d(TAG, "receiver run loop exited");
-	}
+                    // instanceof checks if message is null
+                    if (message instanceof MqttAck) {
+                        token = tokenStore.getToken(message);
+                        if (token != null) {
+                            synchronized (token) {
+                                // Ensure the notify processing is done under a lock on the token
+                                // This ensures that the send processing can complete before the
+                                // receive processing starts! ( request and ack and ack processing
+                                // can occur before request processing is complete if not!
+                                clientState.notifyReceivedAck((MqttAck) message);
+                            }
+                        } else {
+                            // This is an ack for a message we no longer have a ticket for.
+                            logger.d(TAG, "received ack for unknown message id");
+                            clientState.handleOrphanedAcks((MqttAck) message);
+                        }
+                    } else if (message != null && message instanceof MqttDisconnect) {
+                        // This is a Disconnect Message
+                        clientComms.shutdownConnection(null, new MqttException(
+                                MqttClientException.REASON_CODE_SERVER_DISCONNECTED,
+                                (MqttDisconnect) message), (MqttDisconnect) message);
+                    } else {
+                        if (message != null) {
+                            // A new message has arrived
+                            clientState.notifyReceivedMsg(message);
+                        } else {
+                            if (!clientComms.isConnected() && !clientComms.isConnecting()) {
+                                throw new IOException("Connection is lost.");
+                            }
+                        }
+                    }
+                } catch (MqttException ex) {
+                    logger.e(TAG, "exception occured, cause : ", ex);
+                    synchronized (lifecycle) {
+                        target_state = State.STOPPED;
+                    }
+                    // Token maybe null but that is handled in shutdown
+                    clientComms.shutdownConnection(token, ex, null);
+                } catch (IOException ioe) {
+                    logger.e(TAG, "IO exception occured, cause : ", ioe);
+                    if (target_state != State.STOPPED) {
+                        synchronized (lifecycle) {
+                            target_state = State.STOPPED;
+                        }
+                        // An EOFException could be raised if the broker processes the
+                        // DISCONNECT and ends the socket before we complete. As such,
+                        // only shutdown the connection if we're not already shutting down.
+                        if (!clientComms.isDisconnecting()) {
+                            clientComms.shutdownConnection(token,
+                                    new MqttException(
+                                            MqttClientException.REASON_CODE_CONNECTION_LOST, ioe),
+                                    null);
+                        }
+                    }
+                } finally {
+                    synchronized (lifecycle) {
+                        current_state = State.RUNNING;
+                    }
+                }
+                synchronized (lifecycle) {
+                    my_target = target_state;
+                }
+            } // end while
+        } finally {
+            synchronized (lifecycle) {
+                current_state = State.STOPPED;
+            }
+        } // end try
 
-	public boolean isRunning() {
-		boolean result;
-		synchronized (lifecycle) {
-			result = ((current_state == State.RUNNING || current_state == State.RECEIVING)
-					&& target_state == State.RUNNING);
-		}
-		return result;
-	}
+        recThread = null;
+        logger.d(TAG, "receiver run loop exited");
+    }
 
-	/**
-	 * Returns the receiving state.
-	 *
-	 * @return true if the receiver is receiving data, false otherwise.
-	 */
-	public boolean isReceiving() {
-		boolean result;
-		synchronized (lifecycle) {
-			result = (current_state == State.RECEIVING);
-		}
-		return result;
-	}
+    public boolean isRunning() {
+        boolean result;
+        synchronized (lifecycle) {
+            result = ((current_state == State.RUNNING || current_state == State.RECEIVING)
+                    && target_state == State.RUNNING);
+        }
+        return result;
+    }
 }

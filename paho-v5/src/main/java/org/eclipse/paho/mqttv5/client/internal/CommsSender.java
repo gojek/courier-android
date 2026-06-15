@@ -77,7 +77,7 @@ public class CommsSender implements Runnable {
 	 * @param threadName the threadname
 	 * @param executorService used to execute the thread
 	 */
-	public void start(String threadName, ExecutorService executorService) {
+	public void start(String threadName) {
 		this.threadName = threadName;
 		synchronized (lifecycle) {
 			if (current_state == State.STOPPED && target_state == State.STOPPED) {

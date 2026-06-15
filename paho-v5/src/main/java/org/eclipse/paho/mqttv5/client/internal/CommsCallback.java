@@ -108,7 +108,7 @@ public class CommsCallback implements Runnable {
 	 * @param executorService
 	 *            the {@link ExecutorService}
 	 */
-	public void start(String threadName, ExecutorService executorService) {
+	public void start(String threadName) {
 		this.threadName = threadName;
 		synchronized (lifecycle) {
 			if (current_state == State.STOPPED) {

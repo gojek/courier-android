@@ -180,6 +180,4 @@ public class MqttConnectionState {
 		this.keepAlive = keepAlive * 1000;
 	}
 
-
-	
 }

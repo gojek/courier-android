@@ -255,7 +255,6 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 	// Variables that exist within the life of an MQTT connection.
 	private MqttConnectionState mqttConnection; 
 	
-	private ScheduledExecutorService executorService;
 	private MqttPingSender pingSender;
 
 	// Courier customizations: logging, telemetry, experiments and packet interception.
@@ -264,6 +263,76 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 	private IExperimentsConfig experimentsConfig;
 
     final private String TAG = "MqttAsyncClient";
+
+    /**
+     * Create an MqttAsyncClient that is used to communicate with an MQTT server.
+     * <p>
+     * The address of a server can be specified on the constructor. Alternatively a list containing one or more servers can be specified using the
+     * {@link MqttConnectOptions#setServerURIs(String[]) setServerURIs} method on MqttConnectOptions.
+     *
+     * <p>
+     * The <code>serverURI</code> parameter is typically used with the the <code>clientId</code> parameter to form a key. The key is used to store and reference messages while they
+     * are being delivered. Hence the serverURI specified on the constructor must still be specified even if a list of servers is specified on an MqttConnectOptions object. The
+     * serverURI on the constructor must remain the same across restarts of the client for delivery of messages to be maintained from a given client to a given server or set of
+     * servers.
+     *
+     * <p>
+     * The address of the server to connect to is specified as a URI. Two types of connection are supported <code>tcp://</code> for a TCP connection and <code>ssl://</code> for a
+     * TCP connection secured by SSL/TLS. For example:
+     * <ul>
+     * <li><code>tcp://localhost:1883</code></li>
+     * <li><code>ssl://localhost:8883</code></li>
+     * </ul>
+     * If the port is not specified, it will default to 1883 for <code>tcp://</code>" URIs, and 8883 for <code>ssl://</code> URIs.
+     * </p>
+     *
+     * <p>
+     * A client identifier <code>clientId</code> must be specified and be less that 65535 characters. It must be unique across all clients connecting to the same server. The
+     * clientId is used by the server to store data related to the client, hence it is important that the clientId remain the same when connecting to a server if durable
+     * subscriptions or reliable messaging are required.
+     * <p>
+     * A convenience method is provided to generate a random client id that should satisfy this criteria - {@link #generateClientId()}. As the client identifier is used by the
+     * server to identify a client when it reconnects, the client must use the same identifier between connections if durable subscriptions or reliable delivery of messages is
+     * required.
+     * </p>
+     * <p>
+     * In Java SE, SSL can be configured in one of several ways, which the client will use in the following order:
+     * </p>
+     * <ul>
+     * <li><strong>Supplying an <code>SSLSocketFactory</code></strong> - applications can use {@link MqttConnectOptions#setSocketFactory(SocketFactory)} to supply a factory with
+     * the appropriate SSL settings.</li>
+     * <li><strong>SSL Properties</strong> - applications can supply SSL settings as a simple Java Properties using {@link MqttConnectOptions#setSSLProperties(Properties)}.</li>
+     * <li><strong>Use JVM settings</strong> - There are a number of standard Java system properties that can be used to configure key and trust stores.</li>
+     * </ul>
+     *
+     * <p>
+     * In Java ME, the platform settings are used for SSL connections.
+     * </p>
+     *
+     * <p>
+     * An instance of the default persistence mechanism {@link MqttDefaultFilePersistence} is used by the client. To specify a different persistence mechanism or to turn off
+     * persistence, use the {@link #MqttAsyncClient(String, String, MqttClientPersistence)} constructor.
+     *
+     * @param serverURI
+     *            the address of the server to connect to, specified as a URI. Can be overridden using {@link MqttConnectOptions#setServerURIs(String[])}
+     * @param clientId
+     *            a client identifier that is unique on the server being connected to
+     * @throws IllegalArgumentException
+     *             if the URI does not start with "tcp://", "ssl://" or "local://".
+     * @throws IllegalArgumentException
+     *             if the clientId is null or is greater than 65535 characters in length
+     * @throws MqttException
+     *             if any other problem was encountered
+     */
+    public MqttAsyncClient(String serverURI, String clientId, String mqttVersion) throws MqttException
+    {
+        this(serverURI, clientId, mqttVersion, new MqttDefaultFilePersistence(), new TimerPingSender(), new NoOpLogger());
+    }
+
+    public MqttAsyncClient(String serverURI, String clientId, String mqttVersion, MqttClientPersistence persistence, MqttPingSender mqttPingSender, ILogger logger) throws MqttException
+    {
+        this(serverURI, clientId, mqttVersion, persistence, 100, mqttPingSender, logger, new NoOpsPahoEvents(), null, null);
+    }
 
 	/**
 	 * Create an MqttAsyncClient configured with Courier customizations (logging,
@@ -295,18 +364,17 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 	) throws MqttException {
 		final String methodName = "MqttAsyncClient";
 
-		// log.setResourceName(clientId);
+        if (clientId == null)
+        { // Support empty client Id, 3.1.1 standard
+            throw new IllegalArgumentException("Null clientId");
+        }
 
-		if (clientId != null) {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			MqttDataTypes.encodeUTF8(dos, clientId);
-			if (dos.size() - 2 > 65535) {
-				throw new IllegalArgumentException("ClientId longer than 65535 characters");
-			}
-		} else {
-			clientId = "";
-		}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        MqttDataTypes.encodeUTF8(dos, clientId);
+        if (dos.size() - 2 > 65535) {
+            throw new IllegalArgumentException("ClientId longer than 65535 characters");
+        }
 
 		mqttConnection = new MqttConnectionState(clientId);
 
@@ -326,365 +394,17 @@ public class MqttAsyncClient implements MqttClientInterface, IMqttAsyncClient {
 
 		this.pingSender = pingSender;
 		if (this.pingSender == null) {
-			this.pingSender = new TimerPingSender(this.executorService);
+			this.pingSender = new TimerPingSender();
 		}
 
 		this.persistence.open(clientId);
-		this.comms = new ClientComms(this, this.persistence, this.pingSender, this.executorService, this.mqttSession,
+		this.comms = new ClientComms(this, this.persistence, this.pingSender, this.mqttSession,
 				this.mqttConnection, maxInflightMsgs, this.logger, this.experimentsConfig, mqttInterceptorList,
 				this.pahoEvents);
 		this.persistence.close();
-		this.topics = new Hashtable<String, MqttTopic>();
+		this.topics = new Hashtable<>();
 	}
 
-	/**
-	 * Create an MqttAsyncClient that is used to communicate with an MQTT server.
-	 * <p>
-	 * The address of a server can be specified on the constructor. Alternatively a
-	 * list containing one or more servers can be specified using the
-	 * {@link MqttConnectionOptions#setServerURIs(String[]) setServerURIs} method on
-	 * MqttConnectOptions.
-	 *
-	 * <p>
-	 * The <code>serverURI</code> parameter is typically used with the the
-	 * <code>clientId</code> parameter to form a key. The key is used to store and
-	 * reference messages while they are being delivered. Hence the serverURI
-	 * specified on the constructor must still be specified even if a list of
-	 * servers is specified on an MqttConnectOptions object. The serverURI on the
-	 * constructor must remain the same across restarts of the client for delivery
-	 * of messages to be maintained from a given client to a given server or set of
-	 * servers.
-	 *
-	 * <p>
-	 * The address of the server to connect to is specified as a URI. Two types of
-	 * connection are supported <code>tcp://</code> for a TCP connection and
-	 * <code>ssl://</code> for a TCP connection secured by SSL/TLS. For example:
-	 * </p>
-	 * <ul>
-	 * <li><code>tcp://localhost:1883</code></li>
-	 * <li><code>ssl://localhost:8883</code></li>
-	 * </ul>
-	 * <p>
-	 * If the port is not specified, it will default to 1883 for
-	 * <code>tcp://</code>" URIs, and 8883 for <code>ssl://</code> URIs.
-	 * </p>
-	 *
-	 * <p>
-	 * A client identifier <code>clientId</code> must be specified and be less that
-	 * 65535 characters. It must be unique across all clients connecting to the same
-	 * server. The clientId is used by the server to store data related to the
-	 * client, hence it is important that the clientId remain the same when
-	 * connecting to a server if durable subscriptions or reliable messaging are
-	 * required.
-	 * <p>
-	 * As the client identifier is used by the server to identify a client when it
-	 * reconnects, the client must use the same identifier between connections if
-	 * durable subscriptions or reliable delivery of messages is required.
-	 * </p>
-	 * <p>
-	 * In Java SE, SSL can be configured in one of several ways, which the client
-	 * will use in the following order:
-	 * </p>
-	 * <ul>
-	 * <li><strong>Supplying an <code>SSLSocketFactory</code></strong> -
-	 * applications can use
-	 * {@link MqttConnectionOptions#setSocketFactory(SocketFactory)} to supply a
-	 * factory with the appropriate SSL settings.</li>
-	 * <li><strong>SSL Properties</strong> - applications can supply SSL settings as
-	 * a simple Java Properties using
-	 * {@link MqttConnectionOptions#setSSLProperties(Properties)}.</li>
-	 * <li><strong>Use JVM settings</strong> - There are a number of standard Java
-	 * system properties that can be used to configure key and trust stores.</li>
-	 * </ul>
-	 *
-	 * <p>
-	 * In Java ME, the platform settings are used for SSL connections.
-	 * </p>
-	 *
-	 * <p>
-	 * An instance of the default persistence mechanism
-	 * {@link MqttDefaultFilePersistence} is used by the client. To specify a
-	 * different persistence mechanism or to turn off persistence, use the
-	 * {@link #MqttAsyncClient(String, String, MqttClientPersistence)} constructor.
-	 *
-	 * @param serverURI
-	 *            the address of the server to connect to, specified as a URI. Can
-	 *            be overridden using
-	 *            {@link MqttConnectionOptions#setServerURIs(String[])}
-	 * @param clientId
-	 *            a client identifier that is unique on the server being connected
-	 *            to
-	 * @throws IllegalArgumentException
-	 *             if the URI does not start with "tcp://", "ssl://" or "local://".
-	 * @throws IllegalArgumentException
-	 *             if the clientId is null or is greater than 65535 characters in
-	 *             length
-	 * @throws MqttException
-	 *             if any other problem was encountered
-	 */
-	public MqttAsyncClient(String serverURI, String clientId) throws MqttException {
-		this(serverURI, clientId, new MqttDefaultFilePersistence());
-	}
-
-	/**
-	 * Create an MqttAsyncClient that is used to communicate with an MQTT server.
-	 * <p>
-	 * The address of a server can be specified on the constructor. Alternatively a
-	 * list containing one or more servers can be specified using the
-	 * {@link MqttConnectionOptions#setServerURIs(String[]) setServerURIs} method on
-	 * MqttConnectOptions.
-	 *
-	 * <p>
-	 * The <code>serverURI</code> parameter is typically used with the the
-	 * <code>clientId</code> parameter to form a key. The key is used to store and
-	 * reference messages while they are being delivered. Hence the serverURI
-	 * specified on the constructor must still be specified even if a list of
-	 * servers is specified on an MqttConnectOptions object. The serverURI on the
-	 * constructor must remain the same across restarts of the client for delivery
-	 * of messages to be maintained from a given client to a given server or set of
-	 * servers.
-	 *
-	 * <p>
-	 * The address of the server to connect to is specified as a URI. Two types of
-	 * connection are supported <code>tcp://</code> for a TCP connection and
-	 * <code>ssl://</code> for a TCP connection secured by SSL/TLS. For example:
-	 * </p>
-	 * <ul>
-	 * <li><code>tcp://localhost:1883</code></li>
-	 * <li><code>ssl://localhost:8883</code></li>
-	 * </ul>
-	 * <p>
-	 * If the port is not specified, it will default to 1883 for
-	 * <code>tcp://</code>" URIs, and 8883 for <code>ssl://</code> URIs.
-	 * </p>
-	 *
-	 * <p>
-	 * A client identifier <code>clientId</code> must be specified and be less that
-	 * 65535 characters. It must be unique across all clients connecting to the same
-	 * server. The clientId is used by the server to store data related to the
-	 * client, hence it is important that the clientId remain the same when
-	 * connecting to a server if durable subscriptions or reliable messaging are
-	 * required.
-	 * <p>
-	 * As the client identifier is used by the server to identify a client when it
-	 * reconnects, the client must use the same identifier between connections if
-	 * durable subscriptions or reliable delivery of messages is required.
-	 * </p>
-	 * <p>
-	 * In Java SE, SSL can be configured in one of several ways, which the client
-	 * will use in the following order:
-	 * </p>
-	 * <ul>
-	 * <li><strong>Supplying an <code>SSLSocketFactory</code></strong> -
-	 * applications can use
-	 * {@link MqttConnectionOptions#setSocketFactory(SocketFactory)} to supply a
-	 * factory with the appropriate SSL settings.</li>
-	 * <li><strong>SSL Properties</strong> - applications can supply SSL settings as
-	 * a simple Java Properties using
-	 * {@link MqttConnectionOptions#setSSLProperties(Properties)}.</li>
-	 * <li><strong>Use JVM settings</strong> - There are a number of standard Java
-	 * system properties that can be used to configure key and trust stores.</li>
-	 * </ul>
-	 *
-	 * <p>
-	 * In Java ME, the platform settings are used for SSL connections.
-	 * </p>
-	 * <p>
-	 * A persistence mechanism is used to enable reliable messaging. For messages
-	 * sent at qualities of service (QoS) 1 or 2 to be reliably delivered, messages
-	 * must be stored (on both the client and server) until the delivery of the
-	 * message is complete. If messages are not safely stored when being delivered
-	 * then a failure in the client or server can result in lost messages. A
-	 * pluggable persistence mechanism is supported via the
-	 * {@link MqttClientPersistence} interface. An implementer of this interface
-	 * that safely stores messages must be specified in order for delivery of
-	 * messages to be reliable. In addition
-	 * {@link MqttConnectionOptions#setCleanStart(boolean)} must be set to false. In
-	 * the event that only QoS 0 messages are sent or received or cleanStart is set
-	 * to true then a safe store is not needed.
-	 * </p>
-	 * <p>
-	 * An implementation of file-based persistence is provided in class
-	 * {@link MqttDefaultFilePersistence} which will work in all Java SE based
-	 * systems. If no persistence is needed, the persistence parameter can be
-	 * explicitly set to <code>null</code>.
-	 * </p>
-	 *
-	 * @param serverURI
-	 *            the address of the server to connect to, specified as a URI. Can
-	 *            be overridden using
-	 *            {@link MqttConnectionOptions#setServerURIs(String[])}
-	 * @param clientId
-	 *            a client identifier that is unique on the server being connected
-	 *            to
-	 * @param persistence
-	 *            the persistence class to use to store in-flight message. If null
-	 *            then the default persistence mechanism is used
-	 * @throws MqttException
-	 *             if any other problem was encountered
-	 */
-	public MqttAsyncClient(String serverURI, String clientId, MqttClientPersistence persistence) throws MqttException {
-		this(serverURI, clientId, persistence, null, null);
-	}
-
-	/**
-	 * Create an MqttAsyncClient that is used to communicate with an MQTT server.
-	 * <p>
-	 * The address of a server can be specified on the constructor. Alternatively a
-	 * list containing one or more servers can be specified using the
-	 * {@link MqttConnectionOptions#setServerURIs(String[]) setServerURIs} method on
-	 * MqttConnectOptions.
-	 *
-	 * <p>
-	 * The <code>serverURI</code> parameter is typically used with the the
-	 * <code>clientId</code> parameter to form a key. The key is used to store and
-	 * reference messages while they are being delivered. Hence the serverURI
-	 * specified on the constructor must still be specified even if a list of
-	 * servers is specified on an MqttConnectOptions object. The serverURI on the
-	 * constructor must remain the same across restarts of the client for delivery
-	 * of messages to be maintained from a given client to a given server or set of
-	 * servers.
-	 *
-	 * <p>
-	 * The address of the server to connect to is specified as a URI. Two types of
-	 * connection are supported <code>tcp://</code> for a TCP connection and
-	 * <code>ssl://</code> for a TCP connection secured by SSL/TLS. For example:
-	 * </p>
-	 * <ul>
-	 * <li><code>tcp://localhost:1883</code></li>
-	 * <li><code>ssl://localhost:8883</code></li>
-	 * </ul>
-	 * <p>
-	 * If the port is not specified, it will default to 1883 for
-	 * <code>tcp://</code>" URIs, and 8883 for <code>ssl://</code> URIs.
-	 * </p>
-	 *
-	 * <p>
-	 * A client identifier <code>clientId</code> must be specified and be less that
-	 * 65535 characters. It must be unique across all clients connecting to the same
-	 * server. The clientId is used by the server to store data related to the
-	 * client, hence it is important that the clientId remain the same when
-	 * connecting to a server if durable subscriptions or reliable messaging are
-	 * required.
-	 * <p>
-	 * As the client identifier is used by the server to identify a client when it
-	 * reconnects, the client must use the same identifier between connections if
-	 * durable subscriptions or reliable delivery of messages is required.
-	 * </p>
-	 * <p>
-	 * In Java SE, SSL can be configured in one of several ways, which the client
-	 * will use in the following order:
-	 * </p>
-	 * <ul>
-	 * <li><strong>Supplying an <code>SSLSocketFactory</code></strong> -
-	 * applications can use
-	 * {@link MqttConnectionOptions#setSocketFactory(SocketFactory)} to supply a
-	 * factory with the appropriate SSL settings.</li>
-	 * <li><strong>SSL Properties</strong> - applications can supply SSL settings as
-	 * a simple Java Properties using
-	 * {@link MqttConnectionOptions#setSSLProperties(Properties)}.</li>
-	 * <li><strong>Use JVM settings</strong> - There are a number of standard Java
-	 * system properties that can be used to configure key and trust stores.</li>
-	 * </ul>
-	 *
-	 * <p>
-	 * In Java ME, the platform settings are used for SSL connections.
-	 * </p>
-	 * <p>
-	 * A persistence mechanism is used to enable reliable messaging. For messages
-	 * sent at qualities of service (QoS) 1 or 2 to be reliably delivered, messages
-	 * must be stored (on both the client and server) until the delivery of the
-	 * message is complete. If messages are not safely stored when being delivered
-	 * then a failure in the client or server can result in lost messages. A
-	 * pluggable persistence mechanism is supported via the
-	 * {@link MqttClientPersistence} interface. An implementer of this interface
-	 * that safely stores messages must be specified in order for delivery of
-	 * messages to be reliable. In addition
-	 * {@link MqttConnectionOptions#setCleanStart(boolean)} must be set to false. In
-	 * the event that only QoS 0 messages are sent or received or cleanStart is set
-	 * to true then a safe store is not needed.
-	 * </p>
-	 * <p>
-	 * An implementation of file-based persistence is provided in class
-	 * {@link MqttDefaultFilePersistence} which will work in all Java SE based
-	 * systems. If no persistence is needed, the persistence parameter can be
-	 * explicitly set to <code>null</code>.
-	 * </p>
-	 *
-	 * @param serverURI
-	 *            the address of the server to connect to, specified as a URI. Can
-	 *            be overridden using
-	 *            {@link MqttConnectionOptions#setServerURIs(String[])}
-	 * @param clientId
-	 *            a client identifier that is unique on the server being connected
-	 *            to
-	 * @param persistence
-	 *            the persistence class to use to store in-flight message. If null
-	 *            then the default persistence mechanism is used
-	 * @param pingSender
-	 *            the {@link MqttPingSender} Implementation to handle timing and
-	 *            sending Ping messages to the server.
-	 * @param executorService
-	 *            used for managing threads. If null then a newScheduledThreadPool
-	 *            is used.
-	 * @throws IllegalArgumentException
-	 *             if the URI does not start with "tcp://", "ssl://" or "local://"
-	 * @throws IllegalArgumentException
-	 *             if the clientId is null or is greater than 65535 characters in
-	 *             length
-	 * @throws MqttException
-	 *             if any other problem was encountered
-	 */
-	public MqttAsyncClient(String serverURI, String clientId, MqttClientPersistence persistence,
-			MqttPingSender pingSender, ScheduledExecutorService executorService) throws MqttException {
-		final String methodName = "MqttAsyncClient";
-
-		// log.setResourceName(clientId);
-
-		if (clientId != null) {
-			// Verify that the client ID is not too long
-			// Encode it ourselves to check
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			MqttDataTypes.encodeUTF8(dos, clientId);
-			// Remove the two size bytes.
-			if (dos.size() - 2 > 65535) {
-				throw new IllegalArgumentException("ClientId longer than 65535 characters");
-			}
-
-		} else {
-			clientId = "";
-		}
-
-	        mqttConnection = new MqttConnectionState(clientId);
-
-		MqttConnectionOptions.validateURI(serverURI);
-
-		this.serverURI = serverURI;
-		this.mqttSession.setClientId(clientId);
-
-		this.persistence = persistence;
-		if (this.persistence == null) {
-			this.persistence = new MemoryPersistence();
-		}
-
-		this.executorService = executorService;
-
-		this.pingSender = pingSender;
-		if (this.pingSender == null) {
-			this.pingSender = new TimerPingSender(this.executorService);
-		}
-
-		// @TRACE 101=<init> ClientID={0} ServerURI={1} PersistenceType={2}
-		// log.fine(CLASS_NAME, methodName, "101", new Object[] { clientId, serverURI, persistence });
-
-		this.persistence.open(clientId);
-		this.comms = new ClientComms(this, this.persistence, this.pingSender, this.executorService, this.mqttSession,
-				this.mqttConnection);
-		this.persistence.close();
-		this.topics = new Hashtable<String, MqttTopic>();
-
-	}
 
 	/**
 	 * Triggers a Courier fast-reconnect inactivity check on the underlying

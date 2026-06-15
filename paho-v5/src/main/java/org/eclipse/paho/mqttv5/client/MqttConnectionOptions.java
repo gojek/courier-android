@@ -113,6 +113,7 @@ public class MqttConnectionOptions {
 
 	// Connection packet properties
 	private int mqttVersion = 5; // MQTT Version 5
+    private String protocolName = "MQTT";
 	private boolean cleanStart = true; // Clean Session
 	private String willDestination = null; // Will Topic
 	private MqttMessage willMessage = null; // Will Message
@@ -152,6 +153,14 @@ public class MqttConnectionOptions {
 	public int getMqttVersion() {
 		return mqttVersion;
 	}
+
+    public void setProtocolName(String protocolName) {
+        this.protocolName = protocolName;
+    }
+
+    public String getProtocolName() {
+        return protocolName;
+    }
 
 	/**
 	 * Returns the user name to use for the connection.

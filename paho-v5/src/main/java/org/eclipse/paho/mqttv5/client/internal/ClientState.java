@@ -126,7 +126,7 @@ public class ClientState implements MqttState {
 	private CommsTokenStore tokenStore;
 	private ClientComms clientComms = null;
 	private CommsCallback callback = null;
-	//private long keepAlive;
+	private long keepAlive;
 	private boolean cleanStart;
 	private MqttClientPersistence persistence;
 
@@ -137,7 +137,8 @@ public class ClientState implements MqttState {
 	private final Object quiesceLock = new Object();
 	private boolean quiescing = false;
 
-	private long lastOutboundActivity = 0;
+    private long fastReconnectCheckStartTime = 0;
+    private long lastOutboundActivity = 0;
 	private long lastInboundActivity = 0;
 	private long lastPing = 0;
 	private MqttWireMessage pingCommand;
@@ -167,59 +168,57 @@ public class ClientState implements MqttState {
 	private IPahoEvents pahoEvents = new NoOpsPahoEvents();
 	private IExperimentsConfig experimentsConfig;
 	private long inactivityTimeout = DEFAULT_INACTIVITY_TIMEOUT;
-	private long connectPacketTimeout = DEFAULT_CONNECT_PACKET_TIMEOUT;
-	private volatile long fastReconnectCheckStartTime = 0;
+	private long connectPacketTimeout = DEFAULT_INACTIVITY_TIMEOUT;
 	private volatile long lastInboundActivityMillis = System.currentTimeMillis();
-
-	protected ClientState(MqttClientPersistence persistence, CommsTokenStore tokenStore, CommsCallback callback,
-			ClientComms clientComms, MqttPingSender pingSender, MqttConnectionState mqttConnection)
-			throws MqttException {
-
-		logger.v(TAG, "ClientState init");
-
-		inUseMsgIds = new ConcurrentHashMap<>();
-		inUseMsdIdsQos1WithoutPersistence = new ConcurrentHashMap<>();
-		pendingFlows = new Vector<MqttWireMessage>();
-		pendingMessages = new Vector<MqttWireMessage>(mqttConnection.getReceiveMaximum());
-		outboundQoS2 = new ConcurrentHashMap<>();
-		outboundQoS1 = new ConcurrentHashMap<>();
-		outboundQoS0 = new ConcurrentHashMap<>();
-		inboundQoS2 = new ConcurrentHashMap<>();
-		pingCommand = new MqttPingReq();
-		inFlightPubRels = 0;
-		actualInFlight = 0;
-		this.outgoingTopicAliases = new Hashtable<String, Integer>();
-		this.incomingTopicAliases = new Hashtable<Integer, String>();
-
-		this.persistence = persistence;
-		this.callback = callback;
-		this.tokenStore = tokenStore;
-		this.clientComms = clientComms;
-		this.pingSender = pingSender;
-		this.mqttConnection = mqttConnection;
-
-		restoreState();
-	}
-
 	/**
 	 * ClientState constructor with Courier customizations (logging, telemetry,
 	 * experiments config and inflight window override).
 	 */
-	protected ClientState(MqttClientPersistence persistence, CommsTokenStore tokenStore, CommsCallback callback,
-			ClientComms clientComms, MqttPingSender pingSender, MqttConnectionState mqttConnection,
-			int maxInflightMsgs, ILogger logger, IExperimentsConfig experimentsConfig, IPahoEvents pahoEvents)
-			throws MqttException {
-		this(persistence, tokenStore, callback, clientComms, pingSender, mqttConnection);
-		this.logger = (logger == null) ? new NoOpLogger() : logger;
-		this.pahoEvents = (pahoEvents == null) ? new NoOpsPahoEvents() : pahoEvents;
-		this.experimentsConfig = experimentsConfig;
-		if (experimentsConfig != null) {
-			this.inactivityTimeout = experimentsConfig.inactivityTimeoutSecs() * 1000L;
-			this.connectPacketTimeout = experimentsConfig.connectPacketTimeoutSecs() * 1000L;
-		}
-	}
+	protected ClientState(
+            MqttClientPersistence persistence,
+            CommsTokenStore tokenStore,
+            CommsCallback callback,
+			ClientComms clientComms,
+            MqttPingSender pingSender,
+            MqttConnectionState mqttConnection,
+			int maxInflightMsgs,
+            ILogger logger,
+            IExperimentsConfig experimentsConfig,
+            IPahoEvents pahoEvents
+    ) throws MqttException {
 
-	/**
+        logger.v(TAG, "ClientState init");
+        inUseMsgIds = new ConcurrentHashMap<>();
+        inUseMsdIdsQos1WithoutPersistence = new ConcurrentHashMap<>();
+        pendingFlows = new Vector<MqttWireMessage>();
+        pendingMessages = new Vector<MqttWireMessage>(mqttConnection.getReceiveMaximum());
+        outboundQoS2 = new ConcurrentHashMap<>();
+        outboundQoS1 = new ConcurrentHashMap<>();
+        outboundQoS0 = new ConcurrentHashMap<>();
+        inboundQoS2 = new ConcurrentHashMap<>();
+        pingCommand = new MqttPingReq();
+        inFlightPubRels = 0;
+        actualInFlight = 0;
+        this.outgoingTopicAliases = new Hashtable<String, Integer>();
+        this.incomingTopicAliases = new Hashtable<Integer, String>();
+
+        this.persistence = persistence;
+        this.callback = callback;
+        this.tokenStore = tokenStore;
+        this.clientComms = clientComms;
+        this.pingSender = pingSender;
+        this.mqttConnection = mqttConnection;
+        this.logger = (logger == null) ? new NoOpLogger() : logger;
+        this.pahoEvents = (pahoEvents == null) ? new NoOpsPahoEvents() : pahoEvents;
+        this.experimentsConfig = experimentsConfig;
+        if (experimentsConfig != null) {
+            this.inactivityTimeout = experimentsConfig.inactivityTimeoutSecs() * 1000L;
+            this.connectPacketTimeout = experimentsConfig.connectPacketTimeoutSecs() * 1000L;
+        }
+        restoreState();
+        logger.d(TAG, "client id : " + clientComms.getClient().getClientId());
+    }
+    /**
 	 * Courier fast-reconnect support. Throws a client-timeout if no inbound
 	 * activity has been observed within the configured inactivity window since
 	 * the last activity check was started.
@@ -281,8 +280,10 @@ public class ClientState implements MqttState {
 		logger.d(TAG, "clearState");
 
 		persistence.clear();
+        clientComms.clear();
 		inUseMsgIds.clear();
-		pendingMessages.clear();
+        inUseMsdIdsQos1WithoutPersistence.clear();
+        pendingMessages.clear();
 		pendingFlows.clear();
 		outboundQoS2.clear();
 		outboundQoS1.clear();
@@ -306,7 +307,7 @@ public class ClientState implements MqttState {
 		try {
 			message = MqttWireMessage.createWireMessage(persistable);
 		} catch (MqttException ex) {
-			logger.d(TAG, "key=" + key + " exception", ex);
+            logger.e(TAG, "exception in restore message, cause : ", ex);
 			if (ex.getCause() instanceof EOFException) {
 				// Premature end-of-file means that the message is corrupted
 				if (key != null) {
@@ -316,7 +317,7 @@ public class ClientState implements MqttState {
 				throw ex;
 			}
 		}
-		logger.d(TAG, "key=" + key + " message=" + message);
+        logger.d(TAG, "restoring message : " + message.toString() + " with key : " + key);
 		return message;
 	}
 
@@ -467,13 +468,6 @@ public class ClientState implements MqttState {
 
 						outboundQoS1.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
 
-					} else {
-						logger.d(TAG, "outbound QoS 0 publish key=" + key + " message=" + message);
-						outboundQoS0.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
-						// Because there is no Puback, we have to trust that this is enough to send the
-						// message
-						persistence.remove(key);
-
 					}
 
 					MqttToken tok = tokenStore.restoreToken(sendMessage);
@@ -529,18 +523,12 @@ public class ClientState implements MqttState {
 
 			insertInOrder(pendingMessages, msg);
 		}
-		keys = outboundQoS0.keys();
-		while (keys.hasMoreElements()) {
-			Object key = keys.nextElement();
-			MqttPublish msg = (MqttPublish) outboundQoS0.get(key);
-			logger.d(TAG, "QoS 0 publish key=" + key);
-			insertInOrder(pendingMessages, msg);
-
-		}
 
 		this.pendingFlows = reOrder(pendingFlows);
 		this.pendingMessages = reOrder(pendingMessages);
-	}
+        logger.d(TAG, "restoring inflight messages completed");
+
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -585,7 +573,7 @@ public class ClientState implements MqttState {
 		if (message instanceof MqttPublish) {
 			synchronized (queueLock) {
 				if (actualInFlight >= this.mqttConnection.getReceiveMaximum()) {
-					logger.d(TAG, "sending " + actualInFlight + " msgs at max inflight window");
+                    logger.e(TAG, "max in flight messages reached ");
 
 					throw new MqttException(MqttClientException.REASON_CODE_MAX_INFLIGHT);
 				}
@@ -648,7 +636,7 @@ public class ClientState implements MqttState {
 	 * eclipse.paho.client.mqttv3.internal.wire.MqttWireMessage)
 	 */
 	@Override
-	public void persistBufferedMessage(MqttWireMessage message) {
+	public void persistBufferedMessage(MqttWireMessage message) throws MqttException {
 		String key = getSendBufferedPersistenceKey(message);
 
 		// Because the client will have disconnected, we will want to re-open
@@ -659,14 +647,15 @@ public class ClientState implements MqttState {
 			try {
 				persistence.put(key, (MqttPublish) message);
 			} catch (MqttPersistenceException mpe) {
-				logger.d(TAG, "Could not Persist, attempting to Re-Open Persistence Store");
+				logger.e(TAG, "Could not Persist, attempting to Re-Open Persistence Store");
 				persistence.open(this.clientComms.getClient().getClientId());
 				persistence.put(key, (MqttPublish) message);
 			}
 			logger.d(TAG, "Persisted Buffered Message key=" + key);
 		} catch (MqttException ex) {
 			logger.w(TAG, "Failed to persist buffered message key=" + key);
-		}
+            throw ex;
+        }
 	}
 
 	/*
