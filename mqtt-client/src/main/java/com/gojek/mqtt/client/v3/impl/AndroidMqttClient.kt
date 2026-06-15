@@ -177,6 +177,7 @@ internal class AndroidMqttClient(
                 messageSendListener = messageSendListener,
                 pahoPersistence = pahoPersistenceV5,
                 networkHandler = networkHandler,
+                mqttPingSender = getMqttPingSender(),
                 keepAliveFailureHandler = keepAliveFailureHandler,
                 clock = clock,
                 subscriptionStore = subscriptionStore

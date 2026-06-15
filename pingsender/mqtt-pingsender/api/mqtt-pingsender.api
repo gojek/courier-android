@@ -2,7 +2,7 @@ public abstract interface class com/gojek/mqtt/pingsender/AdaptiveMqttPingSender
 }
 
 public abstract interface class com/gojek/mqtt/pingsender/MqttPingSender {
-	public abstract fun init (Lorg/eclipse/paho/client/mqttv3/internal/ClientComms;Lorg/eclipse/paho/client/mqttv3/ILogger;)V
+	public abstract fun init (Lcom/gojek/mqtt/pingsender/PingSenderComms;Lcom/gojek/courier/logging/ILogger;)V
 	public abstract fun schedule (J)V
 	public abstract fun start ()V
 	public abstract fun stop ()V

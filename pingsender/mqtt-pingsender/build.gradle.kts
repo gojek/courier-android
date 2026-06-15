@@ -26,8 +26,7 @@ apiValidation {
 }
 
 dependencies {
-    api(project(":paho"))
-    implementation(project(":courier-core"))
+    api(project(":courier-core"))
     implementation(deps.android.androidx.annotation)
 
     testImplementation(deps.android.test.kotlinTestJunit)

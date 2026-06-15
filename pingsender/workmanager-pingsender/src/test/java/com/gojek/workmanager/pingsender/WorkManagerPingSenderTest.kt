@@ -1,19 +1,19 @@
 package com.gojek.workmanager.pingsender
 
+import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
 import com.gojek.mqtt.pingsender.IPingSenderEvents
+import com.gojek.mqtt.pingsender.PingActionCallback
+import com.gojek.mqtt.pingsender.PingSenderComms
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.eclipse.paho.client.mqttv3.ILogger
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
-import org.eclipse.paho.client.mqttv3.MqttToken
-import org.eclipse.paho.client.mqttv3.internal.ClientComms
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,7 +24,7 @@ class WorkManagerPingSenderTest {
     private val pingWorkScheduler = mock<PingWorkScheduler>()
     private val pingSenderConfig = mock<WorkManagerPingSenderConfig>()
     private val clock = mock<Clock>()
-    private val comms = mock<ClientComms>()
+    private val comms = mock<PingSenderComms>()
     private val logger = mock<ILogger>()
     private val pingSenderEvents = mock<IPingSenderEvents>()
 
@@ -40,7 +40,7 @@ class WorkManagerPingSenderTest {
     fun `test start`() {
         val keepaliveMillis = 30000L
         val timeoutSeconds = 10000L
-        whenever(comms.keepAlive).thenReturn(keepaliveMillis)
+        whenever(comms.keepAliveMillis).thenReturn(keepaliveMillis)
         whenever(pingSenderConfig.timeoutSeconds).thenReturn(timeoutSeconds)
 
         pingSender.start()
@@ -58,14 +58,12 @@ class WorkManagerPingSenderTest {
 
     @Test
     fun `test sendPing when ping cannot be sent(token = null)`() {
-        val mqttClient = mock<IMqttAsyncClient>()
         val testUri = "test-uri"
         val keepaliveMillis = 30000L
         whenever(pingSenderConfig.sendForcePing).thenReturn(false)
-        whenever(comms.client).thenReturn(mqttClient)
-        whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity(false)).thenReturn(null)
+        whenever(comms.serverURI).thenReturn(testUri)
+        whenever(comms.keepAliveMillis).thenReturn(keepaliveMillis)
+        whenever(comms.checkActivity(eq(false), any())).thenReturn(false)
 
         pingSender.sendPing {
             // do nothing
@@ -77,17 +75,14 @@ class WorkManagerPingSenderTest {
 
     @Test
     fun `test sendPing when ping can be sent successfully`() {
-        val mqttClient = mock<IMqttAsyncClient>()
-        val mqttToken = mock<MqttToken>()
         val testUri = "test-uri"
         val keepaliveMillis = 30000L
         val startTime = TimeUnit.MILLISECONDS.toNanos(100)
         val endTime = TimeUnit.MILLISECONDS.toNanos(110)
         whenever(pingSenderConfig.sendForcePing).thenReturn(false)
-        whenever(comms.client).thenReturn(mqttClient)
-        whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity(false)).thenReturn(mqttToken)
+        whenever(comms.serverURI).thenReturn(testUri)
+        whenever(comms.keepAliveMillis).thenReturn(keepaliveMillis)
+        whenever(comms.checkActivity(eq(false), any())).thenReturn(true)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
 
         var success: Boolean? = null
@@ -97,26 +92,23 @@ class WorkManagerPingSenderTest {
 
         verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis / 1000)
 
-        val argumentCaptor = argumentCaptor<IMqttActionListener>()
-        verify(mqttToken).actionCallback = argumentCaptor.capture()
-        argumentCaptor.lastValue.onSuccess(mqttToken)
+        val argumentCaptor = argumentCaptor<PingActionCallback>()
+        verify(comms).checkActivity(eq(false), argumentCaptor.capture())
+        argumentCaptor.lastValue.onSuccess()
         assertTrue(success!!)
         verify(pingSenderEvents).pingEventSuccess(testUri, 10, keepaliveMillis / 1000)
     }
 
     @Test
     fun `test sendPing when ping can be sent successfully with sendForcePing=true`() {
-        val mqttClient = mock<IMqttAsyncClient>()
-        val mqttToken = mock<MqttToken>()
         val testUri = "test-uri"
         val keepaliveMillis = 30000L
         val startTime = TimeUnit.MILLISECONDS.toNanos(100)
         val endTime = TimeUnit.MILLISECONDS.toNanos(110)
         whenever(pingSenderConfig.sendForcePing).thenReturn(true)
-        whenever(comms.client).thenReturn(mqttClient)
-        whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity(true)).thenReturn(mqttToken)
+        whenever(comms.serverURI).thenReturn(testUri)
+        whenever(comms.keepAliveMillis).thenReturn(keepaliveMillis)
+        whenever(comms.checkActivity(eq(true), any())).thenReturn(true)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
 
         var success: Boolean? = null
@@ -126,26 +118,23 @@ class WorkManagerPingSenderTest {
 
         verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis / 1000)
 
-        val argumentCaptor = argumentCaptor<IMqttActionListener>()
-        verify(mqttToken).actionCallback = argumentCaptor.capture()
-        argumentCaptor.lastValue.onSuccess(mqttToken)
+        val argumentCaptor = argumentCaptor<PingActionCallback>()
+        verify(comms).checkActivity(eq(true), argumentCaptor.capture())
+        argumentCaptor.lastValue.onSuccess()
         assertTrue(success!!)
         verify(pingSenderEvents).pingEventSuccess(testUri, 10, keepaliveMillis / 1000)
     }
 
     @Test
     fun `test sendPing when ping cannot be sent successfully`() {
-        val mqttClient = mock<IMqttAsyncClient>()
-        val mqttToken = mock<MqttToken>()
         val testUri = "test-uri"
         val keepaliveMillis = 30000L
         val startTime = TimeUnit.MILLISECONDS.toNanos(100)
         val endTime = TimeUnit.MILLISECONDS.toNanos(110)
         whenever(pingSenderConfig.sendForcePing).thenReturn(false)
-        whenever(comms.client).thenReturn(mqttClient)
-        whenever(mqttClient.serverURI).thenReturn(testUri)
-        whenever(comms.keepAlive).thenReturn(keepaliveMillis)
-        whenever(comms.checkForActivity(false)).thenReturn(mqttToken)
+        whenever(comms.serverURI).thenReturn(testUri)
+        whenever(comms.keepAliveMillis).thenReturn(keepaliveMillis)
+        whenever(comms.checkActivity(eq(false), any())).thenReturn(true)
         whenever(clock.nanoTime()).thenReturn(startTime, endTime)
 
         var success: Boolean? = null
@@ -155,10 +144,10 @@ class WorkManagerPingSenderTest {
 
         verify(pingSenderEvents).mqttPingInitiated(testUri, keepaliveMillis / 1000)
 
-        val argumentCaptor = argumentCaptor<IMqttActionListener>()
-        verify(mqttToken).actionCallback = argumentCaptor.capture()
+        val argumentCaptor = argumentCaptor<PingActionCallback>()
+        verify(comms).checkActivity(eq(false), argumentCaptor.capture())
         val exception = Exception("test")
-        argumentCaptor.lastValue.onFailure(mqttToken, exception)
+        argumentCaptor.lastValue.onFailure(exception)
         assertFalse(success!!)
         verify(pingSenderEvents).pingEventFailure(testUri, 10, exception, keepaliveMillis / 1000)
     }

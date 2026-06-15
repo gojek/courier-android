@@ -20,7 +20,8 @@ import com.gojek.mqtt.logging.PahoLoggerV5
 import com.gojek.mqtt.model.ServerUri
 import com.gojek.mqtt.network.NetworkHandler
 import com.gojek.mqtt.persistence.impl.PahoPersistenceV5
-import com.gojek.mqtt.pingsender.PahoV5TimerPingSender
+import com.gojek.mqtt.pingsender.MqttPingSender
+import com.gojek.mqtt.pingsender.PahoV5PingSenderAdapter
 import com.gojek.mqtt.policies.connectretrytime.IConnectRetryTimePolicy
 import com.gojek.mqtt.policies.connecttimeout.IConnectTimeoutPolicy
 import com.gojek.mqtt.policies.hostfallback.IHostFallbackPolicy
@@ -58,6 +59,7 @@ internal class MqttConnectionV5(
     private val messageSendListener: IMessageSendListener,
     private val pahoPersistence: PahoPersistenceV5,
     private val networkHandler: NetworkHandler,
+    private val mqttPingSender: MqttPingSender,
     private val keepAliveFailureHandler: KeepAliveFailureHandler,
     private val clock: Clock,
     private val subscriptionStore: SubscriptionStore
@@ -369,7 +371,7 @@ internal class MqttConnectionV5(
             com.gojek.mqtt.model.MqttVersion.VERSION_5.protocolLevel.toString(),
             persistence,
             connectionConfig.maxInflightMessages,
-            PahoV5TimerPingSender(connectionConfig.logger),
+            PahoV5PingSenderAdapter(this.mqttPingSender, connectionConfig.logger),
             PahoLoggerV5(connectionConfig.logger),
             PahoEventHandlerV5(connectionConfig.connectionEventHandler),
             getPahoExperimentsConfig(),
