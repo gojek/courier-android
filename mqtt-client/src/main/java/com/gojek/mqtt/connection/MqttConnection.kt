@@ -246,7 +246,7 @@ internal class MqttConnection(
     ) {
         logger.d(TAG, "Current inflight msg count : " + mqtt!!.inflightMessages)
 
-        val resolvedTopic = topicPlaceholderResolver.resolve(mqttPacket.topic, options!!)
+        val resolvedTopic = topicPlaceholderResolver.resolve(mqttPacket.topic, options!!, mqtt!!.clientId)
 
         mqtt!!.publishWithNewType(
             resolvedTopic,
@@ -490,7 +490,7 @@ internal class MqttConnection(
             val subscribeStartTime = clock.nanoTime()
             val resolvedTopicMap = mutableMapOf<String, QoS>()
             topicMap.entries.map { entry ->
-                val resolvedTopic = topicPlaceholderResolver.resolve(entry.key, options!!)
+                val resolvedTopic = topicPlaceholderResolver.resolve(entry.key, options!!, mqtt!!.clientId)
                 resolvedTopicMap[resolvedTopic] = entry.value
             }
             val qosArray = IntArray(topicMap.size)
@@ -549,7 +549,7 @@ internal class MqttConnection(
     override fun unsubscribe(topics: Set<String>) {
         if (topics.isNotEmpty()) {
             val unsubscribeStartTime = clock.nanoTime()
-            val resolvedTopics: Array<String> = topics.map { topicPlaceholderResolver.resolve(it, options!!) }.toTypedArray()
+            val resolvedTopics: Array<String> = topics.map { topicPlaceholderResolver.resolve(it, options!!, mqtt!!.clientId) }.toTypedArray()
             try {
                 logger.d(TAG, "Unsubscribing to topics: $topics")
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeAttempt(topics)
