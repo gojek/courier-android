@@ -29,6 +29,7 @@ import com.gojek.mqtt.policies.subscriptionretry.ISubscriptionRetryPolicy
 import com.gojek.mqtt.scheduler.IRunnableScheduler
 import com.gojek.mqtt.send.listener.IMessageSendListener
 import com.gojek.mqtt.subscription.SubscriptionStore
+import com.gojek.mqtt.topic.TopicPlaceholderResolver
 import com.gojek.mqtt.utils.NetworkUtils
 import com.gojek.mqtt.wakelock.WakeLockProvider
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions
@@ -75,6 +76,8 @@ internal class MqttConnection(
     private var options: MqttConnectOptions? = null
 
     private var mqtt: MqttAsyncClient? = null
+
+    private val topicPlaceholderResolver = TopicPlaceholderResolver()
 
     @Volatile
     private var updatePolicyParams = false
@@ -243,8 +246,10 @@ internal class MqttConnection(
     ) {
         logger.d(TAG, "Current inflight msg count : " + mqtt!!.inflightMessages)
 
+        val resolvedTopic = topicPlaceholderResolver.resolve(mqttPacket.topic, options!!)
+
         mqtt!!.publishWithNewType(
-            mqttPacket.topic,
+            resolvedTopic,
             mqttPacket.message,
             mqttPacket.qos,
             mqttPacket.type,
@@ -482,7 +487,12 @@ internal class MqttConnection(
 
     override fun subscribe(topicMap: Map<String, QoS>) {
         if (topicMap.isNotEmpty()) {
-            val topicArray: Array<String> = topicMap.keys.toTypedArray()
+            val subscribeStartTime = clock.nanoTime()
+            val resolvedTopicMap = mutableMapOf<String, QoS>()
+            topicMap.entries.map { entry ->
+                val resolvedTopic = topicPlaceholderResolver.resolve(entry.key, options!!)
+                resolvedTopicMap[resolvedTopic] = entry.value
+            }
             val qosArray = IntArray(topicMap.size)
             val subscribeFlagList = ArrayList<SubscribeFlags>(topicMap.size)
             for ((index, qos) in topicMap.values.withIndex()) {
@@ -505,34 +515,33 @@ internal class MqttConnection(
                     }
                 }
             }
-            val subscribeStartTime = clock.nanoTime()
             try {
-                logger.d(TAG, "Subscribing to topics: ${topicMap.keys}")
-                connectionConfig.connectionEventHandler.onMqttSubscribeAttempt(topicMap)
+                logger.d(TAG, "Subscribing to topics: ${resolvedTopicMap.keys}")
+                connectionConfig.connectionEventHandler.onMqttSubscribeAttempt(resolvedTopicMap)
                 mqtt!!.subscribeWithPersistableRetryableFlags(
-                    topicArray,
+                    resolvedTopicMap.keys.toTypedArray(),
                     qosArray,
                     subscribeFlagList,
                     MqttContext(subscribeStartTime),
-                    getSubscribeListener(topicMap)
+                    getSubscribeListener(resolvedTopicMap)
                 )
             } catch (mqttException: MqttException) {
                 connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
-                    topics = topicMap,
+                    topics = resolvedTopicMap,
                     throwable = mqttException,
                     timeTakenMillis = (clock.nanoTime() - subscribeStartTime).fromNanosToMillis()
                 )
                 runnableScheduler.scheduleMqttHandleExceptionRunnable(mqttException, true)
             } catch (illegalArgumentException: IllegalArgumentException) {
                 connectionConfig.connectionEventHandler.onMqttSubscribeFailure(
-                    topics = topicMap,
+                    topics = resolvedTopicMap,
                     throwable = MqttException(
                         REASON_CODE_INVALID_SUBSCRIPTION.toInt(),
                         illegalArgumentException
                     ),
                     timeTakenMillis = (clock.nanoTime() - subscribeStartTime).fromNanosToMillis()
                 )
-                subscriptionStore.getListener().onInvalidTopicsSubscribeFailure(topicMap)
+                subscriptionStore.getListener().onInvalidTopicsSubscribeFailure(resolvedTopicMap)
             }
         }
     }
@@ -540,11 +549,12 @@ internal class MqttConnection(
     override fun unsubscribe(topics: Set<String>) {
         if (topics.isNotEmpty()) {
             val unsubscribeStartTime = clock.nanoTime()
+            val resolvedTopics: Array<String> = topics.map { topicPlaceholderResolver.resolve(it, options!!) }.toTypedArray()
             try {
                 logger.d(TAG, "Unsubscribing to topics: $topics")
                 connectionConfig.connectionEventHandler.onMqttUnsubscribeAttempt(topics)
                 mqtt!!.unsubscribe(
-                    topics.toTypedArray(),
+                    resolvedTopics,
                     MqttContext(unsubscribeStartTime),
                     getUnsubscribeListener(topics)
                 )
