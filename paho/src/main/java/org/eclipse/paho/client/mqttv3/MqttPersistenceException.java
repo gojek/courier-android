@@ -25,6 +25,9 @@ public class MqttPersistenceException extends MqttException
 	/** Persistence is already being used by another client. */
 	public static final short REASON_CODE_PERSISTENCE_IN_USE = 32200;
 
+	/** Persistence has reached its configured capacity limit. */
+	public static final short REASON_CODE_PERSISTENCE_CAPACITY_REACHED = 32201;
+
 	/**
 	 * Constructs a new <code>MqttPersistenceException</code>
 	 */

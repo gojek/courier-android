@@ -20,7 +20,7 @@ import com.gojek.courier.streamadapter.rxjava2.RxJava2StreamAdapterFactory
 import com.gojek.mqtt.auth.Authenticator
 import com.gojek.mqtt.client.MqttClient
 import com.gojek.mqtt.client.config.ExperimentConfigs
-import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
+import com.gojek.mqtt.client.config.PersistenceOptions
 import com.gojek.mqtt.client.config.v3.MqttV3Configuration
 import com.gojek.mqtt.client.factory.MqttClientFactory
 import com.gojek.mqtt.event.EventHandler
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             mqttInterceptorList = listOf(MqttChuckInterceptor(this, MqttChuckConfig(retentionPeriod = Period.ONE_HOUR))),
-            persistenceOptions = PahoPersistenceOptions(100, false),
+            persistenceOptions = PersistenceOptions(bufferCapacity = 100, isDeleteOldestMessages = false),
             experimentConfigs = ExperimentConfigs(
                 adaptiveKeepAliveConfig = AdaptiveKeepAliveConfig(
                     lowerBoundMinutes = 1,
