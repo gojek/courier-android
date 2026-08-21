@@ -25,6 +25,9 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "2.0.0-beta.20"
   },
+  "resolutions": {
+    "webpack": "5.75.0"
+  },
   "browserslist": {
     "production": [
       ">0.5%",
