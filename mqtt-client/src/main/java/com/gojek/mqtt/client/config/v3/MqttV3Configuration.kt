@@ -35,7 +35,7 @@ data class MqttV3Configuration(
     override val authFailureHandler: AuthFailureHandler? = null,
     override val pingSender: MqttPingSender,
     override val mqttInterceptorList: List<MqttInterceptor> = emptyList(),
-    override val persistenceOptions: PersistenceOptions,
+    override val persistenceOptions: PersistenceOptions = PersistenceOptions(),
     override val experimentConfigs: ExperimentConfigs = ExperimentConfigs()
 ) : MqttConfiguration(
     connectRetryTimePolicy = connectRetryTimePolicy,

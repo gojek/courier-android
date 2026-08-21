@@ -19,10 +19,10 @@ import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttPersistable;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
-
-import static org.eclipse.paho.client.mqttv3.MqttPersistenceException.REASON_CODE_PERSISTENCE_CAPACITY_REACHED;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Persistence that uses memory
@@ -35,15 +35,17 @@ import static org.eclipse.paho.client.mqttv3.MqttPersistenceException.REASON_COD
  */
 public class BoundedMemoryPersistence implements MqttClientPersistence {
 
-    private Hashtable data;
+    private Map<String, MqttPersistable> data;
     private final int maxCapacity;
+    private final boolean isDeleteOldestMessages;
 
     public BoundedMemoryPersistence() {
-        this(100);
+        this(100, false);
     }
 
-    public BoundedMemoryPersistence(int maxCapacity) {
+    public BoundedMemoryPersistence(int maxCapacity, boolean isDeleteOldestMessages) {
         this.maxCapacity = maxCapacity;
+        this.isDeleteOldestMessages = isDeleteOldestMessages;
     }
 
     /* (non-Javadoc)
@@ -57,7 +59,7 @@ public class BoundedMemoryPersistence implements MqttClientPersistence {
 	 * @see org.eclipse.paho.client.mqttv3.MqttClientPersistence#keys()
 	 */
 	public Enumeration keys() throws MqttPersistenceException {
-		return data.keys();
+		return Collections.enumeration(data.keySet());
 	}
 
 	/* (non-Javadoc)
@@ -71,21 +73,21 @@ public class BoundedMemoryPersistence implements MqttClientPersistence {
 	 * @see org.eclipse.paho.client.mqttv3.MqttClientPersistence#open(java.lang.String, java.lang.String)
 	 */
 	public void open(String clientId, String serverURI) throws MqttPersistenceException {
-		this.data = new Hashtable();
+		this.data = Collections.synchronizedMap(new LinkedHashMap<String, MqttPersistable>());
 	}
 
     /* (non-Javadoc)
      * @see org.eclipse.paho.client.mqttv3.MqttClientPersistence#put(java.lang.String, org.eclipse.paho.client.mqttv3.MqttPersistable)
      */
     public void put(String key, MqttPersistable persistable) throws MqttPersistenceException {
-        synchronized (data){
-            if (!data.containsKey(key) && data.size() >= maxCapacity) {
-                throw new MqttPersistenceException(
-                        REASON_CODE_PERSISTENCE_CAPACITY_REACHED,
-                        new RuntimeException("In-memory persistence capacity of " + maxCapacity + " reached")
-                );
+        synchronized (data) {
+            if (data.size() < maxCapacity || data.containsKey(key)) {
+                data.put(key, persistable);
+            } else if (isDeleteOldestMessages) {
+                String oldestKey = data.keySet().iterator().next();
+                data.remove(oldestKey);
+                data.put(key, persistable);
             }
-            data.put(key, persistable);
         }
     }
 

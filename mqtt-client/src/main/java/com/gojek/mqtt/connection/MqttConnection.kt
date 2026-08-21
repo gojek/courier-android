@@ -405,7 +405,10 @@ internal class MqttConnection(
         val persistenceOptions = connectionConfig.persistenceOptions
         val persistence = if (persistenceOptions.shouldUseMemoryPersistence) {
             if (persistenceOptions.memoryPersistenceCapacity > 0) {
-                BoundedMemoryPersistence(persistenceOptions.memoryPersistenceCapacity)
+                BoundedMemoryPersistence(
+                    persistenceOptions.memoryPersistenceCapacity,
+                    persistenceOptions.isDeleteOldestMessages
+                )
             } else {
                 MemoryPersistence()
             }
@@ -427,7 +430,7 @@ internal class MqttConnection(
         val bufferOptions = DisconnectedBufferOptions()
         with(connectionConfig.persistenceOptions) {
             bufferOptions.isBufferEnabled = true
-            bufferOptions.isPersistBuffer = true
+            bufferOptions.isPersistBuffer = isPersistBuffer
             bufferOptions.bufferSize = bufferCapacity
             bufferOptions.isDeleteOldestMessages = isDeleteOldestMessages
         }
