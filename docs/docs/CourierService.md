@@ -60,3 +60,39 @@ Following annotations are supported for service interface.
 - **@TopicMap** : A parameter annotation used for specifying a topic map. It is always used while subscribing multiple topics. 
 
 **Note** : While subscribing topics using `@SubscribeMultiple` along with a stream, make sure that messages received on all topics follow same format or a message adapter is added for handling different format.
+
+### Topic Placeholders
+
+Apart from `@Path` variables (`{...}`) which are substituted from method parameters, a topic can contain **connection placeholders**. These are resolved automatically from the established MQTT connection when the message is actually published/subscribed, so you don't have to pass these values yourself.
+
+| Placeholder | Resolved with |
+| --- | --- |
+| `%u` | The connection's username |
+| `%c` | The connection's client id |
+
+~~~ kotlin
+interface MessageService {
+	@Send(topic = "user/%u/send", qos = QoS.ONE)
+	fun send(@Data message: Message)
+
+	@Subscribe(topic = "client/%c/receive", qos = QoS.ONE)
+	fun subscribe(): Observable<Message>
+}
+~~~
+
+For example, if the connection is established with username `alice` and client id `alice-android`, the topics above resolve to `user/alice/send` and `client/alice-android/receive` respectively.
+
+#### Splitting a placeholder value
+
+A placeholder value can be split by a delimiter and a single part of it can be used in the topic. The syntax is `(<placeholder>,<delimiter>,<index>)` where `<index>` is **0-based**.
+
+~~~ kotlin
+@Send(topic = "user/(%c,:,2)/send", qos = QoS.ONE)
+fun send(@Data message: Message)
+~~~
+
+If the client id is `region:tenant:device`, then `(%c,:,2)` splits it by `:` into `[region, tenant, device]` and picks the part at index `2`, resolving the topic to `user/device/send`. An index that is out of range results in an `IllegalArgumentException`.
+
+Placeholders can be combined freely with `@Path` variables and plain placeholders in the same topic, e.g. `user/(%c,:,0)/{id}/%u`.
+
+**Note** : Topic placeholders are supported in `@Send`, `@Subscribe`, `@SubscribeMultiple` and `@Unsubscribe` topics. They are **not** resolved for `@Receive` topics — a `@Receive` listener is registered against the topic string as-is, so use the already-resolved topic (or `@Subscribe` with a stream) when you need placeholder-based receiving.

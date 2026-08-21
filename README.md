@@ -65,6 +65,8 @@ End-to-end courier example - https://gojek.github.io/courier/docs/Introduction
 
 * MQTT Chuck
 
+* Topic Placeholders
+
 More details about features in Courier library can be found [here][1]
 
 ## Getting Started
