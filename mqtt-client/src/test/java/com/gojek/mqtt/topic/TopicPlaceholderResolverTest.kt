@@ -1,12 +1,14 @@
 package com.gojek.mqtt.topic
 
+import com.gojek.courier.logging.NoOpLogger
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TopicPlaceholderResolverTest {
 
-    private val resolver = TopicPlaceholderResolver()
+    private val logger = NoOpLogger()
+    private val resolver = TopicPlaceholderResolver(logger)
 
     private fun optionsWithUsername(username: String): MqttConnectOptions {
         return MqttConnectOptions().apply { userName = username }

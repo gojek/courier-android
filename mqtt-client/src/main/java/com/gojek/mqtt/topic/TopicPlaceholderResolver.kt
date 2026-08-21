@@ -1,8 +1,9 @@
 package com.gojek.mqtt.topic
 
+import com.gojek.courier.logging.ILogger
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 
-internal class TopicPlaceholderResolver {
+internal class TopicPlaceholderResolver(private val logger: ILogger) {
     fun resolve(topic: String, options: MqttConnectOptions, clientId: String): String {
         if (!topic.contains(PLACEHOLDER_PREFIX)) {
             return topic
@@ -27,7 +28,9 @@ internal class TopicPlaceholderResolver {
         if (resolvedTopic.contains(CLIENT_ID_PLACEHOLDER)) {
             resolvedTopic = resolvedTopic.replace(CLIENT_ID_PLACEHOLDER, clientId)
         }
-        return resolvedTopic
+        return resolvedTopic.also {
+            logger.d("TopicResolver", "$topic is resolved to $it, username: ${options.userName}, clientId: $clientId")
+        }
     }
 
     private fun String.placeholderValue(options: MqttConnectOptions, clientId: String): String {

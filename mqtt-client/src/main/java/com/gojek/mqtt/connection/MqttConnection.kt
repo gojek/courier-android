@@ -77,7 +77,7 @@ internal class MqttConnection(
 
     private var mqtt: MqttAsyncClient? = null
 
-    private val topicPlaceholderResolver = TopicPlaceholderResolver()
+    private val topicPlaceholderResolver: TopicPlaceholderResolver
 
     @Volatile
     private var updatePolicyParams = false
@@ -108,6 +108,7 @@ internal class MqttConnection(
         this.logger = connectionConfig.logger
         this.mqttExceptionHandler =
             MqttExceptionHandlerImpl(runnableScheduler, connectRetryTimePolicy, logger)
+        this.topicPlaceholderResolver = TopicPlaceholderResolver(logger)
     }
 
     override fun connect(
