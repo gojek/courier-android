@@ -2,7 +2,6 @@ package com.gojek.mqtt.topic
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class TopicPlaceholderResolverTest {
@@ -101,14 +100,12 @@ class TopicPlaceholderResolverTest {
         assertEquals("region/device", resolved)
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException::class)
     fun `throws when split part index is out of bounds`() {
-        assertThrows(IllegalArgumentException::class.java) {
-            resolver.resolve(
-                topic = "chat/(%c,:,3)/inbox",
-                options = optionsWithUsername("john"),
-                clientId = "region:john:device"
-            )
-        }
+        resolver.resolve(
+            topic = "chat/(%c,:,3)/inbox",
+            options = optionsWithUsername("john"),
+            clientId = "region:john:device"
+        )
     }
 }
