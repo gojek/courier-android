@@ -10,7 +10,6 @@ import com.gojek.courier.logging.ILogger
 import com.gojek.courier.utils.Clock
 import com.gojek.keepalive.KeepAliveFailureHandler
 import com.gojek.mqtt.client.IMessageReceiveListener
-import com.gojek.mqtt.client.config.PersistenceOptions.PahoPersistenceOptions
 import com.gojek.mqtt.client.model.MqttSendPacket
 import com.gojek.mqtt.connection.config.v3.ConnectionConfig
 import com.gojek.mqtt.event.PahoEventHandler
@@ -49,6 +48,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException
 import org.eclipse.paho.client.mqttv3.internal.wire.MqttSuback
 import org.eclipse.paho.client.mqttv3.internal.wire.SubscribeFlags
 import org.eclipse.paho.client.mqttv3.internal.wire.UserProperty
+import org.eclipse.paho.client.mqttv3.persist.BoundedMemoryPersistence
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 
 internal class MqttConnection(
@@ -402,8 +402,16 @@ internal class MqttConnection(
     }
 
     private fun getMqttAsyncClient(clientId: String, serverUri: String): MqttAsyncClient {
-        val persistence = if (connectionConfig.shouldUseMemoryPersistence) {
-            MemoryPersistence()
+        val persistenceOptions = connectionConfig.persistenceOptions
+        val persistence = if (persistenceOptions.shouldUseMemoryPersistence) {
+            if (persistenceOptions.memoryPersistenceCapacity > 0) {
+                BoundedMemoryPersistence(
+                    persistenceOptions.memoryPersistenceCapacity,
+                    persistenceOptions.isDeleteOldestMessages
+                )
+            } else {
+                MemoryPersistence()
+            }
         } else {
             pahoPersistence
         }
@@ -420,9 +428,9 @@ internal class MqttConnection(
             connectionConfig.mqttInterceptorList
         )
         val bufferOptions = DisconnectedBufferOptions()
-        with(connectionConfig.persistenceOptions as PahoPersistenceOptions) {
+        with(connectionConfig.persistenceOptions) {
             bufferOptions.isBufferEnabled = true
-            bufferOptions.isPersistBuffer = true
+            bufferOptions.isPersistBuffer = isPersistBuffer
             bufferOptions.bufferSize = bufferCapacity
             bufferOptions.isDeleteOldestMessages = isDeleteOldestMessages
         }
