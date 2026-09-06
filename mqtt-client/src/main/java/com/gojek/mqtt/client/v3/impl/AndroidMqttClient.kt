@@ -395,6 +395,7 @@ internal class AndroidMqttClient(
                 state.set(DESTROYED)
                 runnableScheduler.stop()
             }
+            networkHandler.destroy()
             mqttConnection.shutDown()
             subscriptionStore.clear()
             mqttPersistence.clearAll()
