@@ -14,13 +14,16 @@ import org.eclipse.paho.client.mqttv3.MqttClientPersistence
 import org.eclipse.paho.client.mqttv3.MqttPersistable
 import org.eclipse.paho.client.mqttv3.internal.MqttPersistentData
 
-internal class PahoPersistence(private val context: Context) :
+internal class PahoPersistence(private val context: Context, private val isDatabaseOptimisationEnabled: Boolean) :
     MqttClientPersistence, IMqttReceivePersistence {
     private lateinit var database: MqttDatabase
     private lateinit var incomingMessagesDao: IncomingMessagesDao
     private lateinit var pahoMessagesDao: PahoMessagesDao
 
     override fun open(clientId: String, serverURI: String) {
+        if (isDatabaseOptimisationEnabled && ::database.isInitialized && database.isOpen) {
+            return
+        }
         this.database = Room.databaseBuilder(
             context.applicationContext,
             MqttDatabase::class.java,
@@ -99,11 +102,16 @@ internal class PahoPersistence(private val context: Context) :
     }
 
     fun clearAll() {
-        if (::pahoMessagesDao.isInitialized) {
-            pahoMessagesDao.clearAllMessages()
-        }
-        if (::incomingMessagesDao.isInitialized) {
-            incomingMessagesDao.clearAllMessages()
+        if (isDatabaseOptimisationEnabled && ::database.isInitialized && database.isOpen) {
+            this.database.clearAllTables()
+            this.database.close()
+        } else {
+            if (::pahoMessagesDao.isInitialized) {
+                pahoMessagesDao.clearAllMessages()
+            }
+            if (::incomingMessagesDao.isInitialized) {
+                incomingMessagesDao.clearAllMessages()
+            }
         }
     }
 }
