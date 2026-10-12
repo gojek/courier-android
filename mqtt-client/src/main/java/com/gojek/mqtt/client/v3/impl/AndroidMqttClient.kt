@@ -133,7 +133,7 @@ internal class AndroidMqttClient(
         )
         mqttUtils = MqttUtils()
         networkUtils = NetworkUtils()
-        mqttPersistence = PahoPersistence(context)
+        mqttPersistence = PahoPersistence(context, experimentConfigs.enableDatabaseOptimisation)
         messageSendListener = MqttMessageSendListener()
         networkHandler = NetworkHandler(
             logger = mqttConfiguration.logger,
