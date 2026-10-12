@@ -121,11 +121,11 @@ private fun Project.configureJacoco(configuration: String.() -> Unit) {
         reports.apply {
             xml.apply {
                 isEnabled = true
-                destination = File("${project.buildDir}/reports/jacocoTestReport.xml")
+                setDestination(File("${project.buildDir}/reports/jacocoTestReport.xml"))
             }
             html.apply {
                 isEnabled = true
-                destination = File("${project.buildDir}/reports/jacoco")
+                setDestination(File("${project.buildDir}/reports/jacoco"))
             }
         }
     }
