@@ -25,11 +25,12 @@ internal class NetworkUtils {
     }
 
     fun getNetworkName(info: NetworkInfo?): String {
+        // extraInfo is often null on mobile networks, so fall back to "Unknown" instead of relying on a runtime null check.
         return try {
             if (isWifi(getNetworkType(info))) {
                 "wifi"
             } else {
-                info!!.extraInfo
+                info?.extraInfo ?: "Unknown"
             }
         } catch (e: Exception) {
             "Unknown"
